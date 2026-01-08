@@ -10,10 +10,12 @@ interface OnboardingStep {
   description: string;
 }
 
-// Tipos para el efecto parallax
+// Tipos para el efecto parallax 3D
 interface ParallaxOffset {
   x: number;
   y: number;
+  rotateX: number;
+  rotateY: number;
 }
 
 // srcSet manejará automáticamente la selección de la mejor calidad
@@ -42,13 +44,14 @@ export default function OnboardingFlow() {
   const [touchEnd, setTouchEnd] = useState(0);
   const [isTransitioning, setIsTransitioning] = useState(false);
   const [progress, setProgress] = useState(0); // 0 a 1 para la animación de progreso
-  const [parallaxOffset, setParallaxOffset] = useState<ParallaxOffset>({ x: 0, y: 0 });
+  const [parallaxOffset, setParallaxOffset] = useState<ParallaxOffset>({ x: 0, y: 0, rotateX: 0, rotateY: 0 });
   const autoAdvanceRef = useRef<NodeJS.Timeout | null>(null);
   const progressRef = useRef<NodeJS.Timeout | null>(null);
   const startTimeRef = useRef<number>(Date.now());
-  const parallaxRef = useRef<{ x: number; y: number }>({ x: 0, y: 0 });
+  const parallaxRef = useRef<{ x: number; y: number; rotateX: number; rotateY: number }>({ x: 0, y: 0, rotateX: 0, rotateY: 0 });
   const AUTO_ADVANCE_DURATION = 10000; // 10 segundos - más tiempo entre cada paso
   const PARALLAX_INTENSITY = 15; // Intensidad del efecto parallax en píxeles
+  const ROTATION_INTENSITY = 10; // Intensidad de rotación 3D en grados
 
   // Auto-avance con animación de progreso
   useEffect(() => {
@@ -94,7 +97,7 @@ export default function OnboardingFlow() {
     };
   }, [currentStep]); // Reiniciar cuando cambia el paso
 
-  // Efecto parallax con sensores del dispositivo (gyroscope/accelerometer)
+  // Efecto parallax 3D con sensores del dispositivo (gyroscope/accelerometer)
   useEffect(() => {
     const handleDeviceOrientation = (e: DeviceOrientationEvent) => {
       if (e.gamma !== null && e.beta !== null) {
@@ -103,13 +106,21 @@ export default function OnboardingFlow() {
         const targetX = (e.gamma / 90) * PARALLAX_INTENSITY;
         const targetY = (e.beta / 90) * PARALLAX_INTENSITY;
         
+        // Rotación 3D basada en la inclinación
+        const targetRotateY = (e.gamma / 90) * ROTATION_INTENSITY; // Rotar en Y (izquierda/derecha)
+        const targetRotateX = -(e.beta / 90) * ROTATION_INTENSITY; // Rotar en X (adelante/atrás), invertido para efecto natural
+        
         // Suavizar el movimiento con interpolación
         parallaxRef.current.x += (targetX - parallaxRef.current.x) * 0.1;
         parallaxRef.current.y += (targetY - parallaxRef.current.y) * 0.1;
+        parallaxRef.current.rotateX += (targetRotateX - parallaxRef.current.rotateX) * 0.1;
+        parallaxRef.current.rotateY += (targetRotateY - parallaxRef.current.rotateY) * 0.1;
         
         setParallaxOffset({
           x: parallaxRef.current.x,
           y: parallaxRef.current.y,
+          rotateX: parallaxRef.current.rotateX,
+          rotateY: parallaxRef.current.rotateY,
         });
       }
     };
@@ -122,13 +133,21 @@ export default function OnboardingFlow() {
           const targetX = (x / 9.8) * PARALLAX_INTENSITY;
           const targetY = (y / 9.8) * PARALLAX_INTENSITY;
           
+          // Rotación 3D basada en aceleración
+          const targetRotateY = (x / 9.8) * ROTATION_INTENSITY;
+          const targetRotateX = -(y / 9.8) * ROTATION_INTENSITY;
+          
           // Suavizar el movimiento
           parallaxRef.current.x += (targetX - parallaxRef.current.x) * 0.1;
           parallaxRef.current.y += (targetY - parallaxRef.current.y) * 0.1;
+          parallaxRef.current.rotateX += (targetRotateX - parallaxRef.current.rotateX) * 0.1;
+          parallaxRef.current.rotateY += (targetRotateY - parallaxRef.current.rotateY) * 0.1;
           
           setParallaxOffset({
             x: parallaxRef.current.x,
             y: parallaxRef.current.y,
+            rotateX: parallaxRef.current.rotateX,
+            rotateY: parallaxRef.current.rotateY,
           });
         }
       }
@@ -262,7 +281,7 @@ export default function OnboardingFlow() {
                     transitionDelay: isTransitioning ? '0ms' : '0ms', // Primero sin delay
                   }}
                 />
-                {/* Imagen sobre el círculo - SEGUNDO en entrar con poco delay - SOLO esta tiene parallax */}
+                {/* Imagen sobre el círculo - SEGUNDO en entrar con poco delay - SOLO esta tiene parallax 3D */}
                 <img
                   src={`/img/onboarding/${steps[currentStep].image}.png`}
                   srcSet={`
@@ -280,13 +299,17 @@ export default function OnboardingFlow() {
                     opacity: isTransitioning ? 0 : 1,
                     transform: isTransitioning 
                       ? 'scale(0.88) translateY(10px)' 
-                      : `scale(1) translateY(0) translate(${parallaxOffset.x}px, ${parallaxOffset.y}px)`, // SOLO la imagen tiene parallax
+                      : `scale(1) translateY(0) translate(${parallaxOffset.x}px, ${parallaxOffset.y}px) rotateX(${parallaxOffset.rotateX}deg) rotateY(${parallaxOffset.rotateY}deg)`, // Parallax 3D con rotación
+                    transformStyle: 'preserve-3d', // Habilitar transformaciones 3D
+                    perspective: '1000px', // Profundidad 3D
                     transition: isTransitioning 
                       ? `opacity ${motion.duration.base} ${motion.easing.smoothOut}, transform ${motion.duration.base} ${motion.easing.smoothOut}` 
                       : 'transform 0.1s ease-out', // Transición suave para parallax
                     transitionDelay: isTransitioning ? '0ms' : '100ms', // Muy poco delay después del círculo
                     imageRendering: '-webkit-optimize-contrast', // Mejor calidad en iOS
                     WebkitImageRendering: '-webkit-optimize-contrast',
+                    backfaceVisibility: 'hidden', // Optimización para 3D
+                    WebkitBackfaceVisibility: 'hidden',
                   }}
                 />
               </div>
