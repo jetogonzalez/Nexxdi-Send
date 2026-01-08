@@ -1,0 +1,14 @@
+# Ejemplo de archivo key.properties
+# Copia este archivo a key.properties y completa con tus datos reales
+# IMPORTANTE: NO subas key.properties a Git (debe estar en .gitignore)
+
+storePassword=TU_PASSWORD_DEL_KEYSTORE
+keyPassword=TU_PASSWORD_DEL_KEY
+keyAlias=send-app-key
+storeFile=/ruta/completa/al/keystore.jks
+
+# Ejemplo:
+# storePassword=miPassword123
+# keyPassword=miPassword123
+# keyAlias=send-app-key
+# storeFile=/Users/jettogonzalez/android-keystore.jks

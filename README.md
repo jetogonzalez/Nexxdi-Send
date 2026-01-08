@@ -1,14 +1,17 @@
-# Send App - PWA con Astro y Firebase
+# Send App - Nexxdi Send
 
-Aplicación móvil Progressive Web App (PWA) construida con Astro, lista para iOS y Android, desplegada en Firebase Hosting.
+Aplicación móvil construida con Astro, Capacitor y Firebase. Disponible como PWA y apps nativas iOS/Android.
 
 ## 🚀 Características
 
 - ✅ PWA completa (instalable en iOS y Android)
+- ✅ Apps nativas iOS y Android con Capacitor
 - ✅ Service Worker para funcionamiento offline
 - ✅ Optimizada para móviles
 - ✅ Despliegue en Firebase Hosting
-- ✅ Lista para integrar diseños de Figma
+- ✅ Distribución mediante Firebase App Distribution
+- ✅ Design tokens centralizados
+- ✅ Onboarding flow con transiciones suaves
 
 ## 📋 Prerequisitos
 
@@ -55,15 +58,25 @@ Coloca los iconos en `public/`:
 
 ```
 App/
-├── public/              # Archivos estáticos
+├── android/            # Proyecto Android nativo (Capacitor)
+├── ios/                # Proyecto iOS nativo (Capacitor)
+├── public/             # Archivos estáticos
 │   ├── manifest.json   # Configuración PWA
 │   ├── service-worker.js
-│   └── icon-*.png      # Iconos de la app
+│   └── img/            # Imágenes y assets
 ├── src/
+│   ├── components/     # Componentes React
+│   │   └── onboarding/ # Componentes de onboarding
+│   ├── config/         # Configuración y tokens
+│   │   ├── design-tokens.ts  # Tokens de diseño
+│   │   └── env.ts      # Variables de entorno
 │   ├── layouts/        # Layouts de Astro
-│   ├── pages/          # Páginas (rutas)
-│   └── components/     # Componentes React/Astro
+│   ├── lib/            # Utilidades
+│   │   ├── firebase.ts # Configuración Firebase
+│   │   └── motion.ts   # Transiciones y animaciones
+│   └── pages/          # Páginas (rutas)
 ├── astro.config.mjs    # Configuración de Astro
+├── capacitor.config.ts # Configuración Capacitor
 ├── firebase.json       # Configuración Firebase Hosting
 └── package.json
 ```
@@ -133,10 +146,19 @@ git push -u origin main
 
 ## 📝 Scripts Disponibles
 
+### Desarrollo Web
 - `npm run dev` - Servidor de desarrollo
 - `npm run build` - Build de producción
 - `npm run preview` - Preview del build local
 - `npm run deploy` - Build y deploy a Firebase
+
+### Apps Nativas (Capacitor)
+- `npm run build:sync` - Build y sincronizar con plataformas nativas
+- `npm run open:ios` - Abrir proyecto iOS en Xcode
+- `npm run open:android` - Abrir proyecto Android en Android Studio
+- `npm run sync` - Sincronizar cambios con plataformas nativas
+- `npm run android:build` - Generar Android App Bundle (.aab)
+- `npm run android:build:apk` - Generar APK para Android
 
 ## 🔐 Variables de Entorno
 
@@ -145,12 +167,31 @@ Crea un archivo `.env` si necesitas variables de entorno:
 PUBLIC_API_URL=https://api.example.com
 ```
 
+## 📱 Distribución
+
+### PWA (Web)
+- URL: https://nexxdi-send-jetto-gonzalez.web.app
+- Instalación: Desde Safari (iOS) o Chrome (Android)
+
+### Apps Nativas
+- **Android:** Ver `PASOS_RAPIDOS_ANDROID.md` para distribución con Firebase App Distribution
+- **iOS:** Requiere cuenta de Apple Developer ($99/año). Ver `CONVERTIR_A_NATIVA.md`
+
+## 📚 Documentación Adicional
+
+- `PASOS_RAPIDOS_ANDROID.md` - Guía rápida para distribuir Android
+- `CONFIGURAR_ANDROID.md` - Configuración completa de Android
+- `CONVERTIR_A_NATIVA.md` - Guía completa para apps nativas
+- `INSTALAR_EN_IPHONE.md` - Instrucciones de instalación PWA en iPhone
+- `SEGURIDAD_REACT.md` - Información sobre seguridad React
+
 ## 📚 Recursos
 
 - [Documentación Astro](https://docs.astro.build)
+- [Capacitor Docs](https://capacitorjs.com/docs)
 - [Firebase Hosting Docs](https://firebase.google.com/docs/hosting)
+- [Firebase App Distribution](https://firebase.google.com/docs/app-distribution)
 - [PWA Guide](https://web.dev/progressive-web-apps/)
-- [Astro + React](https://docs.astro.build/en/guides/integrations-guide/react/)
 
 ## 🐛 Troubleshooting
 

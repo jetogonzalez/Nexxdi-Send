@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">Send App</string>
+    <string name="title_activity_main">Send App</string>
+    <string name="package_name">com.nexxdi.send</string>
+    <string name="custom_url_scheme">com.nexxdi.send</string>
+</resources>

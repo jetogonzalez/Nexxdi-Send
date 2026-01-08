@@ -36,3 +36,8 @@ pnpm-debug.log*
 *github*.sh
 *token*.sh
 *secret*.sh
+
+# Android keystore y signing
+android/key.properties
+*.jks
+*.keystore
