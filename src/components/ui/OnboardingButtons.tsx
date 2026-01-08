@@ -43,7 +43,13 @@ export function OnboardingButtons({ onCreateAccount, onLogin }: OnboardingButton
       </button>
       <button
         className="w-full"
-        onClick={onLogin}
+        onClick={() => {
+          if (onLogin) {
+            onLogin();
+          } else if (typeof window !== 'undefined') {
+            window.location.href = '/login';
+          }
+        }}
         style={{
           backgroundColor: colors.semantic.button.secondary,
           color: colors.semantic.text.primary,

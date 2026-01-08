@@ -342,7 +342,11 @@ export default function OnboardingFlow() {
       <div style={{ flexShrink: 0, position: 'relative' }}>
         <OnboardingButtons 
           onCreateAccount={() => console.log('Crear cuenta')}
-          onLogin={() => console.log('Ya tengo cuenta')}
+          onLogin={() => {
+            if (typeof window !== 'undefined') {
+              window.location.href = '/login';
+            }
+          }}
         />
         {/* Botón para habilitar movimiento 3D (solo iOS cuando necesita permiso) */}
         {isSupported && !permissionGranted && (
