@@ -335,17 +335,17 @@ export default function OnboardingFlow() {
         />
       </div>
 
-      {/* Botones */}
-      <div style={{ flexShrink: 0, position: 'relative' }}>
-        <OnboardingButtons 
-          onCreateAccount={() => console.log('Crear cuenta')}
-          onLogin={() => {
-            if (typeof window !== 'undefined') {
-              window.location.href = '/login';
-            }
-          }}
-        />
-      </div>
+          {/* Botones - Liquid Glass Button Bar */}
+          <div style={{ flexShrink: 0, position: 'relative', paddingBottom: 'calc(env(safe-area-inset-bottom) + 120px)' }}>
+            <OnboardingButtons 
+              onCreateAccount={() => console.log('Crear cuenta')}
+              onLogin={() => {
+                if (typeof window !== 'undefined') {
+                  window.location.href = '/login';
+                }
+              }}
+            />
+          </div>
       <style>{`
         @keyframes fadeInScale {
           from {

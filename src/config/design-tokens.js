@@ -206,3 +206,27 @@ export const shadows = {
   inner: 'inset 0 2px 4px 0 rgb(0 0 0 / 0.05)',
   none: 'none',
 };
+
+// Liquid Glass Effect (iOS 16 style)
+export const liquidGlass = {
+  blur: {
+    sm: 'blur(10px)',
+    md: 'blur(20px)',
+    lg: 'blur(30px)',
+    xl: 'blur(40px)',
+  },
+  background: {
+    light: 'rgba(255, 255, 255, 0.7)',
+    dark: 'rgba(0, 0, 0, 0.3)',
+    lightTranslucent: 'rgba(255, 255, 255, 0.8)',
+    darkTranslucent: 'rgba(0, 0, 0, 0.4)',
+  },
+  border: {
+    light: 'rgba(255, 255, 255, 0.18)',
+    dark: 'rgba(0, 0, 0, 0.1)',
+  },
+  saturation: {
+    normal: 'saturate(180%)',
+    high: 'saturate(200%)',
+  },
+};

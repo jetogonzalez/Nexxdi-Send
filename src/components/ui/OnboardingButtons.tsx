@@ -1,5 +1,6 @@
-import { colors, spacing, typography, borderRadius } from '../../config/design-tokens';
+import { colors, spacing, typography, borderRadius, liquidGlass } from '../../config/design-tokens';
 import { motion } from '../../lib/motion';
+import { LiquidGlassButtonBar } from './LiquidGlassButtonBar';
 
 interface OnboardingButtonsProps {
   onCreateAccount?: () => void;
@@ -8,19 +9,7 @@ interface OnboardingButtonsProps {
 
 export function OnboardingButtons({ onCreateAccount, onLogin }: OnboardingButtonsProps) {
   return (
-    <div 
-      style={{
-        paddingLeft: spacing[5], // 1.25rem = 20px
-        paddingRight: spacing[5], // 1.25rem = 20px
-        paddingBottom: spacing[8], // 2rem = 32px
-        display: 'flex',
-        flexDirection: 'column',
-        gap: spacing[4], // 1rem = 16px - distancia entre botones
-        position: 'relative',
-        zIndex: 10,
-        backgroundColor: colors.semantic.background.main,
-      }}
-    >
+    <LiquidGlassButtonBar position="bottom">
       <button
         className="w-full text-white"
         onClick={onCreateAccount}
@@ -32,12 +21,19 @@ export function OnboardingButtons({ onCreateAccount, onLogin }: OnboardingButton
           fontSize: typography.fontSize.base, // 16pt
           fontWeight: typography.fontWeight.bold, // bold
           fontFamily: typography.fontFamily.sans.join(', '),
-          transition: `background-color ${motion.duration.fast} ${motion.easing.smoothOut}`,
+          transition: `background-color ${motion.duration.fast} ${motion.easing.smoothOut}, transform ${motion.duration.fast} ${motion.easing.smoothOut}`,
           border: 'none',
           cursor: 'pointer',
+          boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)',
         }}
-        onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = colors.semantic.button.primaryHover)}
-        onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = colors.semantic.button.primary)}
+        onMouseEnter={(e) => {
+          e.currentTarget.style.backgroundColor = colors.semantic.button.primaryHover;
+          e.currentTarget.style.transform = 'scale(1.02)';
+        }}
+        onMouseLeave={(e) => {
+          e.currentTarget.style.backgroundColor = colors.semantic.button.primary;
+          e.currentTarget.style.transform = 'scale(1)';
+        }}
       >
         Crear cuenta
       </button>
@@ -51,24 +47,32 @@ export function OnboardingButtons({ onCreateAccount, onLogin }: OnboardingButton
           }
         }}
         style={{
-          backgroundColor: colors.semantic.button.secondary,
+          backgroundColor: liquidGlass.background.light,
+          backdropFilter: liquidGlass.blur.md,
+          WebkitBackdropFilter: liquidGlass.blur.md,
           color: colors.semantic.text.primary,
           borderRadius: borderRadius.full, // full rounded
           paddingTop: spacing[4], // 16px
           paddingBottom: spacing[4], // 16px
-          marginBottom: spacing[10], // 40px - espacio adicional en la parte inferior
           fontSize: typography.fontSize.base, // 16pt
           fontWeight: typography.fontWeight.bold, // bold
           fontFamily: typography.fontFamily.sans.join(', '),
-          transition: `background-color ${motion.duration.fast} ${motion.easing.smoothOut}`,
-          border: 'none',
+          transition: `background-color ${motion.duration.fast} ${motion.easing.smoothOut}, transform ${motion.duration.fast} ${motion.easing.smoothOut}`,
+          border: `1px solid ${liquidGlass.border.light}`,
           cursor: 'pointer',
+          boxShadow: '0 2px 8px rgba(0, 0, 0, 0.05)',
         }}
-        onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = colors.semantic.button.secondaryHover)}
-        onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = colors.semantic.button.secondary)}
+        onMouseEnter={(e) => {
+          e.currentTarget.style.backgroundColor = liquidGlass.background.lightTranslucent;
+          e.currentTarget.style.transform = 'scale(1.02)';
+        }}
+        onMouseLeave={(e) => {
+          e.currentTarget.style.backgroundColor = liquidGlass.background.light;
+          e.currentTarget.style.transform = 'scale(1)';
+        }}
       >
         Ya tengo cuenta
       </button>
-    </div>
+    </LiquidGlassButtonBar>
   );
 }

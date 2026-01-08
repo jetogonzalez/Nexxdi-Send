@@ -266,6 +266,38 @@ export const shadows = {
 } as const;
 
 // ============================================
+// Liquid Glass Effect (iOS 16 style)
+// ============================================
+
+export const liquidGlass = {
+  // Backdrop blur values
+  blur: {
+    sm: 'blur(10px)',
+    md: 'blur(20px)',
+    lg: 'blur(30px)',
+    xl: 'blur(40px)',
+  },
+  // Background colors with transparency
+  background: {
+    light: 'rgba(255, 255, 255, 0.7)',
+    dark: 'rgba(0, 0, 0, 0.3)',
+    // iOS 16 style - más translúcido
+    lightTranslucent: 'rgba(255, 255, 255, 0.8)',
+    darkTranslucent: 'rgba(0, 0, 0, 0.4)',
+  },
+  // Border colors
+  border: {
+    light: 'rgba(255, 255, 255, 0.18)',
+    dark: 'rgba(0, 0, 0, 0.1)',
+  },
+  // Saturation for the glass effect
+  saturation: {
+    normal: 'saturate(180%)',
+    high: 'saturate(200%)',
+  },
+} as const;
+
+// ============================================
 // Breakpoints (para responsive)
 // ============================================
 

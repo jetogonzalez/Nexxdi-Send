@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react';
 import { LoginForm } from './LoginForm';
 import { SavePasswordModal } from '../ui/SavePasswordModal';
-import { colors, spacing, typography } from '../../config/design-tokens';
+import { LiquidGlassNav } from '../ui/LiquidGlassNav';
+import { colors, spacing, typography, liquidGlass } from '../../config/design-tokens';
 import { motion } from '../../lib/motion';
 import { hasSavedCredentials, saveCredentials, getSavedCredentials } from '../../lib/storage';
 
@@ -186,39 +187,31 @@ export default function LoginPage() {
         zIndex: 1000,
       }}
     >
-      {/* Barra de navegación estilo iOS - más grande según HIG */}
-      <div
-        style={{
-          paddingTop: 'env(safe-area-inset-top)',
-          paddingLeft: spacing[4],
-          paddingRight: spacing[4],
-          paddingBottom: spacing[5],
-          minHeight: '44px', // Tamaño mínimo táctil según iOS HIG
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'flex-start',
-          backgroundColor: colors.semantic.background.white,
-        }}
-      >
+      {/* Barra de navegación estilo Liquid Glass iOS 16 */}
+      <LiquidGlassNav position="top">
         <button
           onClick={handleClose}
           style={{
             width: '44px', // Tamaño mínimo táctil iOS
             height: '44px', // Tamaño mínimo táctil iOS
             borderRadius: '50%',
-            backgroundColor: colors.semantic.button.secondary,
-            border: 'none',
+            backgroundColor: liquidGlass.background.light,
+            backdropFilter: liquidGlass.blur.md,
+            WebkitBackdropFilter: liquidGlass.blur.md,
+            border: `1px solid ${liquidGlass.border.light}`,
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
             cursor: 'pointer',
-            transition: `background-color ${motion.duration.base} ${motion.easing.easeInOut}`,
+            transition: `background-color ${motion.duration.base} ${motion.easing.easeInOut}, transform ${motion.duration.base} ${motion.easing.easeInOut}`,
           }}
           onMouseEnter={(e) => {
-            e.currentTarget.style.backgroundColor = colors.semantic.button.secondaryHover;
+            e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.9)';
+            e.currentTarget.style.transform = 'scale(1.05)';
           }}
           onMouseLeave={(e) => {
-            e.currentTarget.style.backgroundColor = colors.semantic.button.secondary;
+            e.currentTarget.style.backgroundColor = liquidGlass.background.light;
+            e.currentTarget.style.transform = 'scale(1)';
           }}
         >
           <svg
@@ -237,7 +230,7 @@ export default function LoginPage() {
             />
           </svg>
         </button>
-      </div>
+      </LiquidGlassNav>
 
       {/* Contenido principal */}
       <div
