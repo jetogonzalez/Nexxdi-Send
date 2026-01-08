@@ -51,7 +51,7 @@ export default function OnboardingFlow() {
   const parallaxRef = useRef<{ x: number; y: number; rotateX: number; rotateY: number }>({ x: 0, y: 0, rotateX: 0, rotateY: 0 });
   const AUTO_ADVANCE_DURATION = 10000; // 10 segundos - más tiempo entre cada paso
   const PARALLAX_INTENSITY = 15; // Intensidad del efecto parallax en píxeles
-  const ROTATION_INTENSITY = 10; // Intensidad de rotación 3D en grados
+  const ROTATION_INTENSITY = 15; // Intensidad de rotación 3D en grados - aumentada para mejor visibilidad
 
   // Auto-avance con animación de progreso
   useEffect(() => {
@@ -99,6 +99,9 @@ export default function OnboardingFlow() {
 
   // Efecto parallax 3D con sensores del dispositivo (gyroscope/accelerometer)
   useEffect(() => {
+    let orientationHandler: ((e: DeviceOrientationEvent) => void) | null = null;
+    let motionHandler: ((e: DeviceMotionEvent) => void) | null = null;
+
     const handleDeviceOrientation = (e: DeviceOrientationEvent) => {
       if (e.gamma !== null && e.beta !== null) {
         // gamma: inclinación izquierda/derecha (-90 a 90)
@@ -106,15 +109,15 @@ export default function OnboardingFlow() {
         const targetX = (e.gamma / 90) * PARALLAX_INTENSITY;
         const targetY = (e.beta / 90) * PARALLAX_INTENSITY;
         
-        // Rotación 3D basada en la inclinación
+        // Rotación 3D basada en la inclinación - más pronunciada
         const targetRotateY = (e.gamma / 90) * ROTATION_INTENSITY; // Rotar en Y (izquierda/derecha)
         const targetRotateX = -(e.beta / 90) * ROTATION_INTENSITY; // Rotar en X (adelante/atrás), invertido para efecto natural
         
-        // Suavizar el movimiento con interpolación
-        parallaxRef.current.x += (targetX - parallaxRef.current.x) * 0.1;
-        parallaxRef.current.y += (targetY - parallaxRef.current.y) * 0.1;
-        parallaxRef.current.rotateX += (targetRotateX - parallaxRef.current.rotateX) * 0.1;
-        parallaxRef.current.rotateY += (targetRotateY - parallaxRef.current.rotateY) * 0.1;
+        // Suavizar el movimiento con interpolación más rápida para mejor respuesta
+        parallaxRef.current.x += (targetX - parallaxRef.current.x) * 0.15;
+        parallaxRef.current.y += (targetY - parallaxRef.current.y) * 0.15;
+        parallaxRef.current.rotateX += (targetRotateX - parallaxRef.current.rotateX) * 0.15;
+        parallaxRef.current.rotateY += (targetRotateY - parallaxRef.current.rotateY) * 0.15;
         
         setParallaxOffset({
           x: parallaxRef.current.x,
@@ -137,11 +140,11 @@ export default function OnboardingFlow() {
           const targetRotateY = (x / 9.8) * ROTATION_INTENSITY;
           const targetRotateX = -(y / 9.8) * ROTATION_INTENSITY;
           
-          // Suavizar el movimiento
-          parallaxRef.current.x += (targetX - parallaxRef.current.x) * 0.1;
-          parallaxRef.current.y += (targetY - parallaxRef.current.y) * 0.1;
-          parallaxRef.current.rotateX += (targetRotateX - parallaxRef.current.rotateX) * 0.1;
-          parallaxRef.current.rotateY += (targetRotateY - parallaxRef.current.rotateY) * 0.1;
+          // Suavizar el movimiento con interpolación más rápida
+          parallaxRef.current.x += (targetX - parallaxRef.current.x) * 0.15;
+          parallaxRef.current.y += (targetY - parallaxRef.current.y) * 0.15;
+          parallaxRef.current.rotateX += (targetRotateX - parallaxRef.current.rotateX) * 0.15;
+          parallaxRef.current.rotateY += (targetRotateY - parallaxRef.current.rotateY) * 0.15;
           
           setParallaxOffset({
             x: parallaxRef.current.x,
@@ -159,22 +162,34 @@ export default function OnboardingFlow() {
       (DeviceOrientationEvent as any).requestPermission()
         .then((response: string) => {
           if (response === 'granted') {
+            orientationHandler = handleDeviceOrientation;
             window.addEventListener('deviceorientation', handleDeviceOrientation as EventListener);
+          } else {
+            // Si no se otorga permiso, usar DeviceMotionEvent como fallback
+            motionHandler = handleDeviceMotion;
+            window.addEventListener('devicemotion', handleDeviceMotion as EventListener);
           }
         })
         .catch(() => {
           // Fallback a DeviceMotionEvent
+          motionHandler = handleDeviceMotion;
           window.addEventListener('devicemotion', handleDeviceMotion as EventListener);
         });
     } else {
-      // Android y otros navegadores
+      // Android y otros navegadores - intentar ambos
+      orientationHandler = handleDeviceOrientation;
+      motionHandler = handleDeviceMotion;
       window.addEventListener('deviceorientation', handleDeviceOrientation as EventListener);
       window.addEventListener('devicemotion', handleDeviceMotion as EventListener);
     }
 
     return () => {
-      window.removeEventListener('deviceorientation', handleDeviceOrientation as EventListener);
-      window.removeEventListener('devicemotion', handleDeviceMotion as EventListener);
+      if (orientationHandler) {
+        window.removeEventListener('deviceorientation', orientationHandler as EventListener);
+      }
+      if (motionHandler) {
+        window.removeEventListener('devicemotion', motionHandler as EventListener);
+      }
     };
   }, []);
 
@@ -233,25 +248,42 @@ export default function OnboardingFlow() {
 
   return (
     <div
-      className="w-full flex flex-col min-h-screen"
-      style={{ backgroundColor: colors.semantic.background.main }}
+      className="w-full flex flex-col"
+      style={{ 
+        backgroundColor: colors.semantic.background.main,
+        height: '100vh', // Altura fija de viewport
+        overflow: 'hidden', // Sin scroll en el contenedor principal
+        position: 'fixed', // Fijo para evitar scroll
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+      }}
     >
-      {/* Contenido arrastrable como carrusel - solo esta sección */}
+      {/* Contenido arrastrable como carrusel - solo esta sección - SIN SCROLL */}
       <div 
         className="flex-1 overflow-hidden"
-        style={{ position: 'relative' }}
+        style={{ 
+          position: 'relative',
+          height: '100%',
+          overflow: 'hidden', // Sin scroll
+        }}
         onTouchStart={handleTouchStart}
         onTouchMove={handleTouchMove}
         onTouchEnd={handleTouchEnd}
       >
         <div 
-          className="flex flex-col items-center h-full"
+          className="flex flex-col items-center justify-center"
           style={{
             paddingLeft: spacing[5], // 1.25rem = 20px
             paddingRight: spacing[5], // 1.25rem = 20px
-            paddingTop: '12rem', // 12rem = 192px
-            paddingBottom: spacing[8], // 2rem = 32px
-            overflowY: 'auto',
+            paddingTop: spacing[6], // 1.5rem = 24px - reducido para que quepa sin scroll
+            paddingBottom: spacing[6], // 1.5rem = 24px - reducido
+            height: '100%',
+            overflow: 'hidden', // Sin scroll vertical
+            display: 'flex',
+            flexDirection: 'column',
+            justifyContent: 'center', // Centrar verticalmente
           }}
         >
               {/* Imagen con círculo blanco detrás - solo la imagen tiene parallax */}
@@ -299,9 +331,10 @@ export default function OnboardingFlow() {
                     opacity: isTransitioning ? 0 : 1,
                     transform: isTransitioning 
                       ? 'scale(0.88) translateY(10px)' 
-                      : `scale(1) translateY(0) translate(${parallaxOffset.x}px, ${parallaxOffset.y}px) rotateX(${parallaxOffset.rotateX}deg) rotateY(${parallaxOffset.rotateY}deg)`, // Parallax 3D con rotación
+                      : `translate3d(${parallaxOffset.x}px, ${parallaxOffset.y}px, 0) rotateX(${parallaxOffset.rotateX}deg) rotateY(${parallaxOffset.rotateY}deg) scale(1)`, // Parallax 3D con rotación usando translate3d para mejor rendimiento
                     transformStyle: 'preserve-3d', // Habilitar transformaciones 3D
                     perspective: '1000px', // Profundidad 3D
+                    willChange: 'transform', // Optimización para animaciones
                     transition: isTransitioning 
                       ? `opacity ${motion.duration.base} ${motion.easing.smoothOut}, transform ${motion.duration.base} ${motion.easing.smoothOut}` 
                       : 'transform 0.1s ease-out', // Transición suave para parallax
