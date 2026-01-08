@@ -1,24 +1,16 @@
 import { useState, useEffect, useRef } from 'react';
 import { OnboardingButtons } from '../ui/OnboardingButtons';
 import { ProgressIndicator } from '../ui/ProgressIndicator';
+import { MotionPermissionButton } from '../ui/MotionPermissionButton';
+import { use3DTilt } from '../../hooks/use3DTilt';
 import { colors, spacing, typography } from '../../config/design-tokens';
 import { motion } from '../../lib/motion';
 
 interface OnboardingStep {
-  image: string; // Nombre base de la imagen (sin extensión ni @2x/@3x)
+  image: string;
   title: string;
   description: string;
 }
-
-// Tipos para el efecto parallax 3D
-interface ParallaxOffset {
-  x: number;
-  y: number;
-  rotateX: number;
-  rotateY: number;
-}
-
-// srcSet manejará automáticamente la selección de la mejor calidad
 
 const steps: OnboardingStep[] = [
   {
@@ -42,16 +34,40 @@ export default function OnboardingFlow() {
   const [currentStep, setCurrentStep] = useState(0);
   const [touchStart, setTouchStart] = useState(0);
   const [touchEnd, setTouchEnd] = useState(0);
-  const [isTransitioning, setIsTransitioning] = useState(false);
-  const [progress, setProgress] = useState(0); // 0 a 1 para la animación de progreso
-  const [parallaxOffset, setParallaxOffset] = useState<ParallaxOffset>({ x: 0, y: 0, rotateX: 0, rotateY: 0 });
+  const [progress, setProgress] = useState(0);
   const autoAdvanceRef = useRef<NodeJS.Timeout | null>(null);
   const progressRef = useRef<NodeJS.Timeout | null>(null);
   const startTimeRef = useRef<number>(Date.now());
-  const parallaxRef = useRef<{ x: number; y: number; rotateX: number; rotateY: number }>({ x: 0, y: 0, rotateX: 0, rotateY: 0 });
-  const AUTO_ADVANCE_DURATION = 10000; // 10 segundos - más tiempo entre cada paso
-  const PARALLAX_INTENSITY = 15; // Intensidad del efecto parallax en píxeles
-  const ROTATION_INTENSITY = 15; // Intensidad de rotación 3D en grados - aumentada para mejor visibilidad
+  const imageRef = useRef<HTMLImageElement | null>(null);
+  const AUTO_ADVANCE_DURATION = 10000; // 10 segundos
+
+  // Hook para efecto 3D tilt con phone orientation (gyroscope)
+  // Configuración similar a Framer: valores divididos por 4, offsets aplicados
+  const {
+    tiltState,
+    isSupported,
+    permissionGranted,
+    requestPermission,
+  } = use3DTilt({
+    maxTilt: 22.5, // 90° / 4 = 22.5° (similar a dividir por 4 como en la imagen)
+    smoothing: 0.15, // Factor de suavizado (más bajo = más suave)
+    perspective: 1000, // Profundidad de perspectiva
+    deadZone: 0.5, // Zona muerta para evitar micro movimientos
+    enableShadow: false, // Sin sombra
+    xOffset: 45, // Offset X como en la imagen (45°)
+    yOffset: 0, // Offset Y como en la imagen (0°)
+    divideBy: 4, // Dividir valores por 4 como en la imagen
+  });
+
+  // Aplicar efecto 3D dinámicamente a la imagen después de la animación inicial
+  useEffect(() => {
+    if (imageRef.current && permissionGranted) {
+      const img = imageRef.current;
+      img.style.transform = `perspective(1000px) rotateX(${tiltState.rotateX}deg) rotateY(${tiltState.rotateY}deg) scale(1)`;
+      img.style.transformStyle = 'preserve-3d';
+      img.style.willChange = 'transform';
+    }
+  }, [tiltState, permissionGranted]);
 
   // Auto-avance con animación de progreso
   useEffect(() => {
@@ -67,24 +83,19 @@ export default function OnboardingFlow() {
     startTimeRef.current = Date.now();
     setProgress(0);
 
-    // Actualizar progreso cada 100ms para animación más lenta y natural
+    // Actualizar progreso cada 100ms
     progressRef.current = setInterval(() => {
       const elapsed = Date.now() - startTimeRef.current;
       const newProgress = Math.min(elapsed / AUTO_ADVANCE_DURATION, 1);
       setProgress(newProgress);
-    }, 100); // Actualizar cada 100ms para movimiento más lento y natural
+    }, 100);
 
     // Auto-avance después del tiempo completo
     autoAdvanceRef.current = setTimeout(() => {
       if (progressRef.current) {
         clearInterval(progressRef.current);
       }
-      setCurrentStep((prev) => {
-        const next = (prev + 1) % steps.length;
-        setIsTransitioning(true);
-        setTimeout(() => setIsTransitioning(false), 600);
-        return next;
-      });
+      setCurrentStep((prev) => (prev + 1) % steps.length);
     }, AUTO_ADVANCE_DURATION);
 
     return () => {
@@ -95,110 +106,12 @@ export default function OnboardingFlow() {
         clearInterval(progressRef.current);
       }
     };
-  }, [currentStep]); // Reiniciar cuando cambia el paso
-
-  // Efecto parallax 3D con sensores del dispositivo (gyroscope/accelerometer)
-  useEffect(() => {
-    let orientationHandler: ((e: DeviceOrientationEvent) => void) | null = null;
-    let motionHandler: ((e: DeviceMotionEvent) => void) | null = null;
-
-    const handleDeviceOrientation = (e: DeviceOrientationEvent) => {
-      if (e.gamma !== null && e.beta !== null) {
-        // gamma: inclinación izquierda/derecha (-90 a 90)
-        // beta: inclinación adelante/atrás (-180 a 180)
-        const targetX = (e.gamma / 90) * PARALLAX_INTENSITY;
-        const targetY = (e.beta / 90) * PARALLAX_INTENSITY;
-        
-        // Rotación 3D basada en la inclinación - más pronunciada
-        const targetRotateY = (e.gamma / 90) * ROTATION_INTENSITY; // Rotar en Y (izquierda/derecha)
-        const targetRotateX = -(e.beta / 90) * ROTATION_INTENSITY; // Rotar en X (adelante/atrás), invertido para efecto natural
-        
-        // Suavizar el movimiento con interpolación más rápida para mejor respuesta
-        parallaxRef.current.x += (targetX - parallaxRef.current.x) * 0.15;
-        parallaxRef.current.y += (targetY - parallaxRef.current.y) * 0.15;
-        parallaxRef.current.rotateX += (targetRotateX - parallaxRef.current.rotateX) * 0.15;
-        parallaxRef.current.rotateY += (targetRotateY - parallaxRef.current.rotateY) * 0.15;
-        
-        setParallaxOffset({
-          x: parallaxRef.current.x,
-          y: parallaxRef.current.y,
-          rotateX: parallaxRef.current.rotateX,
-          rotateY: parallaxRef.current.rotateY,
-        });
-      }
-    };
-
-    const handleDeviceMotion = (e: DeviceMotionEvent) => {
-      if (e.accelerationIncludingGravity) {
-        const { x, y } = e.accelerationIncludingGravity;
-        if (x !== null && y !== null) {
-          // Normalizar y aplicar intensidad
-          const targetX = (x / 9.8) * PARALLAX_INTENSITY;
-          const targetY = (y / 9.8) * PARALLAX_INTENSITY;
-          
-          // Rotación 3D basada en aceleración
-          const targetRotateY = (x / 9.8) * ROTATION_INTENSITY;
-          const targetRotateX = -(y / 9.8) * ROTATION_INTENSITY;
-          
-          // Suavizar el movimiento con interpolación más rápida
-          parallaxRef.current.x += (targetX - parallaxRef.current.x) * 0.15;
-          parallaxRef.current.y += (targetY - parallaxRef.current.y) * 0.15;
-          parallaxRef.current.rotateX += (targetRotateX - parallaxRef.current.rotateX) * 0.15;
-          parallaxRef.current.rotateY += (targetRotateY - parallaxRef.current.rotateY) * 0.15;
-          
-          setParallaxOffset({
-            x: parallaxRef.current.x,
-            y: parallaxRef.current.y,
-            rotateX: parallaxRef.current.rotateX,
-            rotateY: parallaxRef.current.rotateY,
-          });
-        }
-      }
-    };
-
-    // Intentar usar DeviceOrientationEvent primero (iOS)
-    if (typeof DeviceOrientationEvent !== 'undefined' && typeof (DeviceOrientationEvent as any).requestPermission === 'function') {
-      // iOS 13+ requiere permiso
-      (DeviceOrientationEvent as any).requestPermission()
-        .then((response: string) => {
-          if (response === 'granted') {
-            orientationHandler = handleDeviceOrientation;
-            window.addEventListener('deviceorientation', handleDeviceOrientation as EventListener);
-          } else {
-            // Si no se otorga permiso, usar DeviceMotionEvent como fallback
-            motionHandler = handleDeviceMotion;
-            window.addEventListener('devicemotion', handleDeviceMotion as EventListener);
-          }
-        })
-        .catch(() => {
-          // Fallback a DeviceMotionEvent
-          motionHandler = handleDeviceMotion;
-          window.addEventListener('devicemotion', handleDeviceMotion as EventListener);
-        });
-    } else {
-      // Android y otros navegadores - intentar ambos
-      orientationHandler = handleDeviceOrientation;
-      motionHandler = handleDeviceMotion;
-      window.addEventListener('deviceorientation', handleDeviceOrientation as EventListener);
-      window.addEventListener('devicemotion', handleDeviceMotion as EventListener);
-    }
-
-    return () => {
-      if (orientationHandler) {
-        window.removeEventListener('deviceorientation', orientationHandler as EventListener);
-      }
-      if (motionHandler) {
-        window.removeEventListener('devicemotion', motionHandler as EventListener);
-      }
-    };
-  }, []);
+  }, [currentStep]);
 
   // Reset auto-advance cuando cambia manualmente
   const handleStepChange = (newStep: number) => {
-    setIsTransitioning(true);
     setCurrentStep(newStep);
-    setProgress(0); // Resetear progreso
-    setTimeout(() => setIsTransitioning(false), 600);
+    setProgress(0);
     
     // Limpiar timers existentes
     if (autoAdvanceRef.current) {
@@ -207,11 +120,9 @@ export default function OnboardingFlow() {
     if (progressRef.current) {
       clearInterval(progressRef.current);
     }
-    
-    // Reiniciar auto-advance (se reiniciará automáticamente por el useEffect)
   };
 
-  // Swipe handlers mejorados con mejor detección y más natural
+  // Swipe handlers
   const handleTouchStart = (e: React.TouchEvent) => {
     const touch = e.touches[0];
     setTouchStart(touch.clientX);
@@ -231,192 +142,192 @@ export default function OnboardingFlow() {
     }
     
     const distance = touchStart - touchEnd;
-    const minSwipeDistance = 30; // Reducido para hacerlo más sensible y natural
-    const isLeftSwipe = distance > minSwipeDistance;
-    const isRightSwipe = distance < -minSwipeDistance;
+    const minSwipeDistance = 50;
 
-    if (isLeftSwipe && currentStep < steps.length - 1) {
+    if (distance > minSwipeDistance && currentStep < steps.length - 1) {
       handleStepChange(currentStep + 1);
-    } else if (isRightSwipe && currentStep > 0) {
+    } else if (distance < -minSwipeDistance && currentStep > 0) {
       handleStepChange(currentStep - 1);
     }
     
-    // Reset
     setTouchStart(0);
     setTouchEnd(0);
   };
+
+  const currentStepData = steps[currentStep];
 
   return (
     <div
       className="w-full flex flex-col"
       style={{ 
         backgroundColor: colors.semantic.background.main,
-        height: '100vh', // Altura fija de viewport
-        overflow: 'hidden', // Sin scroll en el contenedor principal
-        position: 'fixed', // Fijo para evitar scroll
+        height: '100vh',
+        overflow: 'hidden',
+        position: 'fixed',
         top: 0,
         left: 0,
         right: 0,
         bottom: 0,
       }}
     >
-      {/* Contenido arrastrable como carrusel - solo esta sección - SIN SCROLL */}
+      {/* Contenido */}
       <div 
-        className="flex-1 overflow-hidden"
+        className="flex-1 overflow-hidden flex flex-col"
         style={{ 
           position: 'relative',
           height: '100%',
-          overflow: 'hidden', // Sin scroll
+          overflow: 'hidden',
+          display: 'flex',
+          flexDirection: 'column',
         }}
-        onTouchStart={handleTouchStart}
-        onTouchMove={handleTouchMove}
-        onTouchEnd={handleTouchEnd}
       >
         <div 
-          className="flex flex-col items-center justify-center"
+          className="flex flex-col items-center"
           style={{
-            paddingLeft: spacing[5], // 1.25rem = 20px
-            paddingRight: spacing[5], // 1.25rem = 20px
-            paddingTop: spacing[6], // 1.5rem = 24px - reducido para que quepa sin scroll
-            paddingBottom: spacing[6], // 1.5rem = 24px - reducido
-            height: '100%',
-            overflow: 'hidden', // Sin scroll vertical
+            paddingLeft: spacing[5],
+            paddingRight: spacing[5],
+            paddingTop: '12vh',
+            paddingBottom: spacing[4],
+            flex: '1 1 auto',
+            minHeight: 0,
+            overflow: 'hidden',
             display: 'flex',
             flexDirection: 'column',
-            justifyContent: 'center', // Centrar verticalmente
+            justifyContent: 'center',
+            touchAction: 'pan-x',
+            WebkitUserSelect: 'none',
+            userSelect: 'none',
           }}
+          onTouchStart={handleTouchStart}
+          onTouchMove={handleTouchMove}
+          onTouchEnd={handleTouchEnd}
         >
-              {/* Imagen con círculo blanco detrás - solo la imagen tiene parallax */}
-              <div
-                className="relative flex items-center justify-center"
-                key={`image-container-${currentStep}`}
-                style={{
-                  width: spacing.imageCircle, // 17.5rem = 280px
-                  height: spacing.imageCircle, // 17.5rem = 280px
-                  marginBottom: spacing[0], // 0 - sin margen inferior
-                }}
-              >
-                {/* Círculo blanco con opacidad 40% - PRIMERO en entrar - SIN parallax */}
-                <div
-                  className="absolute rounded-full"
-                  key={`circle-${currentStep}`}
-                  style={{
-                    width: '100%',
-                    height: '100%',
-                    backgroundColor: colors.semantic.background.imageCircle,
-                    zIndex: 0,
-                    opacity: isTransitioning ? 0 : 1,
-                    transform: isTransitioning 
-                      ? 'scale(0.85)' 
-                      : 'scale(1)',
-                    transition: `opacity ${motion.duration.base} ${motion.easing.smoothOut}, transform ${motion.duration.base} ${motion.easing.smoothOut}`,
-                    transitionDelay: isTransitioning ? '0ms' : '0ms', // Primero sin delay
-                  }}
-                />
-                {/* Imagen sobre el círculo - SEGUNDO en entrar con poco delay - SOLO esta tiene parallax 3D */}
-                <img
-                  src={`/img/onboarding/${steps[currentStep].image}.png`}
-                  srcSet={`
-                    /img/onboarding/${steps[currentStep].image}.png 1x,
-                    /img/onboarding/${steps[currentStep].image}@2x.png 2x,
-                    /img/onboarding/${steps[currentStep].image}@3x.png 3x
-                  `}
-                  alt={steps[currentStep].title}
-                  key={`image-${currentStep}`}
-                  className="relative z-10"
-                  style={{
-                    width: spacing.imageSize, // 16rem = 256px
-                    height: spacing.imageSize, // 16rem = 256px
-                    objectFit: 'contain',
-                    opacity: isTransitioning ? 0 : 1,
-                    transform: isTransitioning 
-                      ? 'scale(0.88) translateY(10px)' 
-                      : `translate3d(${parallaxOffset.x}px, ${parallaxOffset.y}px, 0) rotateX(${parallaxOffset.rotateX}deg) rotateY(${parallaxOffset.rotateY}deg) scale(1)`, // Parallax 3D con rotación usando translate3d para mejor rendimiento
-                    transformStyle: 'preserve-3d', // Habilitar transformaciones 3D
-                    perspective: '1000px', // Profundidad 3D
-                    willChange: 'transform', // Optimización para animaciones
-                    transition: isTransitioning 
-                      ? `opacity ${motion.duration.base} ${motion.easing.smoothOut}, transform ${motion.duration.base} ${motion.easing.smoothOut}` 
-                      : 'transform 0.1s ease-out', // Transición suave para parallax
-                    transitionDelay: isTransitioning ? '0ms' : '100ms', // Muy poco delay después del círculo
-                    imageRendering: '-webkit-optimize-contrast', // Mejor calidad en iOS
-                    WebkitImageRendering: '-webkit-optimize-contrast',
-                    backfaceVisibility: 'hidden', // Optimización para 3D
-                    WebkitBackfaceVisibility: 'hidden',
-                  }}
-                />
-              </div>
+          {/* Imagen con círculo blanco detrás */}
+          <div
+            className="relative flex items-center justify-center"
+            style={{
+              width: spacing.imageCircle,
+              height: spacing.imageCircle,
+              marginBottom: spacing[0],
+            }}
+          >
+            {/* Círculo blanco con opacidad 40% - PRIMERO en entrar */}
+            <div
+              className="absolute rounded-full"
+              key={`circle-${currentStep}`}
+              style={{
+                width: '100%',
+                height: '100%',
+                backgroundColor: colors.semantic.background.imageCircle,
+                zIndex: 0,
+                opacity: 0,
+                transform: 'scale(0.95)',
+                animation: `fadeInScale ${motion.duration.slow} ${motion.easing.smoothOut} forwards`,
+                animationDelay: '0ms',
+              }}
+            />
+            {/* Imagen - SEGUNDO en entrar con efecto 3D (gyroscope) */}
+            <img
+              ref={imageRef}
+              src={`/img/onboarding/${currentStepData.image}.png`}
+              srcSet={`
+                /img/onboarding/${currentStepData.image}.png 1x,
+                /img/onboarding/${currentStepData.image}@2x.png 2x,
+                /img/onboarding/${currentStepData.image}@3x.png 3x
+              `}
+              alt={currentStepData.title}
+              className="relative z-10"
+              key={`image-${currentStep}`}
+              style={{
+                width: spacing.imageSize,
+                height: spacing.imageSize,
+                objectFit: 'contain',
+                imageRendering: '-webkit-optimize-contrast',
+                WebkitImageRendering: '-webkit-optimize-contrast',
+                opacity: 0,
+                transform: 'scale(0.96)',
+                animation: `fadeInScale ${motion.duration.slow} ${motion.easing.smoothOut} forwards`,
+                animationDelay: '200ms',
+                backfaceVisibility: 'hidden',
+                WebkitBackfaceVisibility: 'hidden',
+              }}
+              onAnimationEnd={() => {
+                // Después de la animación inicial, aplicar el efecto 3D si está habilitado
+                if (imageRef.current && permissionGranted) {
+                  imageRef.current.style.transform = `perspective(1000px) rotateX(${tiltState.rotateX}deg) rotateY(${tiltState.rotateY}deg) scale(1)`;
+                  imageRef.current.style.transformStyle = 'preserve-3d';
+                  imageRef.current.style.willChange = 'transform';
+                }
+              }}
+            />
+          </div>
 
-              {/* Título centrado - TERCERO en entrar después de la imagen */}
-              <div
-                className="text-center w-full"
-                key={`title-${currentStep}`}
-                style={{
-                  opacity: isTransitioning ? 0 : 1,
-                  transform: isTransitioning 
-                    ? 'translateY(20px) scale(0.92)' 
-                    : 'translateY(0) scale(1)',
-                  transition: `opacity ${motion.duration.base} ${motion.easing.smoothOut}, transform ${motion.duration.base} ${motion.easing.smoothOut}`,
-                  transitionDelay: isTransitioning ? '0ms' : '200ms', // Delay después de la imagen
-                  marginTop: spacing[4], // 1rem = 16px - distancia del círculo al título
-                  marginBottom: spacing[3], // 0.75rem = 12px - espaciado entre título y párrafo
-                }}
-              >
-                <h1
-                  className="whitespace-pre-line"
-                  style={{
-                    fontSize: typography.fontSize['3xl'], // 26pt
-                    fontWeight: typography.fontWeight.semibold, // semibold
-                    color: colors.semantic.text.primary,
-                    lineHeight: typography.lineHeight.normal, // 1.5
-                    fontFamily: typography.fontFamily.sans.join(', '),
-                    marginBottom: spacing[0], // 0 - sin padding/margin bottom
-                  }}
-                >
-                  {steps[currentStep].title}
-                </h1>
-              </div>
+          {/* Título centrado - TERCERO en entrar */}
+          <div
+            className="text-center w-full"
+            key={`title-${currentStep}`}
+            style={{
+              marginTop: spacing[4],
+              marginBottom: spacing[3],
+              opacity: 0,
+              transform: 'scale(0.97)',
+              animation: `fadeInScale ${motion.duration.slow} ${motion.easing.smoothOut} forwards`,
+              animationDelay: '400ms',
+            }}
+          >
+            <h1
+              className="whitespace-pre-line"
+              style={{
+                fontSize: typography.fontSize['3xl'],
+                fontWeight: typography.fontWeight.semibold,
+                color: colors.semantic.text.primary,
+                lineHeight: typography.lineHeight.normal,
+                fontFamily: typography.fontFamily.sans.join(', '),
+                marginBottom: spacing[0],
+              }}
+            >
+              {currentStepData.title}
+            </h1>
+          </div>
 
-              {/* Descripción ocupando todo el ancho - CUARTO en entrar después del título */}
-              <div 
-                className="text-center w-full"
-                key={`description-${currentStep}`}
-                style={{
-                  opacity: isTransitioning ? 0 : 1,
-                  transform: isTransitioning 
-                    ? 'translateY(20px) scale(0.92)' 
-                    : 'translateY(0) scale(1)',
-                  transition: `opacity ${motion.duration.base} ${motion.easing.smoothOut}, transform ${motion.duration.base} ${motion.easing.smoothOut}`,
-                  transitionDelay: isTransitioning ? '0ms' : '300ms', // Delay después del título
-                  marginBottom: spacing[0], // 0 - sin padding/margin bottom
-                }}
-              >
-                <p
-                  style={{
-                    fontSize: typography.fontSize.base, // 16pt
-                    fontWeight: typography.fontWeight.normal, // regular
-                    color: colors.semantic.text.secondary,
-                    lineHeight: typography.lineHeight.normal, // 1.5
-                    fontFamily: typography.fontFamily.sans.join(', '),
-                    width: '100%',
-                    display: 'block',
-                    // Sin restricciones - se ve todo el texto completo
-                  }}
-                >
-                  {steps[currentStep].description}
-                </p>
-              </div>
+          {/* Descripción - CUARTO en entrar */}
+          <div 
+            className="text-center w-full"
+            key={`description-${currentStep}`}
+            style={{
+              marginBottom: spacing[0],
+              opacity: 0,
+              transform: 'scale(0.97)',
+              animation: `fadeInScale ${motion.duration.slow} ${motion.easing.smoothOut} forwards`,
+              animationDelay: '600ms',
+            }}
+          >
+            <p
+              style={{
+                fontSize: typography.fontSize.base,
+                fontWeight: typography.fontWeight.normal,
+                color: colors.semantic.text.secondary,
+                lineHeight: typography.lineHeight.normal,
+                fontFamily: typography.fontFamily.sans.join(', '),
+                width: '100%',
+                display: 'block',
+              }}
+            >
+              {currentStepData.description}
+            </p>
+          </div>
         </div>
       </div>
 
-      {/* Indicador de progreso con animación de llenado - solo este */}
+      {/* Indicador de progreso */}
       <div 
         style={{ 
           paddingTop: spacing[0.5], 
-          paddingBottom: spacing[12],
+          paddingBottom: '4rem',
           position: 'relative',
           zIndex: 10,
           backgroundColor: colors.semantic.background.main,
+          flexShrink: 0,
         }}
       >
         <ProgressIndicator 
@@ -427,11 +338,32 @@ export default function OnboardingFlow() {
         />
       </div>
 
-      {/* Botones - Componente separado */}
-      <OnboardingButtons 
-        onCreateAccount={() => console.log('Crear cuenta')}
-        onLogin={() => console.log('Ya tengo cuenta')}
-      />
+      {/* Botones */}
+      <div style={{ flexShrink: 0, position: 'relative' }}>
+        <OnboardingButtons 
+          onCreateAccount={() => console.log('Crear cuenta')}
+          onLogin={() => console.log('Ya tengo cuenta')}
+        />
+        {/* Botón para habilitar movimiento 3D (solo iOS cuando necesita permiso) */}
+        {isSupported && !permissionGranted && (
+          <MotionPermissionButton
+            onRequestPermission={requestPermission}
+            isVisible={true}
+          />
+        )}
+      </div>
+      <style>{`
+        @keyframes fadeInScale {
+          from {
+            opacity: 0;
+            transform: scale(0.95);
+          }
+          to {
+            opacity: 1;
+            transform: scale(1);
+          }
+        }
+      `}</style>
     </div>
   );
 }
