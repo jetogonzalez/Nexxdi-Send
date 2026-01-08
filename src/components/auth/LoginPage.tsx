@@ -205,8 +205,10 @@ export default function LoginPage() {
           minHeight: '44px',
         }}
       >
+        {/* Botón X circular */}
         <button
           onClick={handleClose}
+          type="button"
           style={{
             width: '44px', // Tamaño mínimo táctil iOS
             height: '44px', // Tamaño mínimo táctil iOS
@@ -227,6 +229,7 @@ export default function LoginPage() {
             e.currentTarget.style.backgroundColor = colors.semantic.button.secondary;
             e.currentTarget.style.transform = 'scale(1)';
           }}
+          aria-label="Cerrar"
         >
           <svg
             width="20"
@@ -254,7 +257,7 @@ export default function LoginPage() {
           flexDirection: 'column',
           paddingLeft: spacing[5],
           paddingRight: spacing[5],
-          paddingTop: spacing[4],
+          paddingTop: `calc(env(safe-area-inset-top) + ${spacing[5]} + 44px + ${spacing[6]})`, // Espacio para la barra de navegación + safe area + espacio adicional
           paddingBottom: spacing[8],
           minHeight: 0, // Permite que el contenedor se encoja si es necesario
         }}

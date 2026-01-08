@@ -27,59 +27,23 @@ export function ProgressIndicator({ currentIndex, totalPages, progress, onDotCli
             onClick={() => onDotClick?.(index)}
             style={{
               position: 'relative',
-              width: isActive ? spacing[8] : spacing[3], // 32px activo, 12px inactivo
-              height: spacing[3], // 12px - misma altura para todos
-              borderRadius: spacing[3], // 12px - mismo border radius que la altura
-              backgroundColor: isCompleted 
-                ? colors.semantic.text.primary 
-                : `${colors.semantic.text.primary}30`, // Fondo claro para inactivos
-              overflow: 'hidden',
-              transition: `width ${motion.duration.base} ${motion.easing.smoothOut}, background-color ${motion.duration.base} ${motion.easing.smoothOut}`,
+              width: isActive ? spacing[6] : spacing[2], // 24px activo, 8px inactivo (más pequeños estilo Apple TV mobile)
+              height: spacing[2], // 8px - altura pequeña estilo Apple TV mobile
+              borderRadius: spacing[2], // 8px - border radius pequeño
+              backgroundColor: colors.semantic.text.primary, // Color sólido para todos
+              opacity: isActive ? 1 : 0.3, // Opacidad al 100% para activo, 30% para inactivos
+              overflow: 'visible', // Cambiar a visible para eliminar el relleno interno
+              transition: `width ${motion.duration.base} ${motion.easing.smoothOut}, opacity ${motion.duration.base} ${motion.easing.smoothOut}`,
               border: 'none',
               padding: 0,
               cursor: 'pointer',
-              minWidth: isActive ? spacing[8] : spacing[3],
-              minHeight: spacing[3], // Misma altura mínima para todos
+              minWidth: isActive ? spacing[6] : spacing[2],
+              minHeight: spacing[2], // Altura pequeña estilo Apple TV mobile
               zIndex: 1001, // Asegurar que esté por encima de otros elementos
               pointerEvents: 'auto', // Asegurar que los clicks funcionen
             }}
             aria-label={`Ir al paso ${index + 1}`}
-          >
-            {/* Barra de progreso estilo Apple - solo relleno natural */}
-            {isActive && (
-              <>
-                {/* Fondo de la barra (inactivo) */}
-                <div
-                  style={{
-                    position: 'absolute',
-                    top: 0,
-                    left: 0,
-                    height: '100%',
-                    width: '100%',
-                    backgroundColor: `${colors.semantic.text.primary}30`,
-                    borderRadius: spacing[3],
-                    pointerEvents: 'none', // No bloquear clicks
-                  }}
-                />
-                
-                {/* Barra de progreso que se rellena suavemente */}
-                <div
-                  style={{
-                    position: 'absolute',
-                    top: 0,
-                    left: 0,
-                    height: '100%',
-                    width: `${progress * 100}%`,
-                    backgroundColor: colors.semantic.text.primary,
-                    borderRadius: spacing[3],
-                    transition: `width 100ms cubic-bezier(0.25, 0.46, 0.45, 0.94)`, // Transición suave y natural
-                    willChange: 'width',
-                    pointerEvents: 'none', // No bloquear clicks
-                  }}
-                />
-              </>
-            )}
-          </button>
+          />
         );
       })}
     </div>

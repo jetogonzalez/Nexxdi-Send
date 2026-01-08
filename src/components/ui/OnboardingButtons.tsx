@@ -23,7 +23,7 @@ export function OnboardingButtons({ onCreateAccount, onLogin }: OnboardingButton
           borderRadius: borderRadius.full, // full rounded
           paddingTop: button.paddingY, // 12px (regla de 4px)
           paddingBottom: button.paddingY, // 12px (regla de 4px)
-          minHeight: button.heightCompact, // 40px (regla de 4px)
+          minHeight: button.minHeight, // 48px (regla de 4px)
           fontSize: typography.fontSize.base, // 16pt
           fontWeight: typography.fontWeight.bold, // bold
           fontFamily: typography.fontFamily.sans.join(', '),
@@ -61,7 +61,7 @@ export function OnboardingButtons({ onCreateAccount, onLogin }: OnboardingButton
           borderRadius: borderRadius.full, // full rounded
           paddingTop: button.paddingY, // 12px (regla de 4px)
           paddingBottom: button.paddingY, // 12px (regla de 4px)
-          minHeight: button.heightCompact, // 40px (regla de 4px)
+          minHeight: button.minHeight, // 48px (regla de 4px)
           fontSize: typography.fontSize.base, // 16pt
           fontWeight: typography.fontWeight.bold, // bold
           fontFamily: typography.fontFamily.sans.join(', '),

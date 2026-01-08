@@ -34,10 +34,12 @@ export default function OnboardingFlow() {
   const [touchStart, setTouchStart] = useState(0);
   const [touchEnd, setTouchEnd] = useState(0);
   const [progress, setProgress] = useState(0);
+  const [slideDirection, setSlideDirection] = useState<'left' | 'right' | null>(null);
   const autoAdvanceRef = useRef<NodeJS.Timeout | null>(null);
   const progressRef = useRef<NodeJS.Timeout | null>(null);
   const startTimeRef = useRef<number>(Date.now());
   const imageRef = useRef<HTMLImageElement | null>(null);
+  const containerRef = useRef<HTMLDivElement | null>(null);
   const AUTO_ADVANCE_DURATION = 10000; // 10 segundos
 
   // Hook para efecto 3D tilt con phone orientation (gyroscope) - automático
@@ -58,7 +60,7 @@ export default function OnboardingFlow() {
     autoRequestPermission: true, // Solicitar permiso automáticamente
   });
 
-  // Aplicar efecto 3D dinámicamente a la imagen después de la animación inicial
+  // Aplicar efecto 3D dinámicamente a la imagen del paso activo
   useEffect(() => {
     if (imageRef.current && permissionGranted) {
       const img = imageRef.current;
@@ -66,7 +68,7 @@ export default function OnboardingFlow() {
       img.style.transformStyle = 'preserve-3d';
       img.style.willChange = 'transform';
     }
-  }, [tiltState, permissionGranted]);
+  }, [tiltState, permissionGranted, currentStep]);
 
   // Auto-avance con animación de progreso
   useEffect(() => {
@@ -109,6 +111,19 @@ export default function OnboardingFlow() {
 
   // Reset auto-advance cuando cambia manualmente
   const handleStepChange = (newStep: number) => {
+    // Determinar dirección del slide (considerando navegación circular)
+    const stepDiff = newStep - currentStep;
+    const circularDiff = stepDiff > 0 
+      ? stepDiff 
+      : stepDiff + steps.length; // Ajustar para navegación circular
+    
+    // Determinar dirección basada en la distancia más corta (circular)
+    if (circularDiff <= steps.length / 2) {
+      setSlideDirection('left'); // Deslizar hacia la izquierda (siguiente)
+    } else {
+      setSlideDirection('right'); // Deslizar hacia la derecha (anterior)
+    }
+    
     setCurrentStep(newStep);
     setProgress(0);
     
@@ -119,6 +134,11 @@ export default function OnboardingFlow() {
     if (progressRef.current) {
       clearInterval(progressRef.current);
     }
+    
+    // Resetear dirección después de la animación
+    setTimeout(() => {
+      setSlideDirection(null);
+    }, parseInt(motion.duration.medium.replace('ms', '')));
   };
 
   // Swipe handlers
@@ -143,10 +163,15 @@ export default function OnboardingFlow() {
     const distance = touchStart - touchEnd;
     const minSwipeDistance = 50;
 
-    if (distance > minSwipeDistance && currentStep < steps.length - 1) {
-      handleStepChange(currentStep + 1);
-    } else if (distance < -minSwipeDistance && currentStep > 0) {
-      handleStepChange(currentStep - 1);
+    // Navegación circular
+    if (distance > minSwipeDistance) {
+      // Swipe izquierda: avanzar (circular)
+      const nextStep = (currentStep + 1) % steps.length;
+      handleStepChange(nextStep);
+    } else if (distance < -minSwipeDistance) {
+      // Swipe derecha: retroceder (circular)
+      const prevStep = (currentStep - 1 + steps.length) % steps.length;
+      handleStepChange(prevStep);
     }
     
     setTouchStart(0);
@@ -167,7 +192,7 @@ export default function OnboardingFlow() {
         width: '100%',
       }}
     >
-      {/* Contenido */}
+      {/* Contenedor de galería horizontal */}
       <div 
         className="flex-1 flex flex-col"
         style={{ 
@@ -176,143 +201,171 @@ export default function OnboardingFlow() {
           display: 'flex',
           flexDirection: 'column',
           width: '100%',
+          overflow: 'hidden', // Ocultar contenido fuera del viewport
         }}
       >
-        <div 
-          className="flex flex-col items-center"
+        {/* Galería horizontal - contenedor de slides */}
+        <div
+          ref={containerRef}
           style={{
-            paddingLeft: spacing[5],
-            paddingRight: spacing[5],
-            paddingTop: spacing[8],
-            paddingBottom: spacing[4],
-            flex: '1 1 auto',
-            minHeight: 0,
             display: 'flex',
-            flexDirection: 'column',
-            justifyContent: 'center',
-            touchAction: 'pan-x',
-            WebkitUserSelect: 'none',
-            userSelect: 'none',
-            width: '100%',
+            flexDirection: 'row',
+            width: `${steps.length * 100}%`, // Ancho total = número de pasos * 100%
+            transform: `translateX(-${currentStep * (100 / steps.length)}%)`, // Desplazar según el paso actual
+            transition: slideDirection 
+              ? `transform ${motion.duration.medium} ${motion.easing.screenSlide}` 
+              : 'none', // Solo transición cuando hay cambio de dirección
+            willChange: 'transform',
+            WebkitOverflowScrolling: 'touch',
           }}
           onTouchStart={handleTouchStart}
           onTouchMove={handleTouchMove}
           onTouchEnd={handleTouchEnd}
         >
-          {/* Imagen con círculo blanco detrás */}
-          <div
-            className="relative flex items-center justify-center"
-            style={{
-              width: spacing.imageCircle,
-              height: spacing.imageCircle,
-              marginBottom: spacing[0],
-            }}
-          >
-            {/* Círculo blanco con opacidad 40% - PRIMERO en entrar */}
-            <div
-              className="absolute rounded-full"
-              key={`circle-${currentStep}`}
-              style={{
-                width: '100%',
-                height: '100%',
-                backgroundColor: colors.semantic.background.imageCircle,
-                zIndex: 0,
-                opacity: 0,
-                transform: 'scale(0.95)',
-                animation: `fadeInScale ${motion.duration.slow} ${motion.easing.smoothOut} forwards`,
-                animationDelay: '0ms',
-              }}
-            />
-            {/* Imagen - SEGUNDO en entrar con efecto 3D (gyroscope) */}
-            <img
-              ref={imageRef}
-              src={`/img/onboarding/${currentStepData.image}.png`}
-              srcSet={`
-                /img/onboarding/${currentStepData.image}.png 1x,
-                /img/onboarding/${currentStepData.image}@2x.png 2x,
-                /img/onboarding/${currentStepData.image}@3x.png 3x
-              `}
-              alt={currentStepData.title}
-              className="relative z-10"
-              key={`image-${currentStep}`}
-              style={{
-                width: spacing.imageSize,
-                height: spacing.imageSize,
-                objectFit: 'contain',
-                imageRendering: '-webkit-optimize-contrast',
-                WebkitImageRendering: '-webkit-optimize-contrast',
-                opacity: 0,
-                transform: 'scale(0.96)',
-                animation: `fadeInScale ${motion.duration.slow} ${motion.easing.smoothOut} forwards`,
-                animationDelay: '200ms',
-                backfaceVisibility: 'hidden',
-                WebkitBackfaceVisibility: 'hidden',
-              }}
-              onAnimationEnd={() => {
-                // Después de la animación inicial, aplicar el efecto 3D si está habilitado
-                if (imageRef.current && permissionGranted) {
-                  imageRef.current.style.transform = `perspective(1000px) rotateX(${tiltState.rotateX}deg) rotateY(${tiltState.rotateY}deg) scale(1)`;
-                  imageRef.current.style.transformStyle = 'preserve-3d';
-                  imageRef.current.style.willChange = 'transform';
-                }
-              }}
-            />
-          </div>
+          {steps.map((stepData, index) => {
+            const isActive = index === currentStep;
+            
+            return (
+              <div
+                key={index}
+                className="flex flex-col items-center"
+                style={{
+                  width: `${100 / steps.length}%`, // Cada slide ocupa 1/n del ancho total
+                  paddingLeft: spacing[5],
+                  paddingRight: spacing[5],
+                      paddingTop: '24vh', // Posición proporcional ajustada
+                  paddingBottom: spacing[4],
+                  flex: '1 1 auto',
+                  minHeight: 0,
+                  display: 'flex',
+                  flexDirection: 'column',
+                  justifyContent: 'center',
+                  touchAction: 'pan-x',
+                  WebkitUserSelect: 'none',
+                  userSelect: 'none',
+                  flexShrink: 0,
+                }}
+              >
+                {/* Imagen con círculo blanco detrás */}
+                <div
+                  className="relative flex items-center justify-center"
+                  style={{
+                    width: spacing.imageCircle,
+                    height: spacing.imageCircle,
+                    marginBottom: spacing[0],
+                  }}
+                >
+                  {/* Círculo blanco con opacidad 40% - PRIMERO en entrar */}
+                  <div
+                    className="absolute rounded-full"
+                    style={{
+                      width: '100%',
+                      height: '100%',
+                      backgroundColor: colors.semantic.background.imageCircle,
+                      zIndex: 0,
+                      opacity: isActive ? 1 : 0,
+                      transform: isActive ? 'scale(1)' : 'scale(0.95)',
+                      animation: isActive ? `fadeInScale ${motion.duration.slow} ${motion.easing.smoothOut} forwards` : 'none',
+                      animationDelay: '0ms',
+                    }}
+                  />
+                  {/* Imagen - SEGUNDO en entrar con efecto 3D (gyroscope) */}
+                  <img
+                    ref={isActive ? imageRef : null}
+                    src={`/img/onboarding/${stepData.image}.png`}
+                    srcSet={`
+                      /img/onboarding/${stepData.image}.png 1x,
+                      /img/onboarding/${stepData.image}@2x.png 2x,
+                      /img/onboarding/${stepData.image}@3x.png 3x
+                    `}
+                    alt={stepData.title}
+                    className="relative z-10"
+                    style={{
+                      width: spacing.imageSize,
+                      height: spacing.imageSize,
+                      objectFit: 'contain',
+                      imageRendering: '-webkit-optimize-contrast',
+                      WebkitImageRendering: '-webkit-optimize-contrast',
+                      backfaceVisibility: 'hidden',
+                      WebkitBackfaceVisibility: 'hidden',
+                      opacity: isActive ? 1 : 0,
+                      transform: isActive 
+                        ? (permissionGranted 
+                          ? `perspective(1000px) rotateX(${tiltState.rotateX}deg) rotateY(${tiltState.rotateY}deg) scale(1)`
+                          : 'scale(1)')
+                        : 'scale(0.96)',
+                      animation: isActive ? `fadeInScale ${motion.duration.slow} ${motion.easing.smoothOut} forwards` : 'none',
+                      animationDelay: '200ms',
+                      transformStyle: 'preserve-3d',
+                      willChange: isActive ? 'transform' : 'auto',
+                      transition: isActive && permissionGranted ? 'none' : `transform ${motion.duration.medium} ${motion.easing.screenSlide}`,
+                    }}
+                    onAnimationEnd={() => {
+                      // Después de la animación inicial, aplicar el efecto 3D si está habilitado
+                      if (imageRef.current && permissionGranted && isActive) {
+                        imageRef.current.style.transform = `perspective(1000px) rotateX(${tiltState.rotateX}deg) rotateY(${tiltState.rotateY}deg) scale(1)`;
+                        imageRef.current.style.transformStyle = 'preserve-3d';
+                        imageRef.current.style.willChange = 'transform';
+                      }
+                    }}
+                  />
+                </div>
 
-          {/* Título centrado - TERCERO en entrar */}
-          <div
-            className="text-center w-full"
-            key={`title-${currentStep}`}
-            style={{
-              marginTop: spacing[4],
-              marginBottom: spacing[3],
-              opacity: 0,
-              transform: 'scale(0.97)',
-              animation: `fadeInScale ${motion.duration.slow} ${motion.easing.smoothOut} forwards`,
-              animationDelay: '400ms',
-            }}
-          >
-            <h1
-              className="whitespace-pre-line"
-              style={{
-                fontSize: typography.fontSize['3xl'],
-                fontWeight: typography.fontWeight.semibold,
-                color: colors.semantic.text.primary,
-                lineHeight: '1.15',
-                fontFamily: typography.fontFamily.sans.join(', '),
-                marginBottom: spacing[0],
-              }}
-            >
-              {currentStepData.title}
-            </h1>
-          </div>
+                {/* Título centrado - TERCERO en entrar */}
+                <div
+                  className="text-center w-full"
+                  style={{
+                    marginTop: spacing[4],
+                    marginBottom: spacing[3],
+                    opacity: isActive ? 1 : 0,
+                    transform: isActive ? 'scale(1)' : 'scale(0.97)',
+                    animation: isActive ? `fadeInScale ${motion.duration.slow} ${motion.easing.smoothOut} forwards` : 'none',
+                    animationDelay: '400ms',
+                  }}
+                >
+                  <h1
+                    className="whitespace-pre-line"
+                    style={{
+                      fontSize: typography.fontSize['3xl'],
+                      fontWeight: typography.fontWeight.semibold,
+                      color: colors.semantic.text.primary,
+                      lineHeight: '1.15',
+                      fontFamily: typography.fontFamily.sans.join(', '),
+                      marginBottom: spacing[0],
+                    }}
+                  >
+                    {stepData.title}
+                  </h1>
+                </div>
 
-          {/* Descripción - CUARTO en entrar */}
-          <div 
-            className="text-center w-full"
-            key={`description-${currentStep}`}
-            style={{
-              marginBottom: spacing[0],
-              opacity: 0,
-              transform: 'scale(0.97)',
-              animation: `fadeInScale ${motion.duration.slow} ${motion.easing.smoothOut} forwards`,
-              animationDelay: '600ms',
-            }}
-          >
-            <p
-              style={{
-                fontSize: typography.fontSize.base,
-                fontWeight: typography.fontWeight.normal,
-                color: colors.semantic.text.secondary,
-                lineHeight: typography.lineHeight.normal,
-                fontFamily: typography.fontFamily.sans.join(', '),
-                width: '100%',
-                display: 'block',
-              }}
-            >
-              {currentStepData.description}
-            </p>
-          </div>
+                {/* Descripción - CUARTO en entrar */}
+                <div 
+                  className="text-center w-full"
+                  style={{
+                    marginBottom: spacing[0],
+                    opacity: isActive ? 1 : 0,
+                    transform: isActive ? 'scale(1)' : 'scale(0.97)',
+                    animation: isActive ? `fadeInScale ${motion.duration.slow} ${motion.easing.smoothOut} forwards` : 'none',
+                    animationDelay: '600ms',
+                  }}
+                >
+                  <p
+                    style={{
+                      fontSize: typography.fontSize.base,
+                      fontWeight: typography.fontWeight.normal,
+                      color: colors.semantic.text.secondary,
+                      lineHeight: typography.lineHeight.normal,
+                      fontFamily: typography.fontFamily.sans.join(', '),
+                      width: '100%',
+                      display: 'block',
+                    }}
+                  >
+                    {stepData.description}
+                  </p>
+                </div>
+              </div>
+            );
+          })}
         </div>
       </div>
 
@@ -320,7 +373,7 @@ export default function OnboardingFlow() {
       <div 
         style={{ 
           paddingTop: spacing[0.5], 
-          paddingBottom: spacing[4],
+          paddingBottom: '3rem', // 3rem (48px)
           position: 'relative',
           zIndex: 1001, // Asegurar que esté por encima de la barra de botones
           backgroundColor: 'transparent', // Sin color de fondo

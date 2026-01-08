@@ -15,7 +15,7 @@ export function LiquidGlassButtonBar({ children, position = 'bottom' }: LiquidGl
         left: 0,
         right: 0,
         paddingTop: position === 'top' ? 'env(safe-area-inset-top)' : spacing[5],
-        paddingBottom: position === 'bottom' ? `calc(${spacing[5]} + env(safe-area-inset-bottom))` : spacing[5],
+        paddingBottom: position === 'bottom' ? `calc(2rem + env(safe-area-inset-bottom))` : spacing[5],
         paddingLeft: spacing[5],
         paddingRight: spacing[5],
         backgroundColor: 'transparent', // Sin color de fondo, solo efecto glass
@@ -26,7 +26,7 @@ export function LiquidGlassButtonBar({ children, position = 'bottom' }: LiquidGl
         zIndex: 1000,
         display: 'flex',
         flexDirection: 'column',
-        gap: spacing[3],
+        gap: spacing[4], // 1rem (16px) - distancia entre botones
         pointerEvents: 'auto', // Asegurar que los clicks funcionen
       }}
     >
