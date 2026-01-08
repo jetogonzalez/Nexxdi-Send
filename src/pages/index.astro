@@ -1,0 +1,75 @@
+---
+import Layout from '../layouts/Layout.astro';
+---
+
+<Layout title="Send App">
+  <main class="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center p-4">
+    <div class="max-w-md w-full bg-white rounded-2xl shadow-xl p-8 text-center">
+      <h1 class="text-4xl font-bold text-gray-900 mb-4">
+        Bienvenido a Send
+      </h1>
+      <p class="text-gray-600 mb-8">
+        Tu aplicación móvil está lista para usar
+      </p>
+      <div class="space-y-4">
+        <button 
+          id="installButton" 
+          class="hidden w-full bg-indigo-600 text-white py-3 px-6 rounded-lg font-semibold hover:bg-indigo-700 transition-colors"
+        >
+          Instalar App
+        </button>
+        <p class="text-sm text-gray-500">
+          Abre esta página en tu móvil y añádela a la pantalla de inicio
+        </p>
+      </div>
+    </div>
+  </main>
+</Layout>
+
+<script>
+  // Register service worker
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('/service-worker.js')
+        .then((registration) => {
+          console.log('SW registered: ', registration);
+        })
+        .catch((registrationError) => {
+          console.log('SW registration failed: ', registrationError);
+        });
+    });
+  }
+
+  // Install button functionality
+  let deferredPrompt;
+  const installButton = document.getElementById('installButton');
+
+  window.addEventListener('beforeinstallprompt', (e) => {
+    e.preventDefault();
+    deferredPrompt = e;
+    if (installButton) {
+      installButton.classList.remove('hidden');
+    }
+  });
+
+  if (installButton) {
+    installButton.addEventListener('click', async () => {
+      if (!deferredPrompt) return;
+      
+      deferredPrompt.prompt();
+      const { outcome } = await deferredPrompt.userChoice;
+      console.log(`User response to the install prompt: ${outcome}`);
+      deferredPrompt = null;
+      installButton.classList.add('hidden');
+    });
+  }
+
+  // Hide install button if app is already installed
+  window.addEventListener('appinstalled', () => {
+    console.log('PWA was installed');
+    if (installButton) {
+      installButton.classList.add('hidden');
+    }
+    deferredPrompt = null;
+  });
+</script>
