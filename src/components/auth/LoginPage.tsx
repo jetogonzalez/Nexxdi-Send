@@ -7,10 +7,10 @@ export default function LoginPage() {
   const [isClosing, setIsClosing] = useState(false);
 
   useEffect(() => {
-    // Prevenir scroll en el body
-    document.body.style.overflow = 'hidden';
+    // Permitir scroll si es necesario, pero prevenir pull-to-refresh
+    document.body.style.overscrollBehavior = 'contain';
     return () => {
-      document.body.style.overflow = '';
+      document.body.style.overscrollBehavior = '';
     };
   }, []);
 
@@ -141,6 +141,8 @@ export default function LoginPage() {
         display: 'flex',
         flexDirection: 'column',
         padding: 0,
+        overflowY: 'auto',
+        WebkitOverflowScrolling: 'touch',
         animation: isClosing 
           ? `slideDownToBottom ${motion.duration.slow} ${motion.easing.smoothOut} forwards`
           : `slideUpFromBottom ${motion.duration.slow} ${motion.easing.smoothOut} forwards`,
@@ -209,6 +211,8 @@ export default function LoginPage() {
           paddingLeft: spacing[5],
           paddingRight: spacing[5],
           paddingTop: spacing[4],
+          paddingBottom: spacing[8],
+          minHeight: 0, // Permite que el contenedor se encoja si es necesario
         }}
       >
         {/* Título */}

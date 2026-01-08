@@ -56,6 +56,7 @@ export function OnboardingButtons({ onCreateAccount, onLogin }: OnboardingButton
           borderRadius: borderRadius.full, // full rounded
           paddingTop: spacing[4], // 16px
           paddingBottom: spacing[4], // 16px
+          marginBottom: spacing[10], // 40px - espacio adicional en la parte inferior
           fontSize: typography.fontSize.base, // 16pt
           fontWeight: typography.fontWeight.bold, // bold
           fontFamily: typography.fontFamily.sans.join(', '),

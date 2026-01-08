@@ -9,6 +9,8 @@
     "preview": "astro preview",
     "astro": "astro",
     "deploy": "npm run build && firebase deploy",
+    "deploy:verify": "./scripts/deploy-y-verificar.sh",
+    "verify:deploy": "./scripts/verificar-deploy.sh",
     "build:sync": "npm run build && npx cap sync",
     "open:ios": "npx cap open ios",
     "open:android": "npx cap open android",

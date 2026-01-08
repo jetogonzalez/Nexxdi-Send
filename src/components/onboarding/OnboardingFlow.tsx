@@ -160,24 +160,22 @@ export default function OnboardingFlow() {
       className="w-full flex flex-col"
       style={{ 
         backgroundColor: colors.semantic.background.main,
-        height: '100vh',
-        overflow: 'hidden',
-        position: 'fixed',
-        top: 0,
-        left: 0,
-        right: 0,
-        bottom: 0,
+        minHeight: '100vh',
+        overflowY: 'auto',
+        WebkitOverflowScrolling: 'touch',
+        position: 'relative',
+        width: '100%',
       }}
     >
       {/* Contenido */}
       <div 
-        className="flex-1 overflow-hidden flex flex-col"
+        className="flex-1 flex flex-col"
         style={{ 
           position: 'relative',
-          height: '100%',
-          overflow: 'hidden',
+          minHeight: 0,
           display: 'flex',
           flexDirection: 'column',
+          width: '100%',
         }}
       >
         <div 
@@ -185,17 +183,17 @@ export default function OnboardingFlow() {
           style={{
             paddingLeft: spacing[5],
             paddingRight: spacing[5],
-            paddingTop: '12vh',
+            paddingTop: spacing[8],
             paddingBottom: spacing[4],
             flex: '1 1 auto',
             minHeight: 0,
-            overflow: 'hidden',
             display: 'flex',
             flexDirection: 'column',
             justifyContent: 'center',
             touchAction: 'pan-x',
             WebkitUserSelect: 'none',
             userSelect: 'none',
+            width: '100%',
           }}
           onTouchStart={handleTouchStart}
           onTouchMove={handleTouchMove}

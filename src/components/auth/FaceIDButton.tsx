@@ -7,7 +7,7 @@ interface FaceIDButtonProps {
 
 export function FaceIDButton({ onFaceID }: FaceIDButtonProps) {
   return (
-    <div style={{ textAlign: 'center', marginTop: spacing[8] }}>
+    <div style={{ textAlign: 'center', marginTop: spacing[8], marginBottom: spacing[10] }}>
       <p
         style={{
           fontSize: typography.fontSize.sm,
