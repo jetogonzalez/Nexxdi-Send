@@ -1,17 +1,30 @@
-import { useEffect } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { colors } from '../../config/design-tokens';
 import { motion } from '../../lib/motion';
 
 export default function SplashScreen() {
-  useEffect(() => {
-    // Mostrar splash por 2 segundos, luego redirigir a onboarding
-    const timer = setTimeout(() => {
-      if (typeof window !== 'undefined') {
-        window.location.href = '/onboarding';
-      }
-    }, 2000);
+  const [isExiting, setIsExiting] = useState(false);
+  const redirectTimerRef = useRef<NodeJS.Timeout | null>(null);
 
-    return () => clearTimeout(timer);
+  useEffect(() => {
+    // Mostrar splash por 2.5 segundos, luego fade out y redirigir
+    const showTimer = setTimeout(() => {
+      setIsExiting(true);
+      
+      // Redirigir después del fade out
+      redirectTimerRef.current = setTimeout(() => {
+        if (typeof window !== 'undefined') {
+          window.location.href = '/onboarding';
+        }
+      }, parseInt(motion.duration.base.replace('ms', ''))); // Esperar a que termine el fade out
+    }, 2500); // Mostrar por 2.5 segundos - más tiempo para que no sea tan inmediato
+
+    return () => {
+      clearTimeout(showTimer);
+      if (redirectTimerRef.current) {
+        clearTimeout(redirectTimerRef.current);
+      }
+    };
   }, []);
 
   return (
@@ -27,7 +40,8 @@ export default function SplashScreen() {
         alignItems: 'center',
         justifyContent: 'center',
         zIndex: 9999,
-        transition: `opacity ${motion.duration.slow} ${motion.easing.smoothOut}`,
+        opacity: isExiting ? 0 : 1,
+        transition: `opacity ${motion.duration.base} ${motion.easing.smoothOut}`,
       }}
     >
       <img
@@ -36,7 +50,10 @@ export default function SplashScreen() {
         style={{
           width: '200px',
           height: 'auto',
-          animation: `fadeInScale ${motion.duration.slow} ${motion.easing.smoothOut}`,
+          opacity: isExiting ? 0 : 1,
+          transform: isExiting ? 'scale(0.9)' : 'scale(1)',
+          transition: `opacity ${motion.duration.base} ${motion.easing.smoothOut}, transform ${motion.duration.base} ${motion.easing.smoothOut}`,
+          animation: !isExiting ? `fadeInScale ${motion.duration.base} ${motion.easing.smoothOut}` : 'none',
         }}
       />
       <style>{`
