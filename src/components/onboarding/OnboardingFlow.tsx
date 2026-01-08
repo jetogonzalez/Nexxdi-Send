@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { ApplePagination } from './ApplePagination';
-import { colors } from '../../config/design-tokens';
+import { colors, spacing, typography, borderRadius } from '../../config/design-tokens';
 import { motion } from '../../lib/motion';
 
 interface OnboardingStep {
@@ -110,145 +110,164 @@ export default function OnboardingFlow() {
 
   return (
     <div
-      className="h-screen w-full flex flex-col overflow-hidden"
-      style={{ backgroundColor: '#F0EFF8' }}
+      className="w-full flex flex-col min-h-screen"
+      style={{ backgroundColor: colors.semantic.background.main }}
       onTouchStart={handleTouchStart}
       onTouchMove={handleTouchMove}
       onTouchEnd={handleTouchEnd}
     >
-      {/* Grid de 4 columnas con gap de 16px (1rem) y margin left/right de 20px (1.25rem) */}
+      {/* Contenido sin grid - layout simple */}
       <div className="flex-1 overflow-y-auto">
         <div 
-          className="grid grid-cols-4 gap-4"
+          className="flex flex-col items-center"
           style={{
-            marginLeft: '1.25rem', // 20px
-            marginRight: '1.25rem', // 20px
-            paddingTop: '6rem', // 96px - bajar más el contenido
-            paddingBottom: '2rem', // 32px
-            gap: '1rem', // 16px
+            paddingLeft: spacing[5], // 1.25rem = 20px
+            paddingRight: spacing[5], // 1.25rem = 20px
+            paddingTop: '12rem', // 12rem = 192px
+            paddingBottom: spacing[8], // 2rem = 32px
           }}
         >
-          {/* Columna 1 - vacía para espaciado */}
-          <div className="col-span-1" />
-          
-          {/* Columna 2-3 - Contenido centrado */}
-          <div className="col-span-2 flex flex-col items-center">
-            {/* Imagen con círculo blanco detrás */}
+          {/* Imagen con círculo blanco detrás */}
+          <div
+            className="relative flex items-center justify-center"
+            key={`image-container-${currentStep}`}
+            style={{
+              width: spacing.imageCircle, // 17.5rem = 280px
+              height: spacing.imageCircle, // 17.5rem = 280px
+              marginBottom: spacing[0], // 0 - sin margen inferior
+            }}
+          >
+            {/* Círculo blanco con opacidad 40% - usando tokens */}
             <div
-              className="relative flex items-center justify-center mb-8"
-              key={`image-container-${currentStep}`}
+              className="absolute rounded-full"
               style={{
-                width: '17.5rem', // 280px
-                height: '17.5rem', // 280px
-              }}
-            >
-              {/* Círculo blanco con opacidad 40% - usando tokens */}
-              <div
-                className="absolute rounded-full"
-                style={{
-                  width: '100%',
-                  height: '100%',
-                  backgroundColor: colors.semantic.background.imageCircle,
-                  zIndex: 0,
-                  opacity: isTransitioning ? 0 : 1,
-                  transform: isTransitioning 
-                    ? 'scale(0.9) rotate(-5deg)' 
-                    : 'scale(1) rotate(0deg)',
-                  transition: motion.transitions.fadeScale,
-                }}
-              />
-              {/* Imagen sobre el círculo con transición más fluida - usando mejor calidad */}
-              <img
-                src={`/img/onboarding/${steps[currentStep].image}.png`}
-                srcSet={`
-                  /img/onboarding/${steps[currentStep].image}.png 1x,
-                  /img/onboarding/${steps[currentStep].image}@2x.png 2x,
-                  /img/onboarding/${steps[currentStep].image}@3x.png 3x
-                `}
-                alt={steps[currentStep].title}
-                key={`image-${currentStep}`}
-                className="relative z-10"
-                style={{
-                  width: '16rem', // 256px
-                  height: '16rem', // 256px
-                  objectFit: 'contain',
-                  opacity: isTransitioning ? 0 : 1,
-                  transform: isTransitioning 
-                    ? 'scale(0.85) translateY(15px)' 
-                    : 'scale(1) translateY(0)',
-                  transition: motion.transitions.fadeScale,
-                  imageRendering: '-webkit-optimize-contrast', // Mejor calidad en iOS
-                  WebkitImageRendering: '-webkit-optimize-contrast',
-                }}
-              />
-            </div>
-
-            {/* Título y descripción con transiciones más fluidas y diversas */}
-            <div
-              className="text-center w-full"
-              key={`text-${currentStep}`}
-              style={{
+                width: '100%',
+                height: '100%',
+                backgroundColor: colors.semantic.background.imageCircle,
+                zIndex: 0,
                 opacity: isTransitioning ? 0 : 1,
                 transform: isTransitioning 
-                  ? 'translateY(25px) scale(0.95)' 
-                  : 'translateY(0) scale(1)',
-                transition: motion.transitions.slideUp,
-                marginBottom: '0.1875rem', // 3px - distancia del texto al paginador
+                  ? 'scale(0.92) rotate(-3deg)' 
+                  : 'scale(1) rotate(0deg)',
+                transition: `opacity ${motion.duration.slow} ${motion.easing.smoothOut}, transform ${motion.duration.slow} ${motion.easing.smoothOut}`,
               }}
-            >
-              <h1
-                className="mb-4 whitespace-pre-line"
-                style={{
-                  fontSize: '1.625rem', // 26pt
-                  fontWeight: 600, // semibold
-                  color: colors.semantic.text.primary,
-                  lineHeight: '1.5',
-                  fontFamily: 'Manrope, sans-serif',
-                }}
-              >
-                {steps[currentStep].title}
-              </h1>
-              <p
-                style={{
-                  fontSize: '1rem', // 16pt
-                  fontWeight: 400, // regular
-                  color: colors.semantic.text.secondary,
-                  lineHeight: '1.5',
-                  fontFamily: 'Manrope, sans-serif',
-                  width: '100%',
-                  display: 'block',
-                  // Sin restricciones - se ve todo el texto completo
-                }}
-              >
-                {steps[currentStep].description}
-              </p>
-            </div>
+            />
+            {/* Imagen sobre el círculo con transición más fluida - usando mejor calidad */}
+            <img
+              src={`/img/onboarding/${steps[currentStep].image}.png`}
+              srcSet={`
+                /img/onboarding/${steps[currentStep].image}.png 1x,
+                /img/onboarding/${steps[currentStep].image}@2x.png 2x,
+                /img/onboarding/${steps[currentStep].image}@3x.png 3x
+              `}
+              alt={steps[currentStep].title}
+              key={`image-${currentStep}`}
+              className="relative z-10"
+              style={{
+                width: spacing.imageSize, // 16rem = 256px
+                height: spacing.imageSize, // 16rem = 256px
+                objectFit: 'contain',
+                opacity: isTransitioning ? 0 : 1,
+                transform: isTransitioning 
+                  ? 'scale(0.88) translateY(10px)' 
+                  : 'scale(1) translateY(0)',
+                transition: `opacity ${motion.duration.slow} ${motion.easing.smoothOut}, transform ${motion.duration.slow} ${motion.easing.smoothOut}`,
+                imageRendering: '-webkit-optimize-contrast', // Mejor calidad en iOS
+                WebkitImageRendering: '-webkit-optimize-contrast',
+              }}
+            />
           </div>
 
-          {/* Columna 4 - vacía para espaciado */}
-          <div className="col-span-1" />
+          {/* Título centrado */}
+          <div
+            className="text-center w-full"
+            key={`title-${currentStep}`}
+            style={{
+              opacity: isTransitioning ? 0 : 1,
+              transform: isTransitioning 
+                ? 'translateY(20px) scale(0.92)' 
+                : 'translateY(0) scale(1)',
+              transition: `opacity ${motion.duration.slow} ${motion.easing.smoothOut}, transform ${motion.duration.slow} ${motion.easing.smoothOut}`,
+              marginTop: spacing[4], // 1rem = 16px - distancia del círculo al título
+              marginBottom: spacing[0], // 0 - sin margen inferior
+            }}
+          >
+            <h1
+              className="whitespace-pre-line"
+              style={{
+                fontSize: typography.fontSize['3xl'], // 26pt
+                fontWeight: typography.fontWeight.semibold, // semibold
+                color: colors.semantic.text.primary,
+                lineHeight: typography.lineHeight.normal, // 1.5
+                fontFamily: typography.fontFamily.sans.join(', '),
+                marginBottom: spacing[0], // 0 - sin padding/margin bottom
+              }}
+            >
+              {steps[currentStep].title}
+            </h1>
+          </div>
+
+          {/* Descripción ocupando todo el ancho */}
+          <div 
+            className="text-center w-full"
+            key={`description-${currentStep}`}
+            style={{
+              opacity: isTransitioning ? 0 : 1,
+              transform: isTransitioning 
+                ? 'translateY(20px) scale(0.92)' 
+                : 'translateY(0) scale(1)',
+              transition: `opacity ${motion.duration.slow} ${motion.easing.smoothOut}, transform ${motion.duration.slow} ${motion.easing.smoothOut}`,
+              marginBottom: spacing[0], // 0 - sin padding/margin bottom
+            }}
+          >
+            <p
+              style={{
+                fontSize: typography.fontSize.base, // 16pt
+                fontWeight: typography.fontWeight.normal, // regular
+                color: colors.semantic.text.secondary,
+                lineHeight: typography.lineHeight.normal, // 1.5
+                fontFamily: typography.fontFamily.sans.join(', '),
+                width: '100%',
+                display: 'block',
+                // Sin restricciones - se ve todo el texto completo
+              }}
+            >
+              {steps[currentStep].description}
+            </p>
+          </div>
         </div>
       </div>
 
       {/* Paginación estilo Apple - 3rem (48px) desde el paginador a los botones */}
-      <div style={{ paddingTop: '0.1875rem', paddingBottom: '3rem' }}>
-        <ApplePagination currentIndex={currentStep} totalPages={steps.length} />
+      <div style={{ paddingTop: spacing[0.5], paddingBottom: spacing[12] }}>
+        <ApplePagination 
+          currentIndex={currentStep} 
+          totalPages={steps.length}
+          onDotClick={(index) => handleStepChange(index)}
+        />
       </div>
 
       {/* Botones full rounded */}
       <div 
-        className="space-y-3"
         style={{
-          paddingLeft: '1.25rem', // 20px
-          paddingRight: '1.25rem', // 20px
-          paddingBottom: '2rem', // 32px
+          paddingLeft: spacing[5], // 1.25rem = 20px
+          paddingRight: spacing[5], // 1.25rem = 20px
+          paddingBottom: spacing[8], // 2rem = 32px
+          display: 'flex',
+          flexDirection: 'column',
+          gap: spacing[4], // 1rem = 16px - distancia entre botones
         }}
       >
         <button
-          className="w-full py-4 font-bold text-base text-white"
+          className="w-full text-white"
           style={{
             backgroundColor: colors.semantic.button.primary,
-            borderRadius: '9999px', // full rounded
+            borderRadius: borderRadius.full, // full rounded
+            paddingTop: spacing[4], // 16px
+            paddingBottom: spacing[4], // 16px
+            fontSize: typography.fontSize.base, // 16pt
+            fontWeight: typography.fontWeight.bold, // bold
+            fontFamily: typography.fontFamily.sans.join(', '),
             transition: `background-color ${motion.duration.fast} ${motion.easing.smoothOut}`,
           }}
           onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = colors.semantic.button.primaryHover)}
@@ -257,11 +276,16 @@ export default function OnboardingFlow() {
           Crear cuenta
         </button>
         <button
-          className="w-full py-4 font-bold text-base"
+          className="w-full"
           style={{
             backgroundColor: colors.semantic.button.secondary,
             color: colors.semantic.text.primary,
-            borderRadius: '9999px', // full rounded
+            borderRadius: borderRadius.full, // full rounded
+            paddingTop: spacing[4], // 16px
+            paddingBottom: spacing[4], // 16px
+            fontSize: typography.fontSize.base, // 16pt
+            fontWeight: typography.fontWeight.bold, // bold
+            fontFamily: typography.fontFamily.sans.join(', '),
             transition: `background-color ${motion.duration.fast} ${motion.easing.smoothOut}`,
           }}
           onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = colors.semantic.button.secondaryHover)}

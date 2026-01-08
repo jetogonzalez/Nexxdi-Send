@@ -221,6 +221,9 @@ export const spacing = {
   20: '5rem',       // 80px (8px * 10)
   24: '6rem',       // 96px (8px * 12)
   32: '8rem',       // 128px (8px * 16)
+  // Tamaños específicos para imágenes
+  imageCircle: '17.5rem', // 280px - círculo detrás de imágenes
+  imageSize: '16rem',    // 256px - tamaño de imagen
 } as const;
 
 // ============================================
