@@ -34,7 +34,7 @@ export default function OnboardingFlow() {
   const [isTransitioning, setIsTransitioning] = useState(false);
   const autoAdvanceRef = useRef<NodeJS.Timeout | null>(null);
 
-  // Auto-avance cada 5 segundos (más tiempo)
+  // Auto-avance cada 6 segundos (más tiempo)
   useEffect(() => {
     autoAdvanceRef.current = setInterval(() => {
       setCurrentStep((prev) => {
@@ -43,7 +43,7 @@ export default function OnboardingFlow() {
         setTimeout(() => setIsTransitioning(false), 600);
         return next;
       });
-    }, 5000); // 5 segundos en lugar de 4
+    }, 6000); // 6 segundos
 
     return () => {
       if (autoAdvanceRef.current) {
@@ -68,21 +68,27 @@ export default function OnboardingFlow() {
         setTimeout(() => setIsTransitioning(false), 600);
         return next;
       });
-    }, 5000); // 5 segundos
+    }, 6000); // 6 segundos
   };
 
-  // Swipe handlers mejorados
+  // Swipe handlers mejorados con mejor detección
   const handleTouchStart = (e: React.TouchEvent) => {
-    setTouchStart(e.targetTouches[0].clientX);
+    const touch = e.touches[0];
+    setTouchStart(touch.clientX);
     setTouchEnd(0);
   };
 
   const handleTouchMove = (e: React.TouchEvent) => {
-    setTouchEnd(e.targetTouches[0].clientX);
+    const touch = e.touches[0];
+    setTouchEnd(touch.clientX);
   };
 
   const handleTouchEnd = () => {
-    if (!touchStart || !touchEnd) return;
+    if (!touchStart || !touchEnd) {
+      setTouchStart(0);
+      setTouchEnd(0);
+      return;
+    }
     
     const distance = touchStart - touchEnd;
     const minSwipeDistance = 50;
@@ -91,8 +97,7 @@ export default function OnboardingFlow() {
 
     if (isLeftSwipe && currentStep < steps.length - 1) {
       handleStepChange(currentStep + 1);
-    }
-    if (isRightSwipe && currentStep > 0) {
+    } else if (isRightSwipe && currentStep > 0) {
       handleStepChange(currentStep - 1);
     }
     
@@ -104,7 +109,7 @@ export default function OnboardingFlow() {
   return (
     <div
       className="h-screen w-full flex flex-col overflow-hidden"
-      style={{ backgroundColor: colors.semantic.background.main }}
+      style={{ backgroundColor: '#F0EFF8' }}
       onTouchStart={handleTouchStart}
       onTouchMove={handleTouchMove}
       onTouchEnd={handleTouchEnd}
@@ -116,7 +121,7 @@ export default function OnboardingFlow() {
           style={{
             marginLeft: '1.25rem', // 20px
             marginRight: '1.25rem', // 20px
-            paddingTop: '3rem', // 48px
+            paddingTop: '4rem', // 64px - más espacio arriba
             paddingBottom: '2rem', // 32px
             gap: '1rem', // 16px
           }}
@@ -178,7 +183,7 @@ export default function OnboardingFlow() {
                   ? 'translateY(25px) scale(0.95)' 
                   : 'translateY(0) scale(1)',
                 transition: motion.transitions.slideUp,
-                marginBottom: '2rem', // 32px - espacio antes del paginador
+                marginBottom: '0.1875rem', // 3px - distancia del texto al paginador
               }}
             >
               <h1
@@ -194,12 +199,15 @@ export default function OnboardingFlow() {
                 {steps[currentStep].title}
               </h1>
               <p
+                className="whitespace-nowrap"
                 style={{
                   fontSize: '1rem', // 16pt
                   fontWeight: 400, // regular
                   color: colors.semantic.text.secondary,
                   lineHeight: '1.5',
                   fontFamily: 'Manrope, sans-serif',
+                  overflow: 'hidden',
+                  textOverflow: 'ellipsis',
                 }}
               >
                 {steps[currentStep].description}
@@ -212,8 +220,8 @@ export default function OnboardingFlow() {
         </div>
       </div>
 
-      {/* Paginación estilo Apple - 2rem desde el último texto */}
-      <div style={{ paddingTop: '2rem', paddingBottom: '1rem' }}>
+      {/* Paginación estilo Apple - 3rem (48px) desde el paginador a los botones */}
+      <div style={{ paddingTop: '0.1875rem', paddingBottom: '3rem' }}>
         <ApplePagination currentIndex={currentStep} totalPages={steps.length} />
       </div>
 
