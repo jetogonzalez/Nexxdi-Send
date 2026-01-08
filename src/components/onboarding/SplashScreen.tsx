@@ -1,4 +1,6 @@
 import { useEffect } from 'react';
+import { colors } from '../../config/design-tokens';
+import { motion } from '../../lib/motion';
 
 export default function SplashScreen() {
   useEffect(() => {
@@ -20,12 +22,12 @@ export default function SplashScreen() {
         left: 0,
         right: 0,
         bottom: 0,
-        backgroundColor: '#3A29E9',
+        backgroundColor: colors.primary.main,
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
         zIndex: 9999,
-        transition: 'opacity 500ms ease-out',
+        transition: `opacity ${motion.duration.slow} ${motion.easing.smoothOut}`,
       }}
     >
       <img
@@ -34,14 +36,14 @@ export default function SplashScreen() {
         style={{
           width: '200px',
           height: 'auto',
-          animation: 'fadeIn 500ms ease-out',
+          animation: `fadeInScale ${motion.duration.slow} ${motion.easing.smoothOut}`,
         }}
       />
       <style>{`
-        @keyframes fadeIn {
+        @keyframes fadeInScale {
           from {
             opacity: 0;
-            transform: scale(0.9);
+            transform: scale(0.85);
           }
           to {
             opacity: 1;

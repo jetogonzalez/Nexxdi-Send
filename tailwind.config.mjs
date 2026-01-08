@@ -8,18 +8,20 @@ export default {
       colors: {
         ...colors,
         // Aliases para uso más fácil
-        primary: colors.primary[500],
+        primary: colors.primary?.main || colors.primary[500],
         secondary: colors.secondary[500],
         success: colors.success[500],
         error: colors.error[500],
         warning: colors.warning[500],
         info: colors.info[500],
-        // Colores específicos de Nexxdi Send
+        // Colores específicos de Nexxdi Send (legacy)
         splash: colors.splash,
         background: colors.background,
         textPrimary: colors.textPrimary,
         buttonPrimary: colors.buttonPrimary,
         buttonSecondary: colors.buttonSecondary,
+        // Colores semánticos nuevos
+        semantic: colors.semantic,
       },
       spacing: spacing,
       fontSize: typography.fontSize,

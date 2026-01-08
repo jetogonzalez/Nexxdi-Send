@@ -9,14 +9,11 @@
 // Tailwind puede tener problemas con TypeScript, así que usamos valores directos aquí
 
 export const colors = {
-  // Colores de la app Nexxdi Send
-  splash: '#3A29E9',
-  background: '#F0EFF8',
-  textPrimary: '#101828',
-  buttonPrimary: '#101828',
-  buttonSecondary: 'rgba(0, 0, 0, 0.05)',
-  
+  // Colores Primarios - Nexxdi Send
   primary: {
+    main: '#3A29E9',
+    light: '#5A4AFF',
+    dark: '#2A19D9',
     50: '#f0f9ff',
     100: '#e0f2fe',
     200: '#bae6fd',
@@ -28,6 +25,38 @@ export const colors = {
     800: '#075985',
     900: '#0c4a6e',
   },
+  
+  // Colores Semánticos - Nexxdi Send
+  semantic: {
+    background: {
+      main: '#F0EFF8',
+      imageCircle: 'rgba(255, 255, 255, 0.4)',
+      white: '#FFFFFF',
+    },
+    text: {
+      primary: '#101828',
+      secondary: '#6b7280',
+      tertiary: '#9ca3af',
+    },
+    button: {
+      primary: '#101828',
+      primaryHover: '#1f2937',
+      secondary: 'rgba(0, 0, 0, 0.05)',
+      secondaryHover: 'rgba(0, 0, 0, 0.08)',
+    },
+    border: {
+      light: 'rgba(0, 0, 0, 0.1)',
+      medium: 'rgba(0, 0, 0, 0.2)',
+    },
+  },
+  
+  // Colores legacy (compatibilidad)
+  splash: '#3A29E9',
+  background: '#F0EFF8',
+  textPrimary: '#101828',
+  buttonPrimary: '#101828',
+  buttonSecondary: 'rgba(0, 0, 0, 0.05)',
+  
   secondary: {
     50: '#faf5ff',
     100: '#f3e8ff',

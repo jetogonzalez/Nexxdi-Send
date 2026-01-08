@@ -5,45 +5,64 @@
  */
 
 export const motion = {
-  // Duración de transiciones
+  // Duración de transiciones (más variadas)
   duration: {
-    fast: '200ms',
-    base: '300ms',
-    slow: '500ms',
-    slower: '800ms',
+    instant: '150ms',
+    fast: '250ms',
+    base: '400ms',
+    medium: '600ms',
+    slow: '800ms',
+    slower: '1000ms',
     slowest: '1200ms',
   },
 
-  // Easing functions
+  // Easing functions (más fluidas y diversas)
   easing: {
     linear: 'linear',
+    // Easing estándar
     easeIn: 'cubic-bezier(0.4, 0, 1, 1)',
     easeOut: 'cubic-bezier(0, 0, 0.2, 1)',
     easeInOut: 'cubic-bezier(0.4, 0, 0.2, 1)',
-    // Easing suave para onboarding
+    // Easing suaves y fluidas
     smooth: 'cubic-bezier(0.25, 0.46, 0.45, 0.94)',
-    // Easing para transiciones de pantalla
+    smoothOut: 'cubic-bezier(0.16, 1, 0.3, 1)',
+    smoothIn: 'cubic-bezier(0.7, 0, 0.84, 0)',
+    // Easing para transiciones de pantalla (más fluidas)
     screenTransition: 'cubic-bezier(0.4, 0, 0.2, 1)',
+    screenSlide: 'cubic-bezier(0.25, 0.1, 0.25, 1)',
+    // Easing para elementos que aparecen
+    bounce: 'cubic-bezier(0.68, -0.55, 0.265, 1.55)',
+    // Easing natural
+    natural: 'cubic-bezier(0.4, 0, 0.2, 1)',
   },
 
-  // Transiciones predefinidas
+  // Transiciones predefinidas (más diversas y fluidas)
   transitions: {
-    // Transición de pantalla (slide)
-    screenSlide: 'transform 500ms cubic-bezier(0.4, 0, 0.2, 1)',
-    // Fade in/out
-    fade: 'opacity 300ms cubic-bezier(0.4, 0, 0.2, 1)',
-    // Fade + scale
-    fadeScale: 'opacity 300ms cubic-bezier(0.4, 0, 0.2, 1), transform 300ms cubic-bezier(0.4, 0, 0.2, 1)',
-    // Slide + fade
-    slideFade: 'transform 500ms cubic-bezier(0.4, 0, 0.2, 1), opacity 500ms cubic-bezier(0.4, 0, 0.2, 1)',
+    // Transición de pantalla (slide suave)
+    screenSlide: 'transform 600ms cubic-bezier(0.25, 0.1, 0.25, 1)',
+    // Fade in/out suave
+    fade: 'opacity 400ms cubic-bezier(0.16, 1, 0.3, 1)',
+    // Fade + scale (más fluida)
+    fadeScale: 'opacity 500ms cubic-bezier(0.16, 1, 0.3, 1), transform 500ms cubic-bezier(0.16, 1, 0.3, 1)',
+    // Slide + fade (más fluida)
+    slideFade: 'transform 600ms cubic-bezier(0.25, 0.1, 0.25, 1), opacity 600ms cubic-bezier(0.16, 1, 0.3, 1)',
+    // Slide desde abajo (para textos)
+    slideUp: 'transform 500ms cubic-bezier(0.16, 1, 0.3, 1), opacity 500ms cubic-bezier(0.16, 1, 0.3, 1)',
+    // Scale con bounce sutil
+    scaleBounce: 'transform 600ms cubic-bezier(0.68, -0.55, 0.265, 1.55)',
+    // Fade con slide horizontal
+    fadeSlideHorizontal: 'opacity 500ms cubic-bezier(0.16, 1, 0.3, 1), transform 500ms cubic-bezier(0.25, 0.1, 0.25, 1)',
   },
 
-  // Delays
+  // Delays (más variados)
   delay: {
     none: '0ms',
+    instant: '50ms',
     fast: '100ms',
-    base: '200ms',
+    base: '150ms',
+    medium: '200ms',
     slow: '300ms',
+    slower: '400ms',
   },
 } as const;
 

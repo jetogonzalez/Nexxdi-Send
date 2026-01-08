@@ -11,12 +11,54 @@
 // ============================================
 
 export const colors = {
-  // Colores de la app Nexxdi Send
-  splash: '#3A29E9', // Color del splash screen
-  background: '#F0EFF8', // Color de fondo general
-  textPrimary: '#101828', // Color de texto primario
-  buttonPrimary: '#101828', // Color del botón primario
-  buttonSecondary: 'rgba(0, 0, 0, 0.05)', // Botón secundario con 5% opacidad
+  // ============================================
+  // Colores Primarios - Nexxdi Send
+  // ============================================
+  primary: {
+    main: '#3A29E9', // Color principal (splash)
+    light: '#5A4AFF',
+    dark: '#2A19D9',
+  },
+  
+  // ============================================
+  // Colores Semánticos - Nexxdi Send
+  // ============================================
+  semantic: {
+    // Backgrounds
+    background: {
+      main: '#F0EFF8', // Fondo general
+      imageCircle: 'rgba(255, 255, 255, 0.4)', // Círculo detrás de imágenes (40% opacidad)
+      white: '#FFFFFF',
+    },
+    
+    // Text
+    text: {
+      primary: '#101828', // Texto primario
+      secondary: '#6b7280', // Texto secundario
+      tertiary: '#9ca3af', // Texto terciario
+    },
+    
+    // Buttons
+    button: {
+      primary: '#101828', // Botón primario
+      primaryHover: '#1f2937', // Hover del botón primario
+      secondary: 'rgba(0, 0, 0, 0.05)', // Botón secundario (5% opacidad)
+      secondaryHover: 'rgba(0, 0, 0, 0.08)', // Hover del botón secundario
+    },
+    
+    // Borders
+    border: {
+      light: 'rgba(0, 0, 0, 0.1)',
+      medium: 'rgba(0, 0, 0, 0.2)',
+    },
+  },
+  
+  // Colores legacy (mantener compatibilidad)
+  splash: '#3A29E9',
+  background: '#F0EFF8',
+  textPrimary: '#101828',
+  buttonPrimary: '#101828',
+  buttonSecondary: 'rgba(0, 0, 0, 0.05)',
   
   // Colores primarios
   primary: {

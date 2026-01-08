@@ -1,3 +1,6 @@
+import { colors } from '../../config/design-tokens';
+import { motion } from '../../lib/motion';
+
 interface ApplePaginationProps {
   currentIndex: number;
   totalPages: number;
@@ -9,13 +12,16 @@ export function ApplePagination({ currentIndex, totalPages }: ApplePaginationPro
       {Array.from({ length: totalPages }).map((_, index) => (
         <div
           key={index}
-          className={`transition-all duration-300 ease-in-out ${
+          className={`rounded-full ${
             index === currentIndex
-              ? 'w-8 h-2 bg-textPrimary rounded-full'
-              : 'w-2 h-2 bg-textPrimary/30 rounded-full'
+              ? 'w-8 h-2'
+              : 'w-2 h-2'
           }`}
           style={{
-            transition: 'width 300ms cubic-bezier(0.4, 0, 0.2, 1), background-color 300ms cubic-bezier(0.4, 0, 0.2, 1)',
+            backgroundColor: index === currentIndex 
+              ? colors.semantic.text.primary 
+              : `${colors.semantic.text.primary}30`,
+            transition: `width ${motion.duration.base} ${motion.easing.smoothOut}, background-color ${motion.duration.base} ${motion.easing.smoothOut}`,
           }}
         />
       ))}
