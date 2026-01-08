@@ -225,7 +225,7 @@ export default function LoginPage() {
             marginBottom: spacing[10], // Más espacio según iOS
             fontFamily: typography.fontFamily.sans.join(', '),
             textAlign: 'left',
-            lineHeight: '1.2',
+            lineHeight: '1.1',
           }}
         >
           Inicia sesión
