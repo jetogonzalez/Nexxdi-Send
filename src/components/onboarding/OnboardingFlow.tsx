@@ -278,7 +278,7 @@ export default function OnboardingFlow() {
                 fontSize: typography.fontSize['3xl'],
                 fontWeight: typography.fontWeight.semibold,
                 color: colors.semantic.text.primary,
-                lineHeight: typography.lineHeight.normal,
+                lineHeight: '1.15',
                 fontFamily: typography.fontFamily.sans.join(', '),
                 marginBottom: spacing[0],
               }}
