@@ -320,11 +320,12 @@ export default function OnboardingFlow() {
       <div 
         style={{ 
           paddingTop: spacing[0.5], 
-          paddingBottom: '4rem',
+          paddingBottom: spacing[4],
           position: 'relative',
-          zIndex: 10,
-          backgroundColor: colors.semantic.background.main,
+          zIndex: 1001, // Asegurar que esté por encima de la barra de botones
+          backgroundColor: 'transparent', // Sin color de fondo
           flexShrink: 0,
+          pointerEvents: 'auto', // Asegurar que los clicks funcionen
         }}
       >
         <ProgressIndicator 
@@ -335,17 +336,22 @@ export default function OnboardingFlow() {
         />
       </div>
 
-          {/* Botones - Liquid Glass Button Bar */}
-          <div style={{ flexShrink: 0, position: 'relative', paddingBottom: 'calc(env(safe-area-inset-bottom) + 120px)' }}>
-            <OnboardingButtons 
-              onCreateAccount={() => console.log('Crear cuenta')}
-              onLogin={() => {
-                if (typeof window !== 'undefined') {
-                  window.location.href = '/login';
-                }
-              }}
-            />
-          </div>
+      {/* Espaciador para evitar que el contenido se corte con la barra fija */}
+      <div style={{ 
+        height: 'calc(180px + env(safe-area-inset-bottom))', 
+        flexShrink: 0,
+        backgroundColor: 'transparent',
+      }} />
+
+      {/* Botones - Liquid Glass Button Bar (fixed) */}
+      <OnboardingButtons 
+        onCreateAccount={() => console.log('Crear cuenta')}
+        onLogin={() => {
+          if (typeof window !== 'undefined') {
+            window.location.href = '/login';
+          }
+        }}
+      />
       <style>{`
         @keyframes fadeInScale {
           from {

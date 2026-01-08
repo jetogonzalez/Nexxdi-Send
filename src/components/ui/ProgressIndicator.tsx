@@ -27,19 +27,21 @@ export function ProgressIndicator({ currentIndex, totalPages, progress, onDotCli
             onClick={() => onDotClick?.(index)}
             style={{
               position: 'relative',
-              width: isActive ? spacing[8] : spacing[3], // 32px activo, 12px inactivo (más grande)
-              height: isActive ? spacing[2] : spacing[3], // 8px activo, 12px inactivo (más grande)
-              borderRadius: spacing[2], // 8px
+              width: isActive ? spacing[8] : spacing[3], // 32px activo, 12px inactivo
+              height: spacing[3], // 12px - misma altura para todos
+              borderRadius: spacing[3], // 12px - mismo border radius que la altura
               backgroundColor: isCompleted 
                 ? colors.semantic.text.primary 
                 : `${colors.semantic.text.primary}30`, // Fondo claro para inactivos
               overflow: 'hidden',
-              transition: `width ${motion.duration.base} ${motion.easing.smoothOut}, height ${motion.duration.base} ${motion.easing.smoothOut}, background-color ${motion.duration.base} ${motion.easing.smoothOut}`,
+              transition: `width ${motion.duration.base} ${motion.easing.smoothOut}, background-color ${motion.duration.base} ${motion.easing.smoothOut}`,
               border: 'none',
               padding: 0,
               cursor: 'pointer',
               minWidth: isActive ? spacing[8] : spacing[3],
-              minHeight: isActive ? spacing[2] : spacing[3],
+              minHeight: spacing[3], // Misma altura mínima para todos
+              zIndex: 1001, // Asegurar que esté por encima de otros elementos
+              pointerEvents: 'auto', // Asegurar que los clicks funcionen
             }}
             aria-label={`Ir al paso ${index + 1}`}
           >
@@ -55,7 +57,8 @@ export function ProgressIndicator({ currentIndex, totalPages, progress, onDotCli
                     height: '100%',
                     width: '100%',
                     backgroundColor: `${colors.semantic.text.primary}30`,
-                    borderRadius: spacing[2],
+                    borderRadius: spacing[3],
+                    pointerEvents: 'none', // No bloquear clicks
                   }}
                 />
                 
@@ -68,9 +71,10 @@ export function ProgressIndicator({ currentIndex, totalPages, progress, onDotCli
                     height: '100%',
                     width: `${progress * 100}%`,
                     backgroundColor: colors.semantic.text.primary,
-                    borderRadius: spacing[2],
+                    borderRadius: spacing[3],
                     transition: `width 100ms cubic-bezier(0.25, 0.46, 0.45, 0.94)`, // Transición suave y natural
                     willChange: 'width',
+                    pointerEvents: 'none', // No bloquear clicks
                   }}
                 />
               </>

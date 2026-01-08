@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Input } from '../ui/Input';
 import { FaceIDButton } from './FaceIDButton';
-import { colors, spacing, typography, borderRadius } from '../../config/design-tokens';
+import { colors, spacing, typography, borderRadius, button } from '../../config/design-tokens';
 import { motion } from '../../lib/motion';
 
 interface LoginFormProps {
@@ -108,8 +108,11 @@ export function LoginForm({ onLogin, onForgotPassword, onSignUp, onFaceID }: Log
         disabled={isLoading || !isFormValid}
         style={{
           width: '100%',
-          padding: `${spacing[4]} ${spacing[6]}`,
-          minHeight: '50px', // Tamaño mínimo según iOS HIG para botones principales
+          paddingTop: button.paddingY, // 12px (regla de 4px)
+          paddingBottom: button.paddingY, // 12px (regla de 4px)
+          paddingLeft: button.paddingX, // 24px (regla de 4px)
+          paddingRight: button.paddingX, // 24px (regla de 4px)
+          minHeight: button.heightCompact, // 40px (regla de 4px)
           fontSize: typography.fontSize.base,
           fontWeight: typography.fontWeight.bold,
           color: colors.semantic.background.white,

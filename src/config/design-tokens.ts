@@ -251,6 +251,21 @@ export const borderWidth = {
 } as const;
 
 // ============================================
+// Tokens para Botones
+// ============================================
+
+export const button = {
+  // Padding vertical (regla de 4px)
+  paddingY: spacing[3], // 12px (4px * 3)
+  // Padding horizontal
+  paddingX: spacing[6], // 24px (4px * 6)
+  // Altura mínima (regla de 4px)
+  minHeight: spacing[12], // 48px (4px * 12) - mínimo táctil iOS
+  // Altura compacta (regla de 4px)
+  heightCompact: spacing[10], // 40px (4px * 10)
+} as const;
+
+// ============================================
 // Sombras
 // ============================================
 
@@ -380,6 +395,7 @@ export const designTokens = {
   transitions,
   zIndex,
   theme,
+  button,
 } as const;
 
 export default designTokens;

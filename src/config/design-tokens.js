@@ -207,6 +207,14 @@ export const shadows = {
   none: 'none',
 };
 
+// Tokens para Botones (regla de 4px)
+export const button = {
+  paddingY: spacing[3], // 12px (4px * 3)
+  paddingX: spacing[6], // 24px (4px * 6)
+  minHeight: spacing[12], // 48px (4px * 12) - mínimo táctil iOS
+  heightCompact: spacing[10], // 40px (4px * 10)
+};
+
 // Liquid Glass Effect (iOS 16 style)
 export const liquidGlass = {
   blur: {

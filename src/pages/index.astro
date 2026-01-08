@@ -5,4 +5,13 @@ import SplashScreen from '../components/onboarding/SplashScreen';
 
 <Layout title="Nexxdi Send">
   <SplashScreen client:load />
+  <script>
+    // Fallback: redirección automática si React no se carga en 5 segundos
+    setTimeout(() => {
+      if (window.location.pathname === '/') {
+        console.log('Fallback: redirigiendo a /onboarding');
+        window.location.href = '/onboarding';
+      }
+    }, 5000);
+  </script>
 </Layout>

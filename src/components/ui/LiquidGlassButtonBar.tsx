@@ -11,14 +11,14 @@ export function LiquidGlassButtonBar({ children, position = 'bottom' }: LiquidGl
     <div
       style={{
         position: 'fixed',
-        [position]: 0,
+        ...(position === 'top' ? { top: 0 } : { bottom: 0 }),
         left: 0,
         right: 0,
-        paddingTop: position === 'top' ? 'env(safe-area-inset-top)' : spacing[4],
-        paddingBottom: position === 'bottom' ? 'env(safe-area-inset-bottom)' : spacing[4],
+        paddingTop: position === 'top' ? 'env(safe-area-inset-top)' : spacing[5],
+        paddingBottom: position === 'bottom' ? `calc(${spacing[5]} + env(safe-area-inset-bottom))` : spacing[5],
         paddingLeft: spacing[5],
         paddingRight: spacing[5],
-        backgroundColor: liquidGlass.background.lightTranslucent,
+        backgroundColor: 'transparent', // Sin color de fondo, solo efecto glass
         backdropFilter: `${liquidGlass.blur.lg} ${liquidGlass.saturation.normal}`,
         WebkitBackdropFilter: `${liquidGlass.blur.lg} ${liquidGlass.saturation.normal}`,
         borderTop: position === 'bottom' ? `1px solid ${liquidGlass.border.light}` : 'none',
@@ -27,6 +27,7 @@ export function LiquidGlassButtonBar({ children, position = 'bottom' }: LiquidGl
         display: 'flex',
         flexDirection: 'column',
         gap: spacing[3],
+        pointerEvents: 'auto', // Asegurar que los clicks funcionen
       }}
     >
       {children}

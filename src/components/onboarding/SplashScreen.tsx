@@ -7,19 +7,30 @@ export default function SplashScreen() {
   const redirectTimerRef = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
+    console.log('SplashScreen montado, iniciando timer de redirección');
+    
     // Mostrar splash por 2.5 segundos, luego fade out y redirigir
     const showTimer = setTimeout(() => {
+      console.log('Iniciando fade out');
       setIsExiting(true);
       
-      // Redirigir después del fade out
+      // Redirigir después del fade out (400ms = motion.duration.base)
       redirectTimerRef.current = setTimeout(() => {
+        console.log('Redirigiendo a /onboarding');
         if (typeof window !== 'undefined') {
-          window.location.href = '/onboarding';
+          try {
+            window.location.href = '/onboarding';
+          } catch (error) {
+            console.error('Error al redirigir:', error);
+            // Fallback: usar replace
+            window.location.replace('/onboarding');
+          }
         }
-      }, parseInt(motion.duration.base.replace('ms', ''))); // Esperar a que termine el fade out
-    }, 2500); // Mostrar por 2.5 segundos - más tiempo para que no sea tan inmediato
+      }, 400); // Esperar a que termine el fade out (motion.duration.base = 400ms)
+    }, 2500); // Mostrar por 2.5 segundos
 
     return () => {
+      console.log('Limpiando timers del SplashScreen');
       clearTimeout(showTimer);
       if (redirectTimerRef.current) {
         clearTimeout(redirectTimerRef.current);
@@ -41,7 +52,8 @@ export default function SplashScreen() {
         justifyContent: 'center',
         zIndex: 9999,
         opacity: isExiting ? 0 : 1,
-        transition: `opacity ${motion.duration.base} ${motion.easing.smoothOut}`,
+        transition: `opacity 400ms cubic-bezier(0.16, 1, 0.3, 1)`,
+        pointerEvents: isExiting ? 'none' : 'auto',
       }}
     >
       <img
@@ -52,8 +64,8 @@ export default function SplashScreen() {
           height: 'auto',
           opacity: isExiting ? 0 : 1,
           transform: isExiting ? 'scale(0.9)' : 'scale(1)',
-          transition: `opacity ${motion.duration.base} ${motion.easing.smoothOut}, transform ${motion.duration.base} ${motion.easing.smoothOut}`,
-          animation: !isExiting ? `fadeInScale ${motion.duration.base} ${motion.easing.smoothOut}` : 'none',
+          transition: `opacity 400ms cubic-bezier(0.16, 1, 0.3, 1), transform 400ms cubic-bezier(0.16, 1, 0.3, 1)`,
+          animation: !isExiting ? `fadeInScale 400ms cubic-bezier(0.16, 1, 0.3, 1)` : 'none',
         }}
       />
       <style>{`
