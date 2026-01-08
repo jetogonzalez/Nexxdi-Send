@@ -4,24 +4,26 @@ import { colors } from '../../config/design-tokens';
 import { motion } from '../../lib/motion';
 
 interface OnboardingStep {
-  image: string;
+  image: string; // Nombre base de la imagen (sin extensión ni @2x/@3x)
   title: string;
   description: string;
 }
 
+// srcSet manejará automáticamente la selección de la mejor calidad
+
 const steps: OnboardingStep[] = [
   {
-    image: '/img/onboarding/onboarding-card.png',
+    image: 'onboarding-card',
     title: 'Tarjeta virtual\nsin costo',
     description: 'Compra en línea o úsala desde tu wallet',
   },
   {
-    image: '/img/onboarding/onboarding-send.png',
+    image: 'onboarding-send',
     title: 'Envía dinero a\notros países',
     description: 'Rápido, seguro y desde tu celular',
   },
   {
-    image: '/img/onboarding/onboarding-flash.png',
+    image: 'onboarding-flash',
     title: 'Transferencias\nal instante',
     description: 'Entre usuarios, rápido y sin comisiones',
   },
@@ -155,20 +157,28 @@ export default function OnboardingFlow() {
                   transition: motion.transitions.fadeScale,
                 }}
               />
-              {/* Imagen sobre el círculo con transición más fluida */}
+              {/* Imagen sobre el círculo con transición más fluida - usando mejor calidad */}
               <img
-                src={steps[currentStep].image}
+                src={`/img/onboarding/${steps[currentStep].image}.png`}
+                srcSet={`
+                  /img/onboarding/${steps[currentStep].image}.png 1x,
+                  /img/onboarding/${steps[currentStep].image}@2x.png 2x,
+                  /img/onboarding/${steps[currentStep].image}@3x.png 3x
+                `}
                 alt={steps[currentStep].title}
                 key={`image-${currentStep}`}
-                className="relative z-10 object-contain"
+                className="relative z-10"
                 style={{
                   width: '16rem', // 256px
                   height: '16rem', // 256px
+                  objectFit: 'contain',
                   opacity: isTransitioning ? 0 : 1,
                   transform: isTransitioning 
                     ? 'scale(0.85) translateY(15px)' 
                     : 'scale(1) translateY(0)',
                   transition: motion.transitions.fadeScale,
+                  imageRendering: '-webkit-optimize-contrast', // Mejor calidad en iOS
+                  WebkitImageRendering: '-webkit-optimize-contrast',
                 }}
               />
             </div>
