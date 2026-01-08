@@ -27,19 +27,19 @@ export function ProgressIndicator({ currentIndex, totalPages, progress, onDotCli
             onClick={() => onDotClick?.(index)}
             style={{
               position: 'relative',
-              width: isActive ? spacing[8] : spacing[2], // 32px activo, 8px inactivo
-              height: spacing[2], // 8px
+              width: isActive ? spacing[8] : spacing[3], // 32px activo, 12px inactivo (más grande)
+              height: isActive ? spacing[2] : spacing[3], // 8px activo, 12px inactivo (más grande)
               borderRadius: spacing[2], // 8px
               backgroundColor: isCompleted 
                 ? colors.semantic.text.primary 
                 : `${colors.semantic.text.primary}30`, // Fondo claro para inactivos
               overflow: 'hidden',
-              transition: `width ${motion.duration.base} ${motion.easing.smoothOut}, background-color ${motion.duration.base} ${motion.easing.smoothOut}`,
+              transition: `width ${motion.duration.base} ${motion.easing.smoothOut}, height ${motion.duration.base} ${motion.easing.smoothOut}, background-color ${motion.duration.base} ${motion.easing.smoothOut}`,
               border: 'none',
               padding: 0,
               cursor: 'pointer',
-              minWidth: isActive ? spacing[8] : spacing[2],
-              minHeight: spacing[2],
+              minWidth: isActive ? spacing[8] : spacing[3],
+              minHeight: isActive ? spacing[2] : spacing[3],
             }}
             aria-label={`Ir al paso ${index + 1}`}
           >

@@ -1,14 +1,25 @@
 import { useEffect, useState } from 'react';
 import { LoginForm } from './LoginForm';
+import { SavePasswordModal } from '../ui/SavePasswordModal';
 import { colors, spacing, typography } from '../../config/design-tokens';
 import { motion } from '../../lib/motion';
+import { hasSavedCredentials, saveCredentials, getSavedCredentials } from '../../lib/storage';
 
 export default function LoginPage() {
   const [isClosing, setIsClosing] = useState(false);
+  const [showSavePasswordModal, setShowSavePasswordModal] = useState(false);
+  const [savedEmail, setSavedEmail] = useState<string>('');
+  const [savedPassword, setSavedPassword] = useState<string>('');
+  const [hasCredentials, setHasCredentials] = useState(false);
 
   useEffect(() => {
     // Permitir scroll si es necesario, pero prevenir pull-to-refresh
     document.body.style.overscrollBehavior = 'contain';
+    
+    // Verificar si hay credenciales guardadas
+    const credentials = getSavedCredentials();
+    setHasCredentials(credentials !== null);
+    
     return () => {
       document.body.style.overscrollBehavior = '';
     };
@@ -29,11 +40,19 @@ export default function LoginPage() {
       
       if (emailValid && passwordValid) {
         console.log('Login exitoso');
-        // Redirigir al home
-        setIsClosing(true);
-        setTimeout(() => {
-          window.location.href = '/home';
-        }, parseInt(motion.duration.slow.replace('ms', '')));
+        
+        // Si no hay credenciales guardadas, preguntar si quiere guardarlas
+        if (!hasSavedCredentials()) {
+          setSavedEmail(email);
+          setSavedPassword(password);
+          setShowSavePasswordModal(true);
+        } else {
+          // Si ya hay credenciales guardadas, redirigir directamente
+          setIsClosing(true);
+          setTimeout(() => {
+            window.location.href = '/home';
+          }, parseInt(motion.duration.slow.replace('ms', '')));
+        }
       } else {
         throw new Error('Credenciales inválidas');
       }
@@ -54,15 +73,18 @@ export default function LoginPage() {
 
   const handleFaceID = async (): Promise<boolean> => {
     try {
+      // Obtener credenciales guardadas
+      const credentials = getSavedCredentials();
+      if (!credentials) {
+        console.warn('No hay credenciales guardadas');
+        return false;
+      }
+
       // Usar Web Authentication API para autenticación biométrica nativa (Face ID/Touch ID)
       if (!window.PublicKeyCredential) {
         console.warn('Web Authentication API no está disponible');
-        // Fallback: simular autenticación
-        await new Promise(resolve => setTimeout(resolve, 1000));
-        setIsClosing(true);
-        setTimeout(() => {
-          window.location.href = '/home';
-        }, parseInt(motion.duration.slow.replace('ms', '')));
+        // Fallback: usar credenciales guardadas directamente
+        await handleLogin(credentials.email, credentials.password);
         return true;
       }
 
@@ -71,12 +93,8 @@ export default function LoginPage() {
       
       if (!isAvailable) {
         console.warn('Autenticación biométrica no disponible');
-        // Fallback: simular autenticación
-        await new Promise(resolve => setTimeout(resolve, 1000));
-        setIsClosing(true);
-        setTimeout(() => {
-          window.location.href = '/home';
-        }, parseInt(motion.duration.slow.replace('ms', '')));
+        // Fallback: usar credenciales guardadas directamente
+        await handleLogin(credentials.email, credentials.password);
         return true;
       }
 
@@ -95,11 +113,8 @@ export default function LoginPage() {
 
       if (credential) {
         console.log('Face ID/Touch ID autenticación exitosa');
-        // Redirigir al home después de la animación
-        setIsClosing(true);
-        setTimeout(() => {
-          window.location.href = '/home';
-        }, parseInt(motion.duration.slow.replace('ms', '')));
+        // Usar credenciales guardadas para hacer login automático
+        await handleLogin(credentials.email, credentials.password);
         return true;
       }
 
@@ -113,6 +128,28 @@ export default function LoginPage() {
       console.error('Error en Face ID:', error);
       return false;
     }
+  };
+
+  const handleSavePassword = () => {
+    if (savedEmail && savedPassword) {
+      saveCredentials(savedEmail, savedPassword);
+      setHasCredentials(true);
+    }
+    setShowSavePasswordModal(false);
+    // Redirigir al home después de guardar
+    setIsClosing(true);
+    setTimeout(() => {
+      window.location.href = '/home';
+    }, parseInt(motion.duration.slow.replace('ms', '')));
+  };
+
+  const handleSkipSavePassword = () => {
+    setShowSavePasswordModal(false);
+    // Redirigir al home sin guardar
+    setIsClosing(true);
+    setTimeout(() => {
+      window.location.href = '/home';
+    }, parseInt(motion.duration.slow.replace('ms', '')));
   };
 
   const handleClose = () => {
@@ -237,10 +274,17 @@ export default function LoginPage() {
             onLogin={handleLogin}
             onForgotPassword={handleForgotPassword}
             onSignUp={handleSignUp}
-            onFaceID={handleFaceID}
+            onFaceID={hasCredentials ? handleFaceID : undefined}
           />
         </div>
       </div>
+
+      {/* Modal para guardar contraseña */}
+      <SavePasswordModal
+        isOpen={showSavePasswordModal}
+        onSave={handleSavePassword}
+        onSkip={handleSkipSavePassword}
+      />
 
       <style>{`
         @keyframes slideUpFromBottom {

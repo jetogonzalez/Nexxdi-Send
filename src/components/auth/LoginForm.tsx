@@ -168,25 +168,10 @@ export function LoginForm({ onLogin, onForgotPassword, onSignUp, onFaceID }: Log
         </div>
       )}
 
-      {/* Face ID Button */}
+      {/* Face ID Button - Solo se muestra si hay credenciales guardadas */}
       {onFaceID && (
         <FaceIDButton 
-          onFaceID={async () => {
-            if (onFaceID) {
-              setIsLoading(true);
-              try {
-                const result = await onFaceID();
-                if (result) {
-                  // Si Face ID es exitoso, ejecutar login automáticamente
-                  await onLogin?.(email || 'user@example.com', password || 'validpassword');
-                }
-              } catch (error) {
-                console.error('Error en Face ID:', error);
-              } finally {
-                setIsLoading(false);
-              }
-            }
-          }} 
+          onFaceID={onFaceID}
         />
       )}
     </form>

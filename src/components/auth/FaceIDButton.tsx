@@ -2,7 +2,7 @@ import { colors, spacing, typography, borderRadius } from '../../config/design-t
 import { motion } from '../../lib/motion';
 
 interface FaceIDButtonProps {
-  onFaceID?: () => void;
+  onFaceID?: () => Promise<boolean> | boolean;
 }
 
 export function FaceIDButton({ onFaceID }: FaceIDButtonProps) {
@@ -20,7 +20,11 @@ export function FaceIDButton({ onFaceID }: FaceIDButtonProps) {
       </p>
       <button
         type="button"
-        onClick={onFaceID}
+        onClick={async () => {
+          if (onFaceID) {
+            await onFaceID();
+          }
+        }}
         style={{
           width: spacing[16], // 64px
           height: spacing[16], // 64px
