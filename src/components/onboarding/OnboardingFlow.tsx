@@ -73,11 +73,11 @@ export default function OnboardingFlow() {
     }, 6000); // 6 segundos
   };
 
-  // Swipe handlers mejorados con mejor detección
+  // Swipe handlers mejorados con mejor detección y más natural
   const handleTouchStart = (e: React.TouchEvent) => {
     const touch = e.touches[0];
     setTouchStart(touch.clientX);
-    setTouchEnd(0);
+    setTouchEnd(touch.clientX);
   };
 
   const handleTouchMove = (e: React.TouchEvent) => {
@@ -93,7 +93,7 @@ export default function OnboardingFlow() {
     }
     
     const distance = touchStart - touchEnd;
-    const minSwipeDistance = 50;
+    const minSwipeDistance = 30; // Reducido para hacerlo más sensible y natural
     const isLeftSwipe = distance > minSwipeDistance;
     const isRightSwipe = distance < -minSwipeDistance;
 
@@ -123,7 +123,7 @@ export default function OnboardingFlow() {
           style={{
             marginLeft: '1.25rem', // 20px
             marginRight: '1.25rem', // 20px
-            paddingTop: '4rem', // 64px - más espacio arriba
+            paddingTop: '6rem', // 96px - bajar más el contenido
             paddingBottom: '2rem', // 32px
             gap: '1rem', // 16px
           }}
@@ -185,7 +185,7 @@ export default function OnboardingFlow() {
 
             {/* Título y descripción con transiciones más fluidas y diversas */}
             <div
-              className="text-center"
+              className="text-center w-full"
               key={`text-${currentStep}`}
               style={{
                 opacity: isTransitioning ? 0 : 1,
@@ -209,15 +209,15 @@ export default function OnboardingFlow() {
                 {steps[currentStep].title}
               </h1>
               <p
-                className="whitespace-nowrap"
                 style={{
                   fontSize: '1rem', // 16pt
                   fontWeight: 400, // regular
                   color: colors.semantic.text.secondary,
                   lineHeight: '1.5',
                   fontFamily: 'Manrope, sans-serif',
-                  overflow: 'hidden',
-                  textOverflow: 'ellipsis',
+                  width: '100%',
+                  display: 'block',
+                  // Sin restricciones - se ve todo el texto completo
                 }}
               >
                 {steps[currentStep].description}
