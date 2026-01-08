@@ -54,18 +54,47 @@ export default function LoginPage() {
 
   const handleFaceID = async (): Promise<boolean> => {
     try {
-      // Simular autenticación con Face ID
-      // En una app real, aquí se llamaría a la API de Face ID/Touch ID
-      console.log('Face ID login iniciado');
+      // Usar Web Authentication API para autenticación biométrica nativa (Face ID/Touch ID)
+      if (!window.PublicKeyCredential) {
+        console.warn('Web Authentication API no está disponible');
+        // Fallback: simular autenticación
+        await new Promise(resolve => setTimeout(resolve, 1000));
+        setIsClosing(true);
+        setTimeout(() => {
+          window.location.href = '/home';
+        }, parseInt(motion.duration.slow.replace('ms', '')));
+        return true;
+      }
+
+      // Verificar si hay credenciales disponibles
+      const isAvailable = await PublicKeyCredential.isUserVerifyingPlatformAuthenticatorAvailable();
       
-      // Simular delay de autenticación
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      // Simular autenticación exitosa
-      const success = true; // En producción, esto vendría de la API de autenticación
-      
-      if (success) {
-        console.log('Face ID autenticación exitosa');
+      if (!isAvailable) {
+        console.warn('Autenticación biométrica no disponible');
+        // Fallback: simular autenticación
+        await new Promise(resolve => setTimeout(resolve, 1000));
+        setIsClosing(true);
+        setTimeout(() => {
+          window.location.href = '/home';
+        }, parseInt(motion.duration.slow.replace('ms', '')));
+        return true;
+      }
+
+      // Crear opciones para la autenticación biométrica
+      const publicKeyCredentialRequestOptions: PublicKeyCredentialRequestOptions = {
+        challenge: new Uint8Array(32).fill(0), // En producción, esto debe ser un valor aleatorio del servidor
+        allowCredentials: [],
+        userVerification: 'required',
+        timeout: 60000,
+      };
+
+      // Solicitar autenticación biométrica nativa
+      const credential = await navigator.credentials.get({
+        publicKey: publicKeyCredentialRequestOptions,
+      }) as PublicKeyCredential;
+
+      if (credential) {
+        console.log('Face ID/Touch ID autenticación exitosa');
         // Redirigir al home después de la animación
         setIsClosing(true);
         setTimeout(() => {
@@ -73,9 +102,14 @@ export default function LoginPage() {
         }, parseInt(motion.duration.slow.replace('ms', '')));
         return true;
       }
-      
+
       return false;
-    } catch (error) {
+    } catch (error: any) {
+      // Si el usuario cancela, no mostrar error
+      if (error.name === 'NotAllowedError' || error.name === 'AbortError') {
+        console.log('Autenticación cancelada por el usuario');
+        return false;
+      }
       console.error('Error en Face ID:', error);
       return false;
     }

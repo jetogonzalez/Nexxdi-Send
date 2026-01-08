@@ -1,7 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { OnboardingButtons } from '../ui/OnboardingButtons';
 import { ProgressIndicator } from '../ui/ProgressIndicator';
-import { MotionPermissionButton } from '../ui/MotionPermissionButton';
 import { use3DTilt } from '../../hooks/use3DTilt';
 import { colors, spacing, typography } from '../../config/design-tokens';
 import { motion } from '../../lib/motion';
@@ -41,13 +40,12 @@ export default function OnboardingFlow() {
   const imageRef = useRef<HTMLImageElement | null>(null);
   const AUTO_ADVANCE_DURATION = 10000; // 10 segundos
 
-  // Hook para efecto 3D tilt con phone orientation (gyroscope)
+  // Hook para efecto 3D tilt con phone orientation (gyroscope) - automático
   // Configuración similar a Framer: valores divididos por 4, offsets aplicados
   const {
     tiltState,
     isSupported,
     permissionGranted,
-    requestPermission,
   } = use3DTilt({
     maxTilt: 22.5, // 90° / 4 = 22.5° (similar a dividir por 4 como en la imagen)
     smoothing: 0.15, // Factor de suavizado (más bajo = más suave)
@@ -57,6 +55,7 @@ export default function OnboardingFlow() {
     xOffset: 45, // Offset X como en la imagen (45°)
     yOffset: 0, // Offset Y como en la imagen (0°)
     divideBy: 4, // Dividir valores por 4 como en la imagen
+    autoRequestPermission: true, // Solicitar permiso automáticamente
   });
 
   // Aplicar efecto 3D dinámicamente a la imagen después de la animación inicial
@@ -348,13 +347,6 @@ export default function OnboardingFlow() {
             }
           }}
         />
-        {/* Botón para habilitar movimiento 3D (solo iOS cuando necesita permiso) */}
-        {isSupported && !permissionGranted && (
-          <MotionPermissionButton
-            onRequestPermission={requestPermission}
-            isVisible={true}
-          />
-        )}
       </div>
       <style>{`
         @keyframes fadeInScale {

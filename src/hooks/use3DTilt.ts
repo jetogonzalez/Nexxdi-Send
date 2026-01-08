@@ -9,6 +9,7 @@ interface TiltConfig {
   xOffset?: number; // Offset en grados para el eje X (default: 0)
   yOffset?: number; // Offset en grados para el eje Y (default: 0)
   divideBy?: number; // Dividir valores del giroscopio por este número (default: 1)
+  autoRequestPermission?: boolean; // Solicitar permiso automáticamente (default: false)
 }
 
 interface TiltState {
@@ -35,6 +36,7 @@ const DEFAULT_CONFIG: Required<TiltConfig> = {
   xOffset: 0,
   yOffset: 0,
   divideBy: 1,
+  autoRequestPermission: false,
 };
 
 export function use3DTilt(config: TiltConfig = {}): Use3DTiltReturn {
@@ -47,6 +49,7 @@ export function use3DTilt(config: TiltConfig = {}): Use3DTiltReturn {
     xOffset = DEFAULT_CONFIG.xOffset,
     yOffset = DEFAULT_CONFIG.yOffset,
     divideBy = DEFAULT_CONFIG.divideBy,
+    autoRequestPermission = DEFAULT_CONFIG.autoRequestPermission,
   } = config;
 
   const [tiltState, setTiltState] = useState<TiltState>({
@@ -65,7 +68,7 @@ export function use3DTilt(config: TiltConfig = {}): Use3DTiltReturn {
 
   // Verificar soporte y permisos
   useEffect(() => {
-    const checkSupport = () => {
+    const checkSupport = async () => {
       const hasOrientation = typeof DeviceOrientationEvent !== 'undefined';
       const hasMotion = typeof DeviceMotionEvent !== 'undefined';
       
@@ -77,7 +80,24 @@ export function use3DTilt(config: TiltConfig = {}): Use3DTiltReturn {
         typeof (DeviceOrientationEvent as any).requestPermission === 'function'
       ) {
         setNeedsPermission(true);
-        setPermissionGranted(false);
+        
+        // Si autoRequestPermission está habilitado, solicitar permiso automáticamente
+        if (autoRequestPermission) {
+          try {
+            const response = await (DeviceOrientationEvent as any).requestPermission();
+            if (response === 'granted') {
+              setPermissionGranted(true);
+              setNeedsPermission(false);
+            } else {
+              setPermissionGranted(false);
+            }
+          } catch (error) {
+            console.error('Error al solicitar permiso de movimiento:', error);
+            setPermissionGranted(false);
+          }
+        } else {
+          setPermissionGranted(false);
+        }
       } else {
         setNeedsPermission(false);
         setPermissionGranted(true);
@@ -85,7 +105,7 @@ export function use3DTilt(config: TiltConfig = {}): Use3DTiltReturn {
     };
 
     checkSupport();
-  }, []);
+  }, [autoRequestPermission]);
 
   // Solicitar permiso (debe ser llamado desde un gesto del usuario)
   const requestPermission = () => {
