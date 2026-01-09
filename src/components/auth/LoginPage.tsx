@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { LoginForm } from './LoginForm';
 import { SavePasswordModal } from '../ui/SavePasswordModal';
+import { LiquidGlassButton } from '../ui/LiquidGlassButton';
 import { colors, spacing, typography } from '../../config/design-tokens';
 import { motion } from '../../lib/motion';
 import { hasSavedCredentials, saveCredentials, getSavedCredentials } from '../../lib/storage';
@@ -205,31 +206,12 @@ export default function LoginPage() {
           minHeight: '44px',
         }}
       >
-        {/* Botón X circular */}
-        <button
+        {/* Botón X circular con efecto Liquid Glass */}
+        <LiquidGlassButton
           onClick={handleClose}
-          type="button"
-          style={{
-            width: '44px', // Tamaño mínimo táctil iOS
-            height: '44px', // Tamaño mínimo táctil iOS
-            borderRadius: '50%',
-            backgroundColor: colors.semantic.button.secondary,
-            border: 'none',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            cursor: 'pointer',
-            transition: `background-color ${motion.duration.base} ${motion.easing.easeInOut}, transform ${motion.duration.base} ${motion.easing.easeInOut}`,
-          }}
-          onMouseEnter={(e) => {
-            e.currentTarget.style.backgroundColor = colors.semantic.button.secondaryHover;
-            e.currentTarget.style.transform = 'scale(1.05)';
-          }}
-          onMouseLeave={(e) => {
-            e.currentTarget.style.backgroundColor = colors.semantic.button.secondary;
-            e.currentTarget.style.transform = 'scale(1)';
-          }}
-          aria-label="Cerrar"
+          size={44}
+          shape="circle"
+          ariaLabel="Cerrar"
         >
           <svg
             width="20"
@@ -246,7 +228,7 @@ export default function LoginPage() {
               strokeLinejoin="round"
             />
           </svg>
-        </button>
+        </LiquidGlassButton>
       </nav>
 
       {/* Contenido principal */}

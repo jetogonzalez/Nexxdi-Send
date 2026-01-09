@@ -6,7 +6,7 @@ interface ContactoIconProps {
 }
 
 export function ContactoIcon({ isActive = false, size = 24 }: ContactoIconProps) {
-  const color = isActive ? colors.primary.main : colors.semantic.text.tertiary;
+  const color = isActive ? colors.primary.main : colors.semantic.text.tabInactive;
   
   if (isActive) {
     return (

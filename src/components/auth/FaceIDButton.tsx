@@ -12,7 +12,7 @@ export function FaceIDButton({ onFaceID }: FaceIDButtonProps) {
         style={{
           fontSize: typography.fontSize.sm,
           color: colors.semantic.text.secondary,
-          marginBottom: spacing[4],
+          marginBottom: spacing[6],
           fontFamily: typography.fontFamily.sans.join(', '),
         }}
       >

@@ -29,6 +29,8 @@ export const colors = {
       main: '#F0EFF8', // Fondo general
       imageCircle: 'rgba(255, 255, 255, 0.4)', // Círculo detrás de imágenes (40% opacidad)
       white: '#FFFFFF',
+      tabButtonActive: 'rgba(255, 255, 255, 0.4)', // Fondo del tab button activo (colors.semantic.background.white con 40% opacidad)
+      tabBar: 'rgba(255, 255, 255, 0.4)', // Fondo del tab bar (colors.semantic.background.white con 40% opacidad)
     },
     
     // Text
@@ -36,6 +38,7 @@ export const colors = {
       primary: '#101828', // Texto primario
       secondary: '#6b7280', // Texto secundario
       tertiary: '#9ca3af', // Texto terciario
+      tabInactive: '#9ca3af', // Color para tabs inactivos (iconos y textos) - más claro y tokenizado
     },
     
     // Buttons
@@ -266,6 +269,37 @@ export const button = {
 } as const;
 
 // ============================================
+// Tokens para Bottom Navigation
+// ============================================
+
+export const bottomNavigation = {
+  // Tipografía
+  typography: {
+    fontSize: typography.fontSize.xs, // 12px
+    fontWeight: typography.fontWeight.bold, // 700 (bold según Figma)
+    lineHeight: '1.5', // 18px (1.5 * 12px según Figma)
+  },
+  // Iconos
+  icon: {
+    size: 24, // 24px - iconos más pequeños
+    containerSize: spacing[8], // 32px - tamaño del contenedor del icono
+  },
+  // Colores
+  colors: {
+    activeText: colors.primary.dark, // #2a1ad1 según Figma
+    inactiveText: '#8d8d8e', // Gris según Figma
+    activeBackground: '#efeefd', // Morado muy claro según Figma
+  },
+  // Espaciado
+  spacing: {
+    gap: '-2px', // Gap negativo para acercar icono y texto
+    labelMarginTop: '-2px', // Margin negativo pequeño para acercar
+    containerPadding: spacing[1], // 4px según Figma
+    itemPaddingY: spacing[1], // 4px según Figma
+  },
+} as const;
+
+// ============================================
 // Sombras
 // ============================================
 
@@ -287,9 +321,10 @@ export const shadows = {
 export const liquidGlass = {
   // Backdrop blur values
   blur: {
+    xs: 'blur(6px)', // Blur suave para navigation bottom (según Figma)
     sm: 'blur(10px)',
     md: 'blur(20px)',
-    lg: 'blur(30px)',
+    lg: 'blur(32px)', // Blur para tab bar (tokenizado)
     xl: 'blur(40px)',
   },
   // Background colors with transparency
@@ -299,6 +334,8 @@ export const liquidGlass = {
     // iOS 16 style - más translúcido
     lightTranslucent: 'rgba(255, 255, 255, 0.8)',
     darkTranslucent: 'rgba(0, 0, 0, 0.4)',
+    // Navigation bottom según Figma
+    navigationBottom: 'rgba(255, 255, 255, 0.51)', // 51% de opacidad según Figma
   },
   // Border colors
   border: {
@@ -396,6 +433,7 @@ export const designTokens = {
   zIndex,
   theme,
   button,
+  bottomNavigation,
 } as const;
 
 export default designTokens;

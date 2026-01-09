@@ -32,11 +32,14 @@ export const colors = {
       main: '#F0EFF8',
       imageCircle: 'rgba(255, 255, 255, 0.4)',
       white: '#FFFFFF',
+      tabButtonActive: 'rgba(255, 255, 255, 0.4)', // Fondo del tab button activo (colors.semantic.background.white con 40% opacidad)
+      tabBar: 'rgba(255, 255, 255, 0.4)', // Fondo del tab bar (colors.semantic.background.white con 40% opacidad)
     },
     text: {
       primary: '#101828',
       secondary: '#6b7280',
       tertiary: '#9ca3af',
+      tabInactive: '#9ca3af', // Color para tabs inactivos (iconos y textos) - más claro y tokenizado
     },
     button: {
       primary: '#101828',
@@ -215,12 +218,37 @@ export const button = {
   heightCompact: spacing[10], // 40px (4px * 10)
 };
 
+// Tokens para Bottom Navigation
+export const bottomNavigation = {
+  typography: {
+    fontSize: typography.fontSize.xs, // 12px
+    fontWeight: typography.fontWeight.bold, // 700 (bold según Figma)
+    lineHeight: '1.5', // 18px (1.5 * 12px según Figma)
+  },
+  icon: {
+    size: 24, // 24px - iconos más pequeños
+    containerSize: spacing[8], // 32px - tamaño del contenedor del icono
+  },
+  colors: {
+    activeText: '#2a1ad1', // Morado oscuro según Figma
+    inactiveText: '#8d8d8e', // Gris según Figma
+    activeBackground: '#efeefd', // Morado muy claro según Figma
+  },
+  spacing: {
+    gap: '-2px', // Gap negativo para acercar icono y texto
+    labelMarginTop: '-2px', // Margin negativo pequeño para acercar
+    containerPadding: spacing[1], // 4px según Figma
+    itemPaddingY: spacing[1], // 4px según Figma
+  },
+};
+
 // Liquid Glass Effect (iOS 16 style)
 export const liquidGlass = {
   blur: {
+    xs: 'blur(6px)', // Blur suave para navigation bottom (según Figma)
     sm: 'blur(10px)',
     md: 'blur(20px)',
-    lg: 'blur(30px)',
+    lg: 'blur(32px)', // Blur para tab bar (tokenizado)
     xl: 'blur(40px)',
   },
   background: {
@@ -228,6 +256,7 @@ export const liquidGlass = {
     dark: 'rgba(0, 0, 0, 0.3)',
     lightTranslucent: 'rgba(255, 255, 255, 0.8)',
     darkTranslucent: 'rgba(0, 0, 0, 0.4)',
+    navigationBottom: 'rgba(255, 255, 255, 0.51)', // 51% de opacidad según Figma
   },
   border: {
     light: 'rgba(255, 255, 255, 0.18)',

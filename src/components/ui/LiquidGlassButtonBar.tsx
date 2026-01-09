@@ -4,9 +4,10 @@ import { motion } from '../../lib/motion';
 interface LiquidGlassButtonBarProps {
   children: React.ReactNode;
   position?: 'top' | 'bottom';
+  showBackground?: boolean;
 }
 
-export function LiquidGlassButtonBar({ children, position = 'bottom' }: LiquidGlassButtonBarProps) {
+export function LiquidGlassButtonBar({ children, position = 'bottom', showBackground = false }: LiquidGlassButtonBarProps) {
   return (
     <div
       style={{
@@ -14,13 +15,12 @@ export function LiquidGlassButtonBar({ children, position = 'bottom' }: LiquidGl
         ...(position === 'top' ? { top: spacing[4] } : { bottom: `calc(${spacing[4]} + env(safe-area-inset-bottom))` }),
         left: spacing[4],
         right: spacing[4],
-        paddingTop: spacing[2],
-        paddingBottom: spacing[2],
-        paddingLeft: spacing[2],
-        paddingRight: spacing[2],
-        backgroundColor: 'transparent',
+        padding: spacing[1], // 4px según Figma
+        backgroundColor: showBackground ? liquidGlass.background.navigationBottom : 'transparent', // 51% de opacidad según Figma
+        backdropFilter: showBackground ? liquidGlass.blur.xs : 'none', // blur(6px) según Figma
+        WebkitBackdropFilter: showBackground ? liquidGlass.blur.xs : 'none', // blur(6px) para Safari según Figma
         borderRadius: borderRadius.full,
-        boxShadow: '0 8px 32px rgba(0, 0, 0, 0.12)',
+        boxShadow: 'none', // Sin sombra
         zIndex: 1000,
         display: 'flex',
         flexDirection: 'column',

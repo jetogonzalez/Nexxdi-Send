@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { colors, spacing, typography, borderRadius, button } from '../../config/design-tokens';
+import { LiquidGlassButton } from './LiquidGlassButton';
 import { motion } from '../../lib/motion';
 
 interface SavePasswordModalProps {
@@ -191,30 +192,11 @@ export function SavePasswordModal({ isOpen, onSave, onSkip }: SavePasswordModalP
           >
             ¿Guardar contraseña?
           </h2>
-          <button
+          <LiquidGlassButton
             onClick={onSkip}
-            type="button"
-            style={{
-              width: '44px', // Tamaño mínimo táctil iOS
-              height: '44px', // Tamaño mínimo táctil iOS
-              borderRadius: '50%',
-              backgroundColor: colors.semantic.button.secondary, // Fondo gris claro como en LoginPage
-              border: 'none',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              cursor: 'pointer',
-              transition: `background-color ${motion.duration.base} ${motion.easing.easeInOut}, transform ${motion.duration.base} ${motion.easing.easeInOut}`,
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.backgroundColor = colors.semantic.button.secondaryHover;
-              e.currentTarget.style.transform = 'scale(1.05)';
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.backgroundColor = colors.semantic.button.secondary;
-              e.currentTarget.style.transform = 'scale(1)';
-            }}
-            aria-label="Cerrar"
+            size={44}
+            shape="circle"
+            ariaLabel="Cerrar"
           >
             <svg
               width="20"
@@ -231,7 +213,7 @@ export function SavePasswordModal({ isOpen, onSave, onSkip }: SavePasswordModalP
                 strokeLinejoin="round"
               />
             </svg>
-          </button>
+          </LiquidGlassButton>
         </div>
 
         {/* Content Area */}

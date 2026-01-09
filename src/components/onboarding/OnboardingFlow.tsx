@@ -233,7 +233,7 @@ export default function OnboardingFlow() {
                   width: `${100 / steps.length}%`, // Cada slide ocupa 1/n del ancho total
                   paddingLeft: spacing[5],
                   paddingRight: spacing[5],
-                      paddingTop: '24vh', // Posición proporcional ajustada
+                      paddingTop: '20vh', // Posición proporcional ajustada
                   paddingBottom: spacing[4],
                   flex: '1 1 auto',
                   minHeight: 0,

@@ -6,7 +6,7 @@ interface WalletIconProps {
 }
 
 export function WalletIcon({ isActive = false, size = 24 }: WalletIconProps) {
-  const color = isActive ? colors.primary.main : colors.semantic.text.tertiary;
+  const color = isActive ? colors.primary.main : colors.semantic.text.tabInactive;
   
   if (isActive) {
     return (

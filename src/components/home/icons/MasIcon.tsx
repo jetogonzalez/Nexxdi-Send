@@ -6,7 +6,7 @@ interface MasIconProps {
 }
 
 export function MasIcon({ isActive = false, size = 24 }: MasIconProps) {
-  const color = isActive ? colors.primary.main : colors.semantic.text.tertiary; // Color más claro para inactivo
+  const color = isActive ? colors.primary.main : colors.semantic.text.tabInactive; // Token para tabs inactivos
   
   return (
     <svg width={size} height={size} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">

@@ -149,8 +149,8 @@ export function LoginForm({ onLogin, onForgotPassword, onSignUp, onFaceID }: Log
             style={{
               background: 'none',
               border: 'none',
-              fontSize: typography.fontSize.sm,
-              fontWeight: typography.fontWeight.normal,
+              fontSize: typography.fontSize.base,
+              fontWeight: typography.fontWeight.semibold,
               color: colors.semantic.text.primary,
               cursor: 'pointer',
               padding: spacing[2], // Padding para área táctil más grande

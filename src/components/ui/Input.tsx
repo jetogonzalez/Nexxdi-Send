@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { colors, spacing, typography, borderRadius } from '../../config/design-tokens';
+import { colors, spacing, typography, borderRadius, button } from '../../config/design-tokens';
 import { motion } from '../../lib/motion';
 
 interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {
@@ -20,10 +20,10 @@ export function Input({ label, error, helperText, showPasswordToggle = false, cl
         <label
           style={{
             display: 'block',
-            fontSize: typography.fontSize.sm,
-            fontWeight: typography.fontWeight.medium,
+            fontSize: typography.fontSize.base,
+            fontWeight: typography.fontWeight.semibold,
             color: colors.semantic.text.primary,
-            marginBottom: spacing[2],
+            marginBottom: spacing[4],
             fontFamily: typography.fontFamily.sans.join(', '),
           }}
         >
@@ -38,7 +38,11 @@ export function Input({ label, error, helperText, showPasswordToggle = false, cl
           inputMode={type === 'email' ? 'email' : props.inputMode}
           style={{
             width: '100%',
-            padding: `${spacing[3]} ${showPasswordToggle && isPassword ? spacing[12] : spacing[4]} ${spacing[3]} ${spacing[4]}`,
+            paddingTop: button.paddingY,
+            paddingBottom: button.paddingY,
+            paddingLeft: button.paddingX,
+            paddingRight: showPasswordToggle && isPassword ? spacing[12] : button.paddingX,
+            minHeight: button.minHeight, // 48px igual a los botones
             fontSize: typography.fontSize.base,
             fontWeight: typography.fontWeight.normal,
             color: colors.semantic.text.primary,
