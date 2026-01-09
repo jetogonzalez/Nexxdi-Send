@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { spacing, borderRadius, bottomNavigation } from '../../config/design-tokens';
+import { colors, spacing, typography, liquidGlass, borderRadius, bottomNavigation } from '../../config/design-tokens';
 import { motion } from '../../lib/motion';
 import { LiquidGlassButtonBar } from '../ui/LiquidGlassButtonBar';
 import { WalletIcon } from './icons/WalletIcon';
@@ -82,6 +82,8 @@ export function BottomNavigation({ activeTab, onTabChange }: BottomNavigationPro
           const needsExtraPadding = tab.id === 'contacto' || tab.id === 'tarjeta';
           // Contactos necesita 1px más de padding que SendCard
           const isContactos = tab.id === 'contacto';
+          // SendCard y Contactos necesitan ser más anchos
+          const needsExtraWidth = tab.id === 'contacto' || tab.id === 'tarjeta';
           return (
             <button
               key={tab.id}
@@ -93,18 +95,18 @@ export function BottomNavigation({ activeTab, onTabChange }: BottomNavigationPro
                 flexDirection: 'column',
                 alignItems: 'center',
                 justifyContent: 'center',
-                gap: bottomNavigation.spacing.gap, // Tokenizado
-                paddingTop: isContactos ? spacing[2] : bottomNavigation.spacing.itemPaddingY, // 8px para Contactos, 4px para otros
-                paddingBottom: isContactos ? spacing[2] : bottomNavigation.spacing.itemPaddingY, // 8px para Contactos, 4px para otros
-                paddingLeft: isContactos ? spacing[1] : needsExtraPadding ? spacing[0.5] : 0, // 4px para Contactos, 2px para SendCard
-                paddingRight: isContactos ? spacing[1] : needsExtraPadding ? spacing[0.5] : 0, // 4px para Contactos, 2px para SendCard
-                backgroundColor: 'transparent', // El fondo se maneja con el elemento animado
-                borderRadius: borderRadius.full, // Full rounded según Figma
+                gap: bottomNavigation.spacing.gap,
+                paddingTop: isContactos ? spacing[2] : bottomNavigation.spacing.itemPaddingY,
+                paddingBottom: isContactos ? spacing[2] : bottomNavigation.spacing.itemPaddingY,
+                paddingLeft: isContactos ? spacing[1] : needsExtraPadding ? spacing[0.5] : 0,
+                paddingRight: isContactos ? spacing[1] : needsExtraPadding ? spacing[0.5] : 0,
+                backgroundColor: 'transparent',
+                borderRadius: borderRadius.full,
                 border: 'none',
                 cursor: 'pointer',
-                flex: 1, // Distribuir espacio equitativamente
-                minHeight: spacing[12], // 48px mínimo táctil
-                margin: '0', // Sin margin para que no se mueva
+                flex: needsExtraWidth ? 1.2 : 1,
+                minHeight: spacing[12],
+                margin: '0',
                 transition: `background-color ${motion.duration.base} ${motion.easing.easeInOut}`,
               }}
               aria-label={tab.label}
@@ -116,9 +118,9 @@ export function BottomNavigation({ activeTab, onTabChange }: BottomNavigationPro
                   display: 'flex', 
                   alignItems: 'center', 
                   justifyContent: 'center', 
-                  width: bottomNavigation.icon.containerSize, // Tokenizado
-                  height: bottomNavigation.icon.containerSize, // Tokenizado
-                  marginBottom: isContactos ? spacing[0.5] : 0, // 2px de espacio extra debajo del icono para Contactos
+                  width: bottomNavigation.icon.containerSize,
+                  height: bottomNavigation.icon.containerSize,
+                  marginBottom: isContactos ? spacing[0.5] : 0,
                 }}
               >
                 <IconComponent isActive={isActive} size={bottomNavigation.icon.size} />
@@ -127,13 +129,13 @@ export function BottomNavigation({ activeTab, onTabChange }: BottomNavigationPro
                 style={{
                   position: 'relative',
                   zIndex: 1,
-                  fontSize: bottomNavigation.typography.fontSize, // Tokenizado
-                  fontWeight: bottomNavigation.typography.fontWeight, // Tokenizado (bold)
-                  lineHeight: bottomNavigation.typography.lineHeight, // Tokenizado (1.5)
-                  color: isActive ? bottomNavigation.colors.activeText : bottomNavigation.colors.inactiveText, // Colores según Figma
-                  fontFamily: 'Manrope, sans-serif',
-                  marginTop: bottomNavigation.spacing.labelMarginTop, // Tokenizado
-                  whiteSpace: 'nowrap', // Evitar que el texto se divida
+                  fontSize: bottomNavigation.typography.fontSize,
+                  fontWeight: bottomNavigation.typography.fontWeight,
+                  lineHeight: bottomNavigation.typography.lineHeight,
+                  color: isActive ? bottomNavigation.colors.activeText : bottomNavigation.colors.inactiveText,
+                  fontFamily: typography.fontFamily.sans.join(', '),
+                  marginTop: bottomNavigation.spacing.labelMarginTop,
+                  whiteSpace: 'nowrap',
                   transition: `color ${motion.duration.base} ${motion.easing.easeInOut}`,
                 }}
               >

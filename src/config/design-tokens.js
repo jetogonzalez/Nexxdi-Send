@@ -222,8 +222,9 @@ export const button = {
 export const bottomNavigation = {
   typography: {
     fontSize: typography.fontSize.xs, // 12px
-    fontWeight: typography.fontWeight.bold, // 700 (bold según Figma)
+    fontWeight: typography.fontWeight.semibold, // 600 (semibold - un peso menos que bold)
     lineHeight: '1.5', // 18px (1.5 * 12px según Figma)
+    fontFamily: typography.fontFamily.sans.join(', '), // Manrope, sans-serif
   },
   icon: {
     size: 24, // 24px - iconos más pequeños
@@ -239,6 +240,29 @@ export const bottomNavigation = {
     labelMarginTop: '-2px', // Margin negativo pequeño para acercar
     containerPadding: spacing[1], // 4px según Figma
     itemPaddingY: spacing[1], // 4px según Figma
+    itemPaddingYContactos: spacing[2], // 8px para Contactos
+    itemPaddingXContactos: spacing[1], // 4px para Contactos
+    itemPaddingXSendCard: spacing[0.5], // 2px para SendCard
+    iconMarginBottomContactos: spacing[0.5], // 2px debajo del icono para Contactos
+    containerGap: spacing[0], // 0px - sin gap entre tabs
+  },
+  layout: {
+    flexNormal: 1, // Flex normal para items estándar
+    flexWide: 1.2, // Flex más ancho para SendCard y Contactos
+    minHeight: spacing[12], // 48px mínimo táctil
+  },
+  zIndex: {
+    background: 0, // Fondo animado (número, no string)
+    content: 10, // Contenido sobre el fondo (número, no string)
+  },
+  effects: {
+    backgroundTransition: 'left 600ms cubic-bezier(0.16, 1, 0.3, 1), width 600ms cubic-bezier(0.16, 1, 0.3, 1)',
+    colorTransition: 'color 400ms cubic-bezier(0.4, 0, 0.2, 1)',
+    backgroundColorTransition: 'background-color 400ms cubic-bezier(0.4, 0, 0.2, 1)',
+  },
+  borders: {
+    none: '0', // Sin borde
+    radius: borderRadius.full, // Full rounded
   },
 };
 

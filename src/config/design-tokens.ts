@@ -276,8 +276,9 @@ export const bottomNavigation = {
   // Tipografía
   typography: {
     fontSize: typography.fontSize.xs, // 12px
-    fontWeight: typography.fontWeight.bold, // 700 (bold según Figma)
+    fontWeight: typography.fontWeight.semibold, // 600 (semibold - un peso menos que bold)
     lineHeight: '1.5', // 18px (1.5 * 12px según Figma)
+    fontFamily: typography.fontFamily.sans.join(', '), // Manrope, sans-serif
   },
   // Iconos
   icon: {
@@ -296,6 +297,33 @@ export const bottomNavigation = {
     labelMarginTop: '-2px', // Margin negativo pequeño para acercar
     containerPadding: spacing[1], // 4px según Figma
     itemPaddingY: spacing[1], // 4px según Figma
+    itemPaddingYContactos: spacing[2], // 8px para Contactos
+    itemPaddingXContactos: spacing[1], // 4px para Contactos
+    itemPaddingXSendCard: spacing[0.5], // 2px para SendCard
+    iconMarginBottomContactos: spacing[0.5], // 2px debajo del icono para Contactos
+    containerGap: spacing[0], // 0px - sin gap entre tabs
+  },
+  // Layout
+  layout: {
+    flexNormal: 1, // Flex normal para items estándar
+    flexWide: 1.2, // Flex más ancho para SendCard y Contactos
+    minHeight: spacing[12], // 48px mínimo táctil
+  },
+  // Z-Index
+  zIndex: {
+    background: 0, // Fondo animado (número, no string)
+    content: 10, // Contenido sobre el fondo (número, no string)
+  },
+  // Efectos
+  effects: {
+    backgroundTransition: `left ${motion.duration.medium} ${motion.easing.smoothOut}, width ${motion.duration.medium} ${motion.easing.smoothOut}`,
+    colorTransition: `color ${motion.duration.base} ${motion.easing.easeInOut}`,
+    backgroundColorTransition: `background-color ${motion.duration.base} ${motion.easing.easeInOut}`,
+  },
+  // Bordes
+  borders: {
+    none: borderWidth[0], // Sin borde
+    radius: borderRadius.full, // Full rounded
   },
 } as const;
 
