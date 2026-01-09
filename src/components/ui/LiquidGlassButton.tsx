@@ -28,9 +28,9 @@ export function LiquidGlassButton({
         width: `${size}px`,
         height: `${size}px`,
         borderRadius: shape === 'circle' ? borderRadius.full : borderRadius['2xl'],
-        backgroundColor: liquidGlass.background.lightTranslucent,
-        backdropFilter: `${liquidGlass.blur.lg} ${liquidGlass.saturation.normal}`,
-        WebkitBackdropFilter: `${liquidGlass.blur.lg} ${liquidGlass.saturation.normal}`,
+        backgroundColor: 'rgba(16, 24, 40, 0.08)', // Fondo del color del texto con 8% de opacidad (#101828)
+        backdropFilter: liquidGlass.blur.lg,
+        WebkitBackdropFilter: liquidGlass.blur.lg,
         border: `0.5px solid ${liquidGlass.border.light}`,
         display: 'flex',
         alignItems: 'center',
@@ -40,30 +40,30 @@ export function LiquidGlassButton({
         transition: `background-color ${motion.duration.base} ${motion.easing.easeInOut}, transform ${motion.duration.base} ${motion.easing.easeInOut}, opacity ${motion.duration.base} ${motion.easing.easeInOut}`,
       }}
       onMouseEnter={(e) => {
-        e.currentTarget.style.backgroundColor = liquidGlass.background.light;
+        e.currentTarget.style.backgroundColor = 'rgba(16, 24, 40, 0.15)';
         e.currentTarget.style.transform = 'scale(1.05)';
         e.currentTarget.style.opacity = '0.9';
       }}
       onMouseLeave={(e) => {
-        e.currentTarget.style.backgroundColor = liquidGlass.background.lightTranslucent;
+        e.currentTarget.style.backgroundColor = 'rgba(16, 24, 40, 0.08)';
         e.currentTarget.style.transform = 'scale(1)';
         e.currentTarget.style.opacity = '1';
       }}
       onTouchStart={(e) => {
-        e.currentTarget.style.backgroundColor = liquidGlass.background.light;
+        e.currentTarget.style.backgroundColor = 'rgba(16, 24, 40, 0.15)';
         e.currentTarget.style.transform = 'scale(0.95)';
       }}
       onTouchEnd={(e) => {
-        e.currentTarget.style.backgroundColor = liquidGlass.background.lightTranslucent;
+        e.currentTarget.style.backgroundColor = 'rgba(16, 24, 40, 0.08)';
         e.currentTarget.style.transform = 'scale(1)';
       }}
     >
       {children}
       <style>{`
-        @supports (backdrop-filter: blur(30px)) {
+        @supports (backdrop-filter: blur(32px)) {
           button {
-            backdrop-filter: ${liquidGlass.blur.lg} ${liquidGlass.saturation.normal};
-            -webkit-backdrop-filter: ${liquidGlass.blur.lg} ${liquidGlass.saturation.normal};
+            backdrop-filter: ${liquidGlass.blur.lg};
+            -webkit-backdrop-filter: ${liquidGlass.blur.lg};
           }
         }
       `}</style>
