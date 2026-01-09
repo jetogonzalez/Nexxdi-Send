@@ -35,6 +35,7 @@ export function SavePasswordModal({ isOpen, onSave, onSkip }: SavePasswordModalP
 
   // Drag handlers para expandir/colapsar y cerrar
   const handleTouchStart = (e: React.TouchEvent) => {
+    e.preventDefault(); // Prevenir scroll mientras se arrastra
     setIsDragging(true);
     startYRef.current = e.touches[0].clientY;
     setDragY(0);
@@ -42,13 +43,15 @@ export function SavePasswordModal({ isOpen, onSave, onSkip }: SavePasswordModalP
 
   const handleTouchMove = (e: React.TouchEvent) => {
     if (!isDragging) return;
+    e.preventDefault(); // Prevenir scroll mientras se arrastra
     const currentY = e.touches[0].clientY;
     const deltaY = currentY - startYRef.current;
     setDragY(deltaY);
   };
 
-  const handleTouchEnd = () => {
+  const handleTouchEnd = (e: React.TouchEvent) => {
     if (!isDragging) return;
+    e.preventDefault();
     
     const threshold = 100; // Umbral para cerrar
     
@@ -136,16 +139,18 @@ export function SavePasswordModal({ isOpen, onSave, onSkip }: SavePasswordModalP
           willChange: isDragging ? 'height' : 'auto',
         }}
       >
-        {/* Drag Handle */}
+        {/* Drag Handle - Área táctil aumentada para móviles */}
         <div
           style={{
             display: 'flex',
             justifyContent: 'center',
             alignItems: 'center',
-            paddingTop: spacing[3],
-            paddingBottom: spacing[4],
+            paddingTop: spacing[6], // Más espacio arriba (24px)
+            paddingBottom: spacing[8], // Más espacio abajo para área táctil más grande (32px)
             cursor: 'grab',
             touchAction: 'none',
+            minHeight: spacing[16], // Área táctil mínima de 64px para facilitar el drag en móviles
+            WebkitTapHighlightColor: 'transparent',
           }}
           onTouchStart={handleTouchStart}
           onTouchMove={handleTouchMove}
@@ -157,6 +162,7 @@ export function SavePasswordModal({ isOpen, onSave, onSkip }: SavePasswordModalP
               height: '4px',
               backgroundColor: colors.semantic.text.tertiary,
               borderRadius: borderRadius.full,
+              pointerEvents: 'none', // El área táctil está en el contenedor padre
             }}
           />
         </div>

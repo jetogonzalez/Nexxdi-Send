@@ -60,14 +60,14 @@ export const colors = {
   buttonPrimary: '#101828',
   buttonSecondary: 'rgba(0, 0, 0, 0.05)',
   
-  // Colores primarios
-  primary: {
+  // Colores primarios (escala numérica - usar primary.main para el color principal)
+  primaryScale: {
     50: '#f0f9ff',
     100: '#e0f2fe',
     200: '#bae6fd',
     300: '#7dd3fc',
     400: '#38bdf8',
-    500: '#0ea5e9', // Color principal
+    500: '#0ea5e9',
     600: '#0284c7',
     700: '#0369a1',
     800: '#075985',
@@ -365,7 +365,7 @@ export const theme = {
   light: {
     background: colors.white,
     foreground: colors.gray[900],
-    primary: colors.primary[500],
+    primary: colors.primaryScale[500],
     secondary: colors.secondary[500],
     muted: colors.gray[100],
     border: colors.gray[200],
@@ -373,7 +373,7 @@ export const theme = {
   dark: {
     background: colors.gray[900],
     foreground: colors.white,
-    primary: colors.primary[400],
+    primary: colors.primaryScale[400],
     secondary: colors.secondary[400],
     muted: colors.gray[800],
     border: colors.gray[700],

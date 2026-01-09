@@ -1,42 +1,44 @@
-import { colors, spacing, typography } from '../../config/design-tokens';
+import { useState } from 'react';
+import { BottomNavigation } from './BottomNavigation';
+import { WalletView } from './WalletView';
+import { TarjetaView } from './TarjetaView';
+import { EnviarView } from './EnviarView';
+import { ContactoView } from './ContactoView';
+import { MasView } from './MasView';
+import { colors } from '../../config/design-tokens';
 
 export default function HomePage() {
+  const [activeTab, setActiveTab] = useState('wallet');
+
+  const renderContent = () => {
+    switch (activeTab) {
+      case 'wallet':
+        return <WalletView />;
+      case 'tarjeta':
+        return <TarjetaView />;
+      case 'enviar':
+        return <EnviarView />;
+      case 'contacto':
+        return <ContactoView />;
+      case 'mas':
+        return <MasView />;
+      default:
+        return <WalletView />;
+    }
+  };
+
   return (
     <div
       style={{
         minHeight: '100vh',
-        backgroundColor: '#1a1f3a', // Azul marino
+        backgroundColor: colors.semantic.background.main,
         display: 'flex',
         flexDirection: 'column',
-        alignItems: 'center',
-        justifyContent: 'center',
-        padding: spacing[5],
+        paddingBottom: 'calc(100px + env(safe-area-inset-bottom))', // Espacio para la navegación inferior con glass effect
       }}
     >
-      <h1
-        style={{
-          fontSize: typography.fontSize['4xl'],
-          fontWeight: typography.fontWeight.bold,
-          color: colors.semantic.background.white,
-          fontFamily: typography.fontFamily.sans.join(', '),
-          textAlign: 'center',
-          marginBottom: spacing[4],
-        }}
-      >
-        Home
-      </h1>
-      <p
-        style={{
-          fontSize: typography.fontSize.base,
-          fontWeight: typography.fontWeight.normal,
-          color: colors.semantic.background.white,
-          fontFamily: typography.fontFamily.sans.join(', '),
-          textAlign: 'center',
-          opacity: 0.8,
-        }}
-      >
-        Has accedido exitosamente
-      </p>
+      {renderContent()}
+      <BottomNavigation activeTab={activeTab} onTabChange={setActiveTab} />
     </div>
   );
 }
