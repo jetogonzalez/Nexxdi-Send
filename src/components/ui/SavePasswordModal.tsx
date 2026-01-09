@@ -8,8 +8,11 @@ interface SavePasswordModalProps {
   onSkip: () => void;
 }
 
+type SheetState = 'collapsed' | 'expanded';
+
 export function SavePasswordModal({ isOpen, onSave, onSkip }: SavePasswordModalProps) {
   const [isVisible, setIsVisible] = useState(false);
+  const [sheetState, setSheetState] = useState<SheetState>('collapsed');
   const [dragY, setDragY] = useState(0);
   const [isDragging, setIsDragging] = useState(false);
   const startYRef = useRef(0);
@@ -18,6 +21,7 @@ export function SavePasswordModal({ isOpen, onSave, onSkip }: SavePasswordModalP
   useEffect(() => {
     if (isOpen) {
       setIsVisible(true);
+      setSheetState('collapsed');
       document.body.style.overflow = 'hidden';
     } else {
       const timer = setTimeout(() => setIsVisible(false), parseInt(motion.duration.slow.replace('ms', '')));
@@ -29,33 +33,59 @@ export function SavePasswordModal({ isOpen, onSave, onSkip }: SavePasswordModalP
     };
   }, [isOpen]);
 
-  // Drag handlers para cerrar deslizando hacia abajo
+  // Drag handlers para expandir/colapsar y cerrar
   const handleTouchStart = (e: React.TouchEvent) => {
     setIsDragging(true);
     startYRef.current = e.touches[0].clientY;
+    setDragY(0);
   };
 
   const handleTouchMove = (e: React.TouchEvent) => {
     if (!isDragging) return;
     const currentY = e.touches[0].clientY;
     const deltaY = currentY - startYRef.current;
-    
-    // Solo permitir arrastrar hacia abajo
-    if (deltaY > 0) {
-      setDragY(deltaY);
-    }
+    setDragY(deltaY);
   };
 
   const handleTouchEnd = () => {
     if (!isDragging) return;
     
-    // Si se arrastró más de 100px hacia abajo, cerrar
-    if (dragY > 100) {
+    const threshold = 100; // Umbral para cerrar
+    
+    // Si se arrastra hacia abajo más del umbral, cerrar
+    if (dragY > threshold) {
       onSkip();
+    } else {
+      // Siempre volver al tamaño original (colapsado) cuando se suelta
+      setSheetState('collapsed');
     }
     
     setIsDragging(false);
     setDragY(0);
+  };
+
+  // Calcular altura del sheet basado en el estado y el drag
+  const getSheetHeight = () => {
+    if (typeof window === 'undefined') return '30vh';
+    
+    const viewportHeight = window.innerHeight;
+    const collapsedHeight = viewportHeight * 0.3; // Altura original colapsada
+    const maxExpandHeight = viewportHeight * 0.6; // Máximo 60% al arrastrar (no hasta arriba)
+    
+    if (isDragging && dragY < 0) {
+      // Arrastrando hacia arriba: expandir temporalmente pero limitado
+      const dragProgress = Math.min(Math.abs(dragY) / 300, 1); // Normalizar a 300px de drag máximo
+      const currentHeight = collapsedHeight + (maxExpandHeight - collapsedHeight) * dragProgress;
+      return `${currentHeight}px`;
+    } else if (isDragging && dragY > 0) {
+      // Arrastrando hacia abajo: reducir altura pero mantener mínimo
+      const dragProgress = Math.min(dragY / 200, 1);
+      const currentHeight = Math.max(collapsedHeight - (dragProgress * 50), collapsedHeight * 0.5);
+      return `${currentHeight}px`;
+    }
+    
+    // Estado normal: siempre colapsado
+    return '30vh';
   };
 
   if (!isVisible && !isOpen) return null;
@@ -89,24 +119,22 @@ export function SavePasswordModal({ isOpen, onSave, onSkip }: SavePasswordModalP
           backgroundColor: colors.semantic.background.white,
           borderTopLeftRadius: borderRadius['2xl'],
           borderTopRightRadius: borderRadius['2xl'],
-          paddingBottom: `calc(${spacing[6]} + env(safe-area-inset-bottom))`,
+          paddingBottom: `calc(${spacing[8]} + env(safe-area-inset-bottom))`, // Más espacio de área segura
           zIndex: 2001,
-          maxHeight: '90vh',
+          height: isDragging ? getSheetHeight() : 'auto', // Auto cuando no se arrastra, altura calculada cuando se arrastra
           minHeight: '30vh',
-          transform: isOpen 
-            ? `translateY(${Math.max(0, -dragY)}px)` 
-            : 'translateY(100%)',
+          maxHeight: '90vh', // Máximo 90% para permitir más contenido
+          transform: isOpen ? 'translateY(0)' : 'translateY(100%)',
           transition: isDragging 
             ? 'none' 
-            : `transform ${motion.duration.slow} ${motion.easing.smoothOut}`,
+            : `transform ${motion.duration.slow} ${motion.easing.smoothOut}, height ${motion.duration.slow} ${motion.easing.smoothOut}`,
           boxShadow: '0 -4px 20px rgba(0, 0, 0, 0.15)',
           display: 'flex',
           flexDirection: 'column',
           touchAction: 'pan-y',
+          overflow: isDragging ? 'hidden' : 'visible', // Visible cuando no se arrastra para mostrar todo el contenido
+          willChange: isDragging ? 'height' : 'auto',
         }}
-        onTouchStart={handleTouchStart}
-        onTouchMove={handleTouchMove}
-        onTouchEnd={handleTouchEnd}
       >
         {/* Drag Handle */}
         <div
@@ -115,9 +143,13 @@ export function SavePasswordModal({ isOpen, onSave, onSkip }: SavePasswordModalP
             justifyContent: 'center',
             alignItems: 'center',
             paddingTop: spacing[3],
-            paddingBottom: spacing[2],
+            paddingBottom: spacing[4],
             cursor: 'grab',
+            touchAction: 'none',
           }}
+          onTouchStart={handleTouchStart}
+          onTouchMove={handleTouchMove}
+          onTouchEnd={handleTouchEnd}
         >
           <div
             style={{
@@ -137,16 +169,18 @@ export function SavePasswordModal({ isOpen, onSave, onSkip }: SavePasswordModalP
             justifyContent: 'space-between',
             paddingLeft: spacing[5],
             paddingRight: spacing[5],
-            paddingBottom: spacing[4],
+            paddingBottom: spacing[6],
+            flexShrink: 0,
           }}
         >
           <h2
             style={{
-              fontSize: typography.fontSize.xl,
+              fontSize: typography.fontSize['2xl'], // Más grande para mejor jerarquía
               fontWeight: typography.fontWeight.bold,
               color: colors.semantic.text.primary,
               fontFamily: typography.fontFamily.sans.join(', '),
               margin: 0,
+              lineHeight: typography.lineHeight.tight,
             }}
           >
             ¿Guardar contraseña?
@@ -155,22 +189,24 @@ export function SavePasswordModal({ isOpen, onSave, onSkip }: SavePasswordModalP
             onClick={onSkip}
             type="button"
             style={{
-              width: spacing[12], // 48px
-              height: spacing[12], // 48px
-              borderRadius: borderRadius.full,
-              backgroundColor: 'transparent',
+              width: '44px', // Tamaño mínimo táctil iOS
+              height: '44px', // Tamaño mínimo táctil iOS
+              borderRadius: '50%',
+              backgroundColor: colors.semantic.button.secondary, // Fondo gris claro como en LoginPage
               border: 'none',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
               cursor: 'pointer',
-              transition: `background-color ${motion.duration.base} ${motion.easing.easeInOut}`,
+              transition: `background-color ${motion.duration.base} ${motion.easing.easeInOut}, transform ${motion.duration.base} ${motion.easing.easeInOut}`,
             }}
             onMouseEnter={(e) => {
-              e.currentTarget.style.backgroundColor = colors.semantic.button.secondary;
+              e.currentTarget.style.backgroundColor = colors.semantic.button.secondaryHover;
+              e.currentTarget.style.transform = 'scale(1.05)';
             }}
             onMouseLeave={(e) => {
-              e.currentTarget.style.backgroundColor = 'transparent';
+              e.currentTarget.style.backgroundColor = colors.semantic.button.secondary;
+              e.currentTarget.style.transform = 'scale(1)';
             }}
             aria-label="Cerrar"
           >
@@ -195,12 +231,13 @@ export function SavePasswordModal({ isOpen, onSave, onSkip }: SavePasswordModalP
         {/* Content Area */}
         <div
           style={{
-            flex: 1,
             paddingLeft: spacing[5],
             paddingRight: spacing[5],
             paddingBottom: spacing[6],
-            overflowY: 'auto',
-            WebkitOverflowScrolling: 'touch',
+            flexShrink: 0, // No encoger, ajustarse al contenido
+            display: 'flex',
+            flexDirection: 'column',
+            justifyContent: 'flex-start',
           }}
         >
           <p
@@ -222,10 +259,11 @@ export function SavePasswordModal({ isOpen, onSave, onSkip }: SavePasswordModalP
           style={{
             paddingLeft: spacing[5],
             paddingRight: spacing[5],
-            paddingTop: spacing[4],
+            paddingTop: spacing[4], // Espacio reducido entre contenido y botones (16px)
             display: 'flex',
             flexDirection: 'column',
             gap: spacing[4], // 16px entre botones
+            flexShrink: 0,
           }}
         >
           <button
@@ -235,7 +273,9 @@ export function SavePasswordModal({ isOpen, onSave, onSkip }: SavePasswordModalP
               width: '100%',
               paddingTop: button.paddingY,
               paddingBottom: button.paddingY,
-              minHeight: button.minHeight, // 48px
+              paddingLeft: button.paddingX,
+              paddingRight: button.paddingX,
+              minHeight: button.heightCompact, // 40px - igual que el botón de inicio de sesión
               fontSize: typography.fontSize.base,
               fontWeight: typography.fontWeight.bold,
               color: colors.semantic.background.white,
@@ -260,24 +300,27 @@ export function SavePasswordModal({ isOpen, onSave, onSkip }: SavePasswordModalP
             type="button"
             style={{
               width: '100%',
-              paddingTop: button.paddingY,
-              paddingBottom: button.paddingY,
-              minHeight: button.minHeight, // 48px
+              paddingTop: button.paddingY, // 12px
+              paddingBottom: button.paddingY, // 12px
+              minHeight: button.minHeight, // 48px - igual que onboarding
               fontSize: typography.fontSize.base,
-              fontWeight: typography.fontWeight.normal,
+              fontWeight: typography.fontWeight.bold, // Bold como en onboarding
               color: colors.semantic.text.primary,
-              backgroundColor: 'transparent',
+              backgroundColor: colors.semantic.button.secondary, // Color con opacidad como onboarding
               borderRadius: borderRadius.full,
               border: 'none',
               cursor: 'pointer',
               fontFamily: typography.fontFamily.sans.join(', '),
-              transition: `opacity ${motion.duration.base} ${motion.easing.easeInOut}`,
+              transition: `background-color ${motion.duration.fast} ${motion.easing.smoothOut}, transform ${motion.duration.fast} ${motion.easing.smoothOut}`,
+              marginBottom: spacing[6], // Área segura estándar después del último botón (24px)
             }}
             onMouseEnter={(e) => {
-              e.currentTarget.style.opacity = '0.7';
+              e.currentTarget.style.backgroundColor = colors.semantic.button.secondaryHover;
+              e.currentTarget.style.transform = 'scale(1.02)';
             }}
             onMouseLeave={(e) => {
-              e.currentTarget.style.opacity = '1';
+              e.currentTarget.style.backgroundColor = colors.semantic.button.secondary;
+              e.currentTarget.style.transform = 'scale(1)';
             }}
           >
             Ahora no
