@@ -82,7 +82,7 @@ export function VirtualCard({
             alignItems: 'center',
             justifyContent: 'space-between',
             position: 'absolute',
-            top: isFront ? `calc(${spacing[6]} + ${spacing[3]})` : `calc(${spacing[1]} + ${spacing[3]})`, // 36px al frente (24px + 12px), 16px detrás (4px + 12px)
+            top: isFront ? spacing[6] : `calc(${spacing[1]} + ${spacing[3]})`, // 24px al frente, 16px detrás (4px + 12px)
             left: spacing[6], // 24px desde el borde izquierdo
             right: spacing[6], // 24px desde el borde derecho
             zIndex: 2,
