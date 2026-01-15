@@ -4,6 +4,7 @@ import { VirtualCard } from './VirtualCard';
 import { CurrencyCard } from './CurrencyCard';
 import { CardDeck } from './CardDeck';
 import { CurrencyChangeCard } from './CurrencyChangeCard';
+import { MovementAvatar } from './MovementAvatar';
 
 interface HomeViewProps {
   titleRef?: (el: HTMLElement | null) => void;
@@ -571,7 +572,7 @@ export function HomeView({ titleRef, scrollProgress = 0, isBalanceVisible = true
             <div
               style={{
                 position: 'absolute',
-                left: `calc(${spacing[10]} + ${spacing[3]})`, // Empieza después del avatar (40px) + gap (12px)
+                left: `calc(34px + ${spacing[3]})`, // Empieza después del avatar (34px) + gap (12px)
                 right: 0, // Termina en el borde derecho (sin padding)
                 bottom: 0,
                 height: '1px',
@@ -579,41 +580,11 @@ export function HomeView({ titleRef, scrollProgress = 0, isBalanceVisible = true
               }}
             />
             {/* Avatar */}
-            <div
-              style={{
-                width: spacing[10], // 40px
-                height: spacing[10], // 40px
-                borderRadius: borderRadius.full,
-                backgroundColor: colors.semantic.background.tabButtonActive, // Fondo gris claro
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                flexShrink: 0,
-                marginRight: spacing[3], // 12px de espacio a la derecha
-                position: 'relative',
-              }}
-            >
-              {/* Badge pequeño en la esquina */}
-              <div
-                style={{
-                  position: 'absolute',
-                  bottom: 0,
-                  right: 0,
-                  width: spacing[4], // 16px
-                  height: spacing[4], // 16px
-                  borderRadius: borderRadius.full,
-                  backgroundColor: colors.semantic.background.tabButtonActive,
-                  border: `2px solid ${colors.semantic.background.white}`,
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                }}
-              >
-                <span style={{ fontSize: '10px', color: colors.semantic.text.primary }}>+</span>
-              </div>
-              {/* Logo/Icono de Amazon - placeholder */}
-              <span style={{ fontSize: '20px', color: colors.semantic.text.primary }}>A</span>
-            </div>
+            <MovementAvatar
+              logoUrl="/img/icons/logos/logo-local-amazon.svg"
+              badgeIconUrl="/img/icons/global/card-buy.svg"
+              size={34}
+            />
             
             {/* Información del movimiento */}
             <div
@@ -670,7 +641,7 @@ export function HomeView({ titleRef, scrollProgress = 0, isBalanceVisible = true
                 alignSelf: 'flex-start', // Alinear al inicio para coincidir con el nombre
               }}
             >
-              - 340 USD
+              {isBalanceVisible ? '- 340 USD' : '•••'}
             </div>
           </div>
           
@@ -690,7 +661,7 @@ export function HomeView({ titleRef, scrollProgress = 0, isBalanceVisible = true
             <div
               style={{
                 position: 'absolute',
-                left: `calc(${spacing[10]} + ${spacing[3]})`, // Empieza después del avatar (40px) + gap (12px)
+                left: `calc(34px + ${spacing[3]})`, // Empieza después del avatar (34px) + gap (12px)
                 right: 0, // Termina en el borde derecho (sin padding)
                 bottom: 0,
                 height: '1px',
@@ -698,41 +669,11 @@ export function HomeView({ titleRef, scrollProgress = 0, isBalanceVisible = true
               }}
             />
             {/* Avatar */}
-            <div
-              style={{
-                width: spacing[10], // 40px
-                height: spacing[10], // 40px
-                borderRadius: borderRadius.full,
-                backgroundColor: colors.semantic.background.tabButtonActive,
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                flexShrink: 0,
-                marginRight: spacing[3], // 12px de espacio a la derecha
-                position: 'relative',
-              }}
-            >
-              {/* Badge pequeño en la esquina */}
-              <div
-                style={{
-                  position: 'absolute',
-                  bottom: 0,
-                  right: 0,
-                  width: spacing[4], // 16px
-                  height: spacing[4], // 16px
-                  borderRadius: borderRadius.full,
-                  backgroundColor: colors.semantic.background.tabButtonActive,
-                  border: `2px solid ${colors.semantic.background.white}`,
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                }}
-              >
-                <span style={{ fontSize: '10px', color: colors.semantic.text.primary }}>+</span>
-              </div>
-              {/* Logo Citi - placeholder */}
-              <span style={{ fontSize: '16px', color: '#0064D2', fontWeight: typography.fontWeight.bold }}>citi</span>
-            </div>
+            <MovementAvatar
+              logoUrl="/img/icons/logos/logo-bank-us-citybank.svg"
+              badgeIconUrl="/img/icons/global/add-balance.svg"
+              size={34}
+            />
             
             {/* Información del movimiento */}
             <div
@@ -786,7 +727,7 @@ export function HomeView({ titleRef, scrollProgress = 0, isBalanceVisible = true
                 textAlign: 'right',
               }}
             >
-              + 1.200 USD
+              {isBalanceVisible ? '+ 1.200 USD' : '•••'}
             </div>
           </div>
           
@@ -802,57 +743,13 @@ export function HomeView({ titleRef, scrollProgress = 0, isBalanceVisible = true
             }}
           >
             {/* Avatar */}
-            <div
-              style={{
-                width: spacing[10], // 40px
-                height: spacing[10], // 40px
-                borderRadius: borderRadius.full,
-                backgroundColor: colors.semantic.background.tabButtonActive,
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                flexShrink: 0,
-                marginRight: spacing[3], // 12px de espacio a la derecha
-                position: 'relative',
-                overflow: 'hidden',
-              }}
-            >
-              {/* Badge pequeño en la esquina con icono de avión */}
-              <div
-                style={{
-                  position: 'absolute',
-                  bottom: 0,
-                  right: 0,
-                  width: spacing[4], // 16px
-                  height: spacing[4], // 16px
-                  borderRadius: borderRadius.full,
-                  backgroundColor: colors.semantic.background.white,
-                  border: `1px solid ${colors.semantic.border.light}`,
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                }}
-              >
-                <svg width="10" height="10" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <path d="M2 22L22 2M22 2H16M22 2V8" stroke={colors.semantic.text.primary} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                </svg>
-              </div>
-              {/* Avatar con imagen - placeholder */}
-              <div
-                style={{
-                  width: '100%',
-                  height: '100%',
-                  borderRadius: borderRadius.full,
-                  backgroundColor: colors.semantic.background.tabButtonActive,
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  fontSize: '20px',
-                }}
-              >
-                👤
-              </div>
-            </div>
+            <MovementAvatar
+              contactName="Sandra Zuluaga"
+              imageUrl="/img/user/sandra-zuluaga.png"
+              badgeIconUrl="/img/icons/global/arrow-up-right.svg"
+              badgeStyle="light"
+              size={34}
+            />
             
             {/* Información del movimiento */}
             <div
@@ -876,7 +773,7 @@ export function HomeView({ titleRef, scrollProgress = 0, isBalanceVisible = true
                   width: '100%',
                 }}
               >
-                Dinero enviado
+                Dinero enviado a Sandra
               </div>
               
               {/* Fecha y hora */}
@@ -906,7 +803,7 @@ export function HomeView({ titleRef, scrollProgress = 0, isBalanceVisible = true
                 textAlign: 'right',
               }}
             >
-              - 80 USD
+              {isBalanceVisible ? '- 80 USD' : '•••'}
             </div>
           </div>
         </div>
