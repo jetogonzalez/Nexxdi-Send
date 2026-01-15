@@ -80,8 +80,8 @@ export function CurrencyCard({
         position: 'relative',
         overflow: 'hidden',
         boxSizing: 'border-box',
-        // Borde muy fino y suave de 1px para mejor diferenciación de las tarjetas de currency
-        border: `1px solid rgba(0, 0, 0, 0.05)`,
+        // Borde más visible de 1px para mejor diferenciación de las tarjetas de currency
+        border: `1px solid rgba(0, 0, 0, 0.10)`, // Opacidad del 10% para mejor visibilidad
       }}
       role="img"
       aria-label={`Card de ${currencyName || currency}`}

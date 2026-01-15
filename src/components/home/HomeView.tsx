@@ -741,7 +741,7 @@ export function HomeView({ titleRef, scrollProgress = 0, isBalanceVisible = true
               paddingLeft: 0, // Sin padding horizontal izquierdo
               paddingRight: 0, // Sin padding horizontal derecho
             }}
-          >
+            >
             {/* Avatar */}
             <MovementAvatar
               contactName="Sandra Zuluaga"

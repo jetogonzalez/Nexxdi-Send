@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useLayoutEffect } from 'react';
 import type { ReactNode } from 'react';
 import { spacing, colors } from '../../config/design-tokens';
 
@@ -77,6 +77,8 @@ export function CardDeck({ children, onCardChange }: CardDeckProps) {
   const dyVisualRef = useRef(0);
   const rafPendingRef = useRef(false);
   const pendingYRef = useRef(0);
+  const isDragStartedRef = useRef(false); // Para detectar si el drag realmente comenzó
+  const initialMoveThreshold = 1; // Umbral mínimo de movimiento para activar drag (1px - más sensible)
 
   // Funciones helper
   const clamp = (v: number, a: number, b: number) => Math.max(a, Math.min(b, v));
@@ -350,14 +352,16 @@ export function CardDeck({ children, onCardChange }: CardDeckProps) {
     
     if (!clickedOnFront) return;
 
-    // Prevenir scroll del body
-    preventBodyScroll(true);
-
-    draggingRef.current = true;
+    // Inicializar estado del drag (pero no activar todavía)
     startYRef.current = e.clientY;
     lastYRef.current = e.clientY;
     lastTRef.current = performance.now();
     velocityYRef.current = 0;
+    dyRawRef.current = 0;
+    isDragStartedRef.current = false;
+
+    // Prevenir scroll del body inmediatamente
+    preventBodyScroll(true);
 
     if (deckRef.current.setPointerCapture) {
       deckRef.current.setPointerCapture(e.pointerId);
@@ -365,12 +369,31 @@ export function CardDeck({ children, onCardChange }: CardDeckProps) {
   };
 
   const handlePointerMove = (e: React.PointerEvent) => {
+    // Calcular movimiento desde el inicio
+    const dy = e.clientY - startYRef.current;
+    
+    // Si el drag no ha comenzado todavía, verificar si superamos el umbral
+    if (!isDragStartedRef.current) {
+      if (Math.abs(dy) >= initialMoveThreshold) {
+        // Activar el drag solo cuando hay movimiento suficiente
+        isDragStartedRef.current = true;
+        draggingRef.current = true;
+        // Prevenir scroll inmediatamente cuando se activa el drag
+        e.preventDefault();
+        e.stopPropagation();
+      } else {
+        // Aún no hay suficiente movimiento, no hacer nada
+        return;
+      }
+    }
+
     if (!draggingRef.current) return;
 
     // Prevenir scroll durante el drag
     e.preventDefault();
+    e.stopPropagation();
 
-    dyRawRef.current = e.clientY - startYRef.current;
+    dyRawRef.current = dy;
 
     const now = performance.now();
     const dt = now - lastTRef.current;
@@ -384,12 +407,18 @@ export function CardDeck({ children, onCardChange }: CardDeckProps) {
   };
 
   const handlePointerUp = () => {
-    if (!draggingRef.current) return;
-    
-    // Restaurar scroll del body
+    // Restaurar scroll del body siempre
     preventBodyScroll(false);
     
+    // Solo procesar si el drag realmente comenzó
+    if (!isDragStartedRef.current || !draggingRef.current) {
+      draggingRef.current = false;
+      isDragStartedRef.current = false;
+      return;
+    }
+    
     draggingRef.current = false;
+    isDragStartedRef.current = false;
 
     const yCommit = dyRawRef.current < 0 ? dyVisualRef.current : softDown(dyRawRef.current);
     const commit =
@@ -407,18 +436,37 @@ export function CardDeck({ children, onCardChange }: CardDeckProps) {
     preventBodyScroll(false);
     
     draggingRef.current = false;
+    isDragStartedRef.current = false;
     layout(true);
   };
 
   // Event listeners globales para touch en móviles
   useEffect(() => {
     const handleGlobalPointerMove = (e: PointerEvent) => {
+      // Calcular movimiento desde el inicio
+      const dy = e.clientY - startYRef.current;
+      
+      // Si el drag no ha comenzado todavía, verificar si superamos el umbral
+      if (!isDragStartedRef.current) {
+        if (Math.abs(dy) >= initialMoveThreshold) {
+          // Activar el drag solo cuando hay movimiento suficiente
+          isDragStartedRef.current = true;
+          draggingRef.current = true;
+          // Prevenir scroll inmediatamente cuando se activa el drag
+          e.preventDefault();
+          e.stopPropagation();
+        } else {
+          // Aún no hay suficiente movimiento, no hacer nada
+          return;
+        }
+      }
+
       if (!draggingRef.current) return;
       
       // Prevenir scroll durante el drag
       e.preventDefault();
+      e.stopPropagation();
       
-      const dy = e.clientY - startYRef.current;
       dyRawRef.current = dy;
 
       const now = performance.now();
@@ -433,42 +481,66 @@ export function CardDeck({ children, onCardChange }: CardDeckProps) {
     };
 
     const handleGlobalPointerUp = (e: PointerEvent) => {
-      if (draggingRef.current) {
-        preventBodyScroll(false);
+      // Restaurar scroll del body siempre
+      preventBodyScroll(false);
+      
+      // Solo procesar si el drag realmente comenzó
+      if (!isDragStartedRef.current || !draggingRef.current) {
         draggingRef.current = false;
-
-        const yCommit = dyRawRef.current < 0 ? dyVisualRef.current : softDown(dyRawRef.current);
-        const commit =
-          Math.abs(yCommit) > threshold() || Math.abs(velocityYRef.current) > VELOCITY_COMMIT;
-
-        if (!commit) {
-          layout(true);
-          return;
-        }
-        animateCommit(dyRawRef.current < 0, dyRawRef.current);
+        isDragStartedRef.current = false;
+        return;
       }
+      
+      draggingRef.current = false;
+      isDragStartedRef.current = false;
+
+      const yCommit = dyRawRef.current < 0 ? dyVisualRef.current : softDown(dyRawRef.current);
+      const commit =
+        Math.abs(yCommit) > threshold() || Math.abs(velocityYRef.current) > VELOCITY_COMMIT;
+
+      if (!commit) {
+        layout(true);
+        return;
+      }
+      animateCommit(dyRawRef.current < 0, dyRawRef.current);
     };
 
     const handleGlobalTouchMove = (e: TouchEvent) => {
+      if (e.touches.length !== 1) return;
+      
+      const touch = e.touches[0];
+      const dy = touch.clientY - startYRef.current;
+      
+      // Si el drag no ha comenzado todavía, verificar si superamos el umbral
+      if (!isDragStartedRef.current) {
+        if (Math.abs(dy) >= initialMoveThreshold) {
+          // Activar el drag solo cuando hay movimiento suficiente
+          isDragStartedRef.current = true;
+          draggingRef.current = true;
+          // Prevenir scroll inmediatamente cuando se activa el drag
+          e.preventDefault();
+          e.stopPropagation();
+        } else {
+          // Aún no hay suficiente movimiento, permitir scroll normal
+          return;
+        }
+      }
+
       if (draggingRef.current) {
         e.preventDefault(); // Prevenir scroll durante drag
         e.stopPropagation(); // Evitar que el evento se propague
         
-        if (e.touches.length === 1) {
-          const touch = e.touches[0];
-          const dy = touch.clientY - startYRef.current;
-          dyRawRef.current = dy;
+        dyRawRef.current = dy;
 
-          const now = performance.now();
-          const dt = now - lastTRef.current;
-          if (dt > 0) {
-            velocityYRef.current = ((touch.clientY - lastYRef.current) / dt) * 1000;
-            lastYRef.current = touch.clientY;
-            lastTRef.current = now;
-          }
-
-          dragTransform(dy);
+        const now = performance.now();
+        const dt = now - lastTRef.current;
+        if (dt > 0) {
+          velocityYRef.current = ((touch.clientY - lastYRef.current) / dt) * 1000;
+          lastYRef.current = touch.clientY;
+          lastTRef.current = now;
         }
+
+        dragTransform(dy);
       }
     };
 
@@ -489,41 +561,52 @@ export function CardDeck({ children, onCardChange }: CardDeckProps) {
       const clickedOnFront = front.contains(target) || front === target;
       
       if (clickedOnFront && e.touches.length === 1) {
-        e.preventDefault(); // Prevenir scroll inmediatamente
-        preventBodyScroll(true);
-        draggingRef.current = true;
         const touch = e.touches[0];
+        
+        // Inicializar estado del drag (pero no activar todavía)
         startYRef.current = touch.clientY;
         lastYRef.current = touch.clientY;
         lastTRef.current = performance.now();
         velocityYRef.current = 0;
+        dyRawRef.current = 0;
+        isDragStartedRef.current = false;
+        
+        // Prevenir scroll del body inmediatamente
+        preventBodyScroll(true);
       }
     };
 
     const handleGlobalTouchEnd = (e: TouchEvent) => {
-      if (draggingRef.current) {
-        e.preventDefault();
-        preventBodyScroll(false);
+      // Restaurar scroll del body siempre
+      preventBodyScroll(false);
+      
+      // Solo procesar si el drag realmente comenzó
+      if (!isDragStartedRef.current || !draggingRef.current) {
         draggingRef.current = false;
-
-        const yCommit = dyRawRef.current < 0 ? dyVisualRef.current : softDown(dyRawRef.current);
-        const commit =
-          Math.abs(yCommit) > threshold() || Math.abs(velocityYRef.current) > VELOCITY_COMMIT;
-
-        if (!commit) {
-          layout(true);
-          return;
-        }
-        animateCommit(dyRawRef.current < 0, dyRawRef.current);
+        isDragStartedRef.current = false;
+        return;
       }
+      
+      e.preventDefault();
+      draggingRef.current = false;
+      isDragStartedRef.current = false;
+
+      const yCommit = dyRawRef.current < 0 ? dyVisualRef.current : softDown(dyRawRef.current);
+      const commit =
+        Math.abs(yCommit) > threshold() || Math.abs(velocityYRef.current) > VELOCITY_COMMIT;
+
+      if (!commit) {
+        layout(true);
+        return;
+      }
+      animateCommit(dyRawRef.current < 0, dyRawRef.current);
     };
 
     const handleGlobalTouchCancel = () => {
-      if (draggingRef.current) {
-        preventBodyScroll(false);
-        draggingRef.current = false;
-        layout(true);
-      }
+      preventBodyScroll(false);
+      draggingRef.current = false;
+      isDragStartedRef.current = false;
+      layout(true);
     };
 
     // Usar capture phase para interceptar eventos antes de que lleguen a otros elementos
@@ -549,10 +632,12 @@ export function CardDeck({ children, onCardChange }: CardDeckProps) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [order]);
 
-  // Layout inicial cuando se monta el componente - sin animación
-  useEffect(() => {
+  // Layout inicial cuando se monta el componente - sin animación y sincronizado
+  // Usar useLayoutEffect para ejecutar antes del paint y asegurar que todas las cards se rendericen al mismo tiempo
+  useLayoutEffect(() => {
     if (cards.length > 0 && deckRef.current) {
       // Layout inicial sin animación para posicionar correctamente desde el inicio
+      // Esto asegura que todas las cards se posicionen simultáneamente sin animación
       layout(false);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -679,6 +764,8 @@ export function CardDeck({ children, onCardChange }: CardDeckProps) {
               WebkitTouchCallout: 'none',
               userSelect: 'none',
               WebkitUserSelect: 'none',
+              willChange: 'transform', // Optimizar para animaciones
+              backfaceVisibility: 'hidden', // Mejorar rendimiento en móviles
             }}
           >
             {typeof card === 'object' && card !== null && 'type' in card
