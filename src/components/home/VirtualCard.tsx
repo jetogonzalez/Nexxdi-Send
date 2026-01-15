@@ -31,12 +31,6 @@ export function VirtualCard({
   const isDarkBackground = true; // El morado es oscuro
   const textColor = isDarkBackground ? colors.semantic.background.white : colors.semantic.text.primary;
 
-  // Padding superior del contenedor: 0 cuando está al frente (el header tiene margin-top), 12px cuando está detrás
-  const containerTopPadding = isFront ? 0 : spacing[3]; // 0 al frente, 12px detrás
-  
-  // Padding superior del header: 24px cuando está al frente, 12px cuando está en medio o atrás
-  const headerTopPadding = isFront ? spacing[6] : spacing[3]; // 24px al frente, 12px detrás
-
   return (
     <div
       style={{
@@ -56,11 +50,11 @@ export function VirtualCard({
           width: '100%',
           height: '100%',
           borderRadius: borderRadius['3xl'], // 24px (sin ajuste porque no hay borde)
-          backgroundColor: colors.primary.main, // Color principal morado de la marca
-          paddingTop: containerTopPadding, // 0 al frente (header tiene padding-top), 12px detrás
-          paddingBottom: spacing[6], // 24px de padding inferior
-          paddingLeft: spacing[6], // 24px de padding izquierdo
-          paddingRight: spacing[6], // 24px de padding derecho
+          backgroundImage: 'url(/img/icons/cards/card-thumb-default-3x.png)',
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+          backgroundRepeat: 'no-repeat',
+          padding: 0,
           position: 'relative',
           overflow: 'hidden',
         }}
@@ -87,9 +81,11 @@ export function VirtualCard({
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'space-between',
-            position: 'relative',
+            position: 'absolute',
+            top: isFront ? spacing[6] : spacing[1], // 24px al frente, 4px detrás
+            left: spacing[6], // 24px desde el borde izquierdo
+            right: spacing[6], // 24px desde el borde derecho
             zIndex: 2,
-            paddingTop: headerTopPadding, // Dinámico: 24px al frente, 12px en medio o atrás
           }}
         >
           {/* Logo de Visa a la izquierda */}
@@ -152,7 +148,7 @@ export function VirtualCard({
           <div
             style={{
               position: 'absolute',
-              bottom: spacing[6], // 24px desde el borde inferior (padding incluido)
+              bottom: spacing[6], // 24px desde el borde inferior
               left: spacing[6], // 24px desde el borde izquierdo (alineado a la izquierda)
               fontFamily: typography.fontFamily.sans.join(', '), // Manrope
               fontWeight: typography.fontWeight.bold, // Bold
