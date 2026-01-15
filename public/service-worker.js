@@ -1,4 +1,4 @@
-const CACHE_NAME = 'send-app-v1';
+const CACHE_NAME = 'cash-app-v1';
 const urlsToCache = [
   '/',
   '/index.html',

@@ -160,13 +160,13 @@ firebase login
 firebase appdistribution:distribute android/app/build/outputs/bundle/release/app-release.aab \
   --app 1:988564691824:android:cb57f91b64973fe1104db5 \
   --groups "beta-testers" \
-  --release-notes "Versión inicial de Send App para Android"
+  --release-notes "Versión inicial de Nexxdi Cash para Android"
 
 # O para APK
 firebase appdistribution:distribute android/app/build/outputs/apk/release/app-release.apk \
   --app 1:988564691824:android:cb57f91b64973fe1104db5 \
   --groups "beta-testers" \
-  --release-notes "Versión inicial de Send App para Android"
+  --release-notes "Versión inicial de Nexxdi Cash para Android"
 ```
 
 **Nota:** Reemplaza el `--app` con tu App ID real de Firebase.

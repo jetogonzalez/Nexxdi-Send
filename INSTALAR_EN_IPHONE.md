@@ -1,4 +1,4 @@
-# 📱 Instalar Send App en iPhone
+# 📱 Instalar Nexxdi Cash en iPhone
 
 ## Opción 1: Instalar como PWA (Progressive Web App) - RECOMENDADO
 

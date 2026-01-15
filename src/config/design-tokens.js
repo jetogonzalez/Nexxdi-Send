@@ -1,15 +1,34 @@
 /**
- * Design Tokens - Send App (JavaScript version for Tailwind)
+ * Design Tokens - Nexxdi Cash (JavaScript version for Tailwind)
  * 
  * Versión JavaScript de los tokens para compatibilidad con Tailwind
  * Los tokens TypeScript son la fuente de verdad, este es un alias
  */
 
-// Re-exportar desde el archivo TypeScript
-// Tailwind puede tener problemas con TypeScript, así que usamos valores directos aquí
+// ============================================
+// Colores Primitivos - Colores base del sistema
+// ============================================
+const primitiveColors = {
+  // Colores base
+  white: '#ffffff',
+  black: '#000000',
+  transparent: 'transparent',
+  
+  // Colores de gradientes para header
+  gradient: {
+    giftHomeStart: '#3023C3', // Inicio del gradiente del regalo en home
+    giftHomeEnd: '#25133D', // Fin del gradiente del regalo en home
+    tarjetaStart: '#FFFFFF', // Inicio del gradiente en tarjeta (blanco)
+    tarjetaEnd: '#F97FC4', // Fin del gradiente en tarjeta (rosa)
+  },
+  // Colores de iconos
+  icon: {
+    default: '#101828', // Color por defecto de iconos
+  },
+};
 
 export const colors = {
-  // Colores Primarios - Nexxdi Send
+  // Colores Primarios - Nexxdi Cash
   primary: {
     main: '#3A29E9',
     light: '#5A4AFF',
@@ -26,20 +45,38 @@ export const colors = {
     900: '#0c4a6e',
   },
   
-  // Colores Semánticos - Nexxdi Send
+  // Colores Semánticos - Nexxdi Cash
   semantic: {
     background: {
       main: '#F0EFF8',
       imageCircle: 'rgba(255, 255, 255, 0.4)',
-      white: '#FFFFFF',
-      tabButtonActive: 'rgba(255, 255, 255, 0.4)', // Fondo del tab button activo (colors.semantic.background.white con 40% opacidad)
-      tabBar: 'rgba(255, 255, 255, 0.4)', // Fondo del tab bar (colors.semantic.background.white con 40% opacidad)
+      white: primitiveColors.white, // Referencia a primitivo
+      tabButtonActive: 'rgba(255, 255, 255, 0.4)',
+      tabBar: 'rgba(255, 255, 255, 0.4)',
+      navItemActive: 'rgba(239, 238, 253, 0.8)', // #EFEEFD con 80% de opacidad (item activo bottom navigation)
+      cardButtonIcon: 'rgba(255, 255, 255, 0.15)', // Fondo del botón de icono en la card (15% opacidad)
+      cardButtonIconHover: 'rgba(255, 255, 255, 0.25)', // Hover del botón de icono en la card (25% opacidad)
     },
     text: {
-      primary: '#101828',
+      primary: primitiveColors.icon.default, // Referencia a primitivo
       secondary: '#6b7280',
       tertiary: '#9ca3af',
-      tabInactive: '#9ca3af', // Color para tabs inactivos (iconos y textos) - más claro y tokenizado
+      tabInactive: '#9ca3af',
+    },
+    // Iconos
+    icon: {
+      default: primitiveColors.icon.default, // Referencia a primitivo
+      // Gradientes semánticos
+      gradient: {
+        giftHome: {
+          start: primitiveColors.gradient.giftHomeStart,
+          end: primitiveColors.gradient.giftHomeEnd,
+        },
+        tarjeta: {
+          start: primitiveColors.gradient.tarjetaStart,
+          end: primitiveColors.gradient.tarjetaEnd,
+        },
+      },
     },
     button: {
       primary: '#101828',
@@ -185,6 +222,93 @@ export const typography = {
     relaxed: '1.625',
     loose: '2',
   },
+  
+  // Títulos de sección (tokenizados)
+  sectionTitle: {
+    fontSize: '2.25rem', // 36px
+    fontWeight: '800', // Extrabold
+    lineHeight: '1', // normal
+    color: '#101828', // Color primario de texto
+    fontFamily: 'Manrope, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif', // Manrope
+  },
+  
+  // Texto de código de moneda en cards de divisa/stablecoin
+  currencyCode: {
+    fontSize: '0.875rem', // 14px
+    fontWeight: '700', // Bold
+    lineHeight: '1.25rem', // 20px
+    letterSpacing: '0%', // 0%
+    fontFamily: 'Manrope, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif', // Manrope
+  },
+};
+
+// Tokens para Header
+export const header = {
+  // Tamaños
+  sizes: {
+    profileImage: spacing[12], // 48px
+    actionIcon: spacing[10], // 40px
+    notificationDot: spacing[3], // 12px de diámetro
+  },
+  // Espaciado
+  spacing: {
+    actionsGap: spacing[3], // 12px entre acciones del header
+  },
+  // Colores
+  colors: {
+    // Fondo del header según la vista
+    background: {
+      home: '#FFFFFF', // Blanco en home
+      wallet: '#FFFFFF', // Blanco en wallet
+      tarjeta: 'rgba(255, 255, 255, 0.1)', // Blanco al 10% en tarjeta
+    },
+    // Fondo de botones de iconos según la vista (tokenizado por componente)
+    buttonBackground: {
+      home: '#FFFFFF', // Blanco en home
+      wallet: '#FFFFFF', // Blanco en wallet
+      tarjeta: 'rgba(255, 255, 255, 0.1)', // Blanco al 10% en tarjeta
+    },
+    // Hover state de botones de iconos (tokenizado por componente)
+    buttonBackgroundHover: {
+      home: '#f9fafb', // Gris claro en home/wallet (gray[50])
+      wallet: '#f9fafb', // Gris claro en home/wallet (gray[50])
+      tarjeta: 'rgba(255, 255, 255, 0.15)', // Blanco al 15% en tarjeta (hover)
+    },
+    // Fondo del avatar (tokenizado por componente)
+    avatarBackground: '#d1d5db', // Gris claro para fondo del avatar (gray[300])
+    // Color de iconos según la vista (referencias a semánticos)
+    icon: {
+      default: primitiveColors.icon.default, // Color por defecto
+      home: primitiveColors.icon.default, // Color en home
+      wallet: primitiveColors.icon.default, // Color en wallet
+      // En tarjeta: ojo y búsqueda usan default, solo regalo usa gradiente
+      tarjeta: primitiveColors.icon.default, // Color default también en tarjeta para ojo y búsqueda
+      tarjetaGift: primitiveColors.white, // Solo para regalo en tarjeta (gradiente)
+    },
+    // Gradientes para iconos específicos (referencias a semánticos)
+    gradients: {
+      // Gradiente para el icono de regalo en home
+      giftHome: {
+        id: 'paint0_linear_gift_home',
+        start: primitiveColors.gradient.giftHomeStart,
+        end: primitiveColors.gradient.giftHomeEnd,
+      },
+      // Gradiente para iconos en tarjeta
+      tarjeta: {
+        id: 'paint0_linear_tarjeta',
+        start: primitiveColors.gradient.tarjetaStart,
+        end: primitiveColors.gradient.tarjetaEnd,
+      },
+    },
+    // Indicador de notificación
+    notification: '#F04438',
+    // Borde del indicador de notificación (igual al fondo de contenido)
+    notificationBorder: '#F0EFF8',
+  },
+  // Bordes
+  borders: {
+    notificationBorderWidth: '2px',
+  },
 };
 
 export const borderRadius = {
@@ -231,9 +355,12 @@ export const bottomNavigation = {
     containerSize: spacing[8], // 32px - tamaño del contenedor del icono
   },
   colors: {
-    activeText: '#2a1ad1', // Morado oscuro según Figma
+    activeText: '#2A1AD1', // Color del texto activo en navigation bar
     inactiveText: '#8d8d8e', // Gris según Figma
-    activeBackground: '#efeefd', // Morado muy claro según Figma
+    activeBackground: 'rgba(239, 238, 253, 0.8)', // #EFEEFD al 80% (tokenizado)
+    // Colores de iconos (tokenizados globalmente)
+    iconActive: '#3A29E9', // Color azul para iconos activos
+    iconInactive: '#8d8d8e', // Gris para iconos inactivos
   },
   spacing: {
     gap: '-2px', // Gap negativo para acercar icono y texto
@@ -256,13 +383,20 @@ export const bottomNavigation = {
     content: 10, // Contenido sobre el fondo (número, no string)
   },
   effects: {
-    backgroundTransition: 'left 600ms cubic-bezier(0.16, 1, 0.3, 1), width 600ms cubic-bezier(0.16, 1, 0.3, 1)',
+    backgroundTransition: 'left 400ms cubic-bezier(0.16, 1, 0.3, 1), width 400ms cubic-bezier(0.16, 1, 0.3, 1)',
     colorTransition: 'color 400ms cubic-bezier(0.4, 0, 0.2, 1)',
     backgroundColorTransition: 'background-color 400ms cubic-bezier(0.4, 0, 0.2, 1)',
   },
   borders: {
     none: '0', // Sin borde
     radius: borderRadius.full, // Full rounded
+  },
+  // Estilos del navigation bar
+  navigationBar: {
+    background: 'rgba(255, 255, 255, 0.51)', // Background del navigation bar
+    border: '1px solid rgba(154, 150, 184, 0.10)', // Border tokenizado
+    borderRadius: borderRadius.full, // 9999px
+    backdropFilter: 'blur(6px)', // blur(6px) tokenizado
   },
 };
 
@@ -285,6 +419,8 @@ export const liquidGlass = {
   border: {
     light: 'rgba(255, 255, 255, 0.18)',
     dark: 'rgba(0, 0, 0, 0.1)',
+    // Navigation bar border específico
+    navigationBar: 'rgba(154, 150, 184, 0.10)', // Border del navigation bar
   },
   saturation: {
     normal: 'saturate(180%)',

@@ -1,12 +1,10 @@
-import { colors } from '../../../config/design-tokens';
-
 interface TarjetaIconProps {
   isActive?: boolean;
   size?: number;
 }
 
 export function TarjetaIcon({ isActive = false, size = 24 }: TarjetaIconProps) {
-  const color = isActive ? colors.primary.main : colors.semantic.text.tabInactive;
+  const color = isActive ? '#3A29E9' : '#8d8d8e'; // Tokenizado: azul activo, gris inactivo
   
   if (isActive) {
     return (

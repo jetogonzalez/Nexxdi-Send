@@ -1,12 +1,8 @@
-import { useState, useEffect, useRef } from 'react';
-import { colors, spacing, typography, liquidGlass, borderRadius, bottomNavigation } from '../../config/design-tokens';
+import { useState, useEffect, useRef, useMemo } from 'react';
+import { spacing, typography, borderRadius, bottomNavigation } from '../../config/design-tokens';
 import { motion } from '../../lib/motion';
 import { LiquidGlassButtonBar } from '../ui/LiquidGlassButtonBar';
-import { WalletIcon } from './icons/WalletIcon';
-import { TarjetaIcon } from './icons/TarjetaIcon';
-import { EnviarIcon } from './icons/EnviarIcon';
-import { ContactoIcon } from './icons/ContactoIcon';
-import { MasIcon } from './icons/MasIcon';
+import { getTabIconConfig } from './iconHelper';
 
 interface BottomNavigationProps {
   activeTab: string;
@@ -16,35 +12,54 @@ interface BottomNavigationProps {
 export function BottomNavigation({ activeTab, onTabChange }: BottomNavigationProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const [backgroundStyle, setBackgroundStyle] = useState({ left: 0, width: 0 });
-  const tabs = [
-    { id: 'wallet', label: 'Wallet', icon: WalletIcon },
-    { id: 'tarjeta', label: 'SendCard', icon: TarjetaIcon },
-    { id: 'enviar', label: 'Enviar', icon: EnviarIcon },
-    { id: 'contacto', label: 'Contactos', icon: ContactoIcon },
-    { id: 'mas', label: 'Más', icon: MasIcon },
-  ];
+  // Configuración de tabs - memoizada para evitar re-renders infinitos
+  const tabs = useMemo(() => {
+    return [
+      { id: 'home', label: 'Inicio' },
+      { id: 'wallet', label: 'Wallet' },
+      { id: 'cash', label: 'Cash' },
+      { id: 'tarjeta', label: 'Tarjeta' },
+      { id: 'mas', label: 'Más' },
+    ].map(tab => getTabIconConfig(tab.id, tab.label));
+  }, []); // Array vacío porque los tabs nunca cambian
 
   // Calcular posición del fondo activo
   useEffect(() => {
-    if (!containerRef.current) return;
+    const updateBackground = () => {
+      if (!containerRef.current) return;
 
-    const activeIndex = tabs.findIndex(tab => tab.id === activeTab);
-    if (activeIndex === -1) return;
+      const activeIndex = tabs.findIndex(tab => tab.id === activeTab);
+      if (activeIndex === -1) return;
 
-    const container = containerRef.current;
-    const buttons = container.querySelectorAll('button');
-    const activeButton = buttons[activeIndex];
+      const container = containerRef.current;
+      const buttons = container.querySelectorAll('button');
+      const activeButton = buttons[activeIndex] as HTMLButtonElement;
 
-    if (activeButton) {
-      const containerRect = container.getBoundingClientRect();
-      const buttonRect = activeButton.getBoundingClientRect();
-      
-      setBackgroundStyle({
-        left: buttonRect.left - containerRect.left,
-        width: buttonRect.width,
-      });
-    }
-  }, [activeTab, tabs]);
+      if (activeButton && activeButton.offsetWidth > 0) {
+        const containerRect = container.getBoundingClientRect();
+        const buttonRect = activeButton.getBoundingClientRect();
+        
+        setBackgroundStyle({
+          left: buttonRect.left - containerRect.left,
+          width: buttonRect.width,
+        });
+      }
+    };
+
+    // Usar useLayoutEffect para calcular antes del paint
+    updateBackground();
+
+    // Recalcular después de que el DOM esté listo
+    const timeoutId = setTimeout(updateBackground, 0);
+
+    // Recalcular en resize
+    window.addEventListener('resize', updateBackground);
+
+    return () => {
+      clearTimeout(timeoutId);
+      window.removeEventListener('resize', updateBackground);
+    };
+  }, [activeTab]); // Solo activeTab como dependencia, tabs está memoizado
 
   return (
     <LiquidGlassButtonBar position="bottom" showBackground={true}>
@@ -61,29 +76,25 @@ export function BottomNavigation({ activeTab, onTabChange }: BottomNavigationPro
         }}
       >
         {/* Fondo animado líquido */}
-        <div
-          style={{
-            position: 'absolute',
-            top: 0,
-            left: `${backgroundStyle.left}px`,
-            width: `${backgroundStyle.width}px`,
-            height: '100%',
-            backgroundColor: bottomNavigation.colors.activeBackground,
-            borderRadius: borderRadius.full,
-            transition: `left ${motion.duration.medium} ${motion.easing.smoothOut}, width ${motion.duration.medium} ${motion.easing.smoothOut}`,
-            zIndex: 0,
-            pointerEvents: 'none',
-          }}
-        />
+        {backgroundStyle.width > 0 && (
+          <div
+            style={{
+              position: 'absolute',
+              top: 0,
+              left: `${backgroundStyle.left}px`,
+              width: `${backgroundStyle.width}px`,
+              height: '100%',
+              backgroundColor: bottomNavigation.colors.activeBackground,
+              borderRadius: borderRadius.full,
+              transition: bottomNavigation.effects.backgroundTransition,
+              zIndex: 0,
+              pointerEvents: 'none',
+            }}
+          />
+        )}
         {tabs.map((tab) => {
           const isActive = activeTab === tab.id;
-          const IconComponent = tab.icon;
-          // Items con texto más largo necesitan padding horizontal extra
-          const needsExtraPadding = tab.id === 'contacto' || tab.id === 'tarjeta';
-          // Contactos necesita 1px más de padding que SendCard
-          const isContactos = tab.id === 'contacto';
-          // SendCard y Contactos necesitan ser más anchos
-          const needsExtraWidth = tab.id === 'contacto' || tab.id === 'tarjeta';
+          
           return (
             <button
               key={tab.id}
@@ -96,18 +107,16 @@ export function BottomNavigation({ activeTab, onTabChange }: BottomNavigationPro
                 alignItems: 'center',
                 justifyContent: 'center',
                 gap: bottomNavigation.spacing.gap,
-                paddingTop: isContactos ? spacing[2] : bottomNavigation.spacing.itemPaddingY,
-                paddingBottom: isContactos ? spacing[2] : bottomNavigation.spacing.itemPaddingY,
-                paddingLeft: isContactos ? spacing[1] : needsExtraPadding ? spacing[0.5] : 0,
-                paddingRight: isContactos ? spacing[1] : needsExtraPadding ? spacing[0.5] : 0,
+                paddingTop: bottomNavigation.spacing.itemPaddingY,
+                paddingBottom: bottomNavigation.spacing.itemPaddingY,
                 backgroundColor: 'transparent',
                 borderRadius: borderRadius.full,
                 border: 'none',
                 cursor: 'pointer',
-                flex: needsExtraWidth ? 1.2 : 1,
+                flex: 1,
                 minHeight: spacing[12],
                 margin: '0',
-                transition: `background-color ${motion.duration.base} ${motion.easing.easeInOut}`,
+                transition: bottomNavigation.effects.backgroundColorTransition,
               }}
               aria-label={tab.label}
             >
@@ -120,10 +129,22 @@ export function BottomNavigation({ activeTab, onTabChange }: BottomNavigationPro
                   justifyContent: 'center', 
                   width: bottomNavigation.icon.containerSize,
                   height: bottomNavigation.icon.containerSize,
-                  marginBottom: isContactos ? spacing[0.5] : 0,
+                  marginBottom: 0,
                 }}
               >
-                <IconComponent isActive={isActive} size={bottomNavigation.icon.size} />
+                {tab.iconActive && tab.iconInactive ? (
+                  <img
+                    src={isActive ? tab.iconActive : tab.iconInactive}
+                    alt={tab.label}
+                    style={{
+                      width: bottomNavigation.icon.size,
+                      height: bottomNavigation.icon.size,
+                      display: 'block',
+                    }}
+                  />
+                ) : tab.icon ? (
+                  <tab.icon isActive={isActive} size={bottomNavigation.icon.size} />
+                ) : null}
               </div>
               <span
                 style={{
@@ -136,7 +157,7 @@ export function BottomNavigation({ activeTab, onTabChange }: BottomNavigationPro
                   fontFamily: typography.fontFamily.sans.join(', '),
                   marginTop: bottomNavigation.spacing.labelMarginTop,
                   whiteSpace: 'nowrap',
-                  transition: `color ${motion.duration.base} ${motion.easing.easeInOut}`,
+                  transition: bottomNavigation.effects.colorTransition,
                 }}
               >
                 {tab.label}

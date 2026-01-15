@@ -75,7 +75,7 @@ npm run android:build
 firebase appdistribution:distribute android/app/build/outputs/bundle/release/app-release.aab \
   --app TU_APP_ID \
   --groups "beta-testers" \
-  --release-notes "Versión inicial de Send App"
+  --release-notes "Versión inicial de Nexxdi Cash"
 ```
 
 ## 📱 Los testers recibirán:

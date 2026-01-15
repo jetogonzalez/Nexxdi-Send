@@ -1,5 +1,4 @@
-import { colors, spacing, typography, borderRadius, liquidGlass, shadows } from '../../config/design-tokens';
-import { motion } from '../../lib/motion';
+import { spacing, bottomNavigation } from '../../config/design-tokens';
 
 interface LiquidGlassButtonBarProps {
   children: React.ReactNode;
@@ -10,16 +9,18 @@ interface LiquidGlassButtonBarProps {
 export function LiquidGlassButtonBar({ children, position = 'bottom', showBackground = false }: LiquidGlassButtonBarProps) {
   return (
     <div
+      data-bottom-navigation={position === 'bottom' ? 'true' : undefined}
       style={{
         position: 'fixed',
-        ...(position === 'top' ? { top: spacing[4] } : { bottom: `calc(${spacing[4]} + env(safe-area-inset-bottom))` }),
-        left: spacing[4],
-        right: spacing[4],
-        padding: spacing[1], // 4px según Figma
-        backgroundColor: showBackground ? liquidGlass.background.navigationBottom : 'transparent', // 51% de opacidad según Figma
-        backdropFilter: showBackground ? liquidGlass.blur.xs : 'none', // blur(6px) según Figma
-        WebkitBackdropFilter: showBackground ? liquidGlass.blur.xs : 'none', // blur(6px) para Safari según Figma
-        borderRadius: borderRadius.full,
+        ...(position === 'top' ? { top: `calc(${spacing[4]} + env(safe-area-inset-top))` } : { bottom: `calc(${spacing[6]} + env(safe-area-inset-bottom))` }),
+        left: spacing[5], // 20px padding horizontal
+        right: spacing[5], // 20px padding horizontal
+        padding: bottomNavigation.spacing.containerPadding, // 4px tokenizado
+        backgroundColor: showBackground ? bottomNavigation.navigationBar.background : 'transparent', // Background tokenizado
+        border: showBackground ? bottomNavigation.navigationBar.border : 'none', // Border tokenizado
+        borderRadius: bottomNavigation.navigationBar.borderRadius, // 9999px tokenizado
+        backdropFilter: showBackground ? bottomNavigation.navigationBar.backdropFilter : 'none', // blur(6px) tokenizado
+        WebkitBackdropFilter: showBackground ? bottomNavigation.navigationBar.backdropFilter : 'none', // blur(6px) para Safari
         boxShadow: 'none', // Sin sombra
         zIndex: 1000,
         display: 'flex',

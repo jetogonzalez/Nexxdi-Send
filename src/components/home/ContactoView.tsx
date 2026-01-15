@@ -1,5 +1,5 @@
 import { colors, spacing, typography } from '../../config/design-tokens';
-import { GrupoIcon } from './icons/GrupoIcon';
+import { ContactoIcon } from './icons/ContactoIcon';
 
 export function ContactoView() {
   return (
@@ -55,7 +55,7 @@ export function ContactoView() {
           e.currentTarget.style.backgroundColor = colors.semantic.background.white;
         }}
       >
-        <GrupoIcon isActive={true} size={24} />
+        <ContactoIcon isActive={true} size={24} />
         <span
           style={{
             fontSize: typography.fontSize.base,

@@ -57,8 +57,8 @@ export default function SplashScreen() {
       }}
     >
       <img
-        src="/img/nexxdi-send-logo.svg"
-        alt="Nexxdi Send"
+        src="/img/splash/nexxdi-cash-logo.svg"
+        alt="Nexxdi Cash"
         style={{
           width: '200px',
           height: 'auto',

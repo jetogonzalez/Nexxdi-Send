@@ -14,7 +14,7 @@ export default {
         error: colors.error[500],
         warning: colors.warning[500],
         info: colors.info[500],
-        // Colores específicos de Nexxdi Send (legacy)
+        // Colores específicos de Nexxdi Cash (legacy)
         splash: colors.splash,
         background: colors.background,
         textPrimary: colors.textPrimary,

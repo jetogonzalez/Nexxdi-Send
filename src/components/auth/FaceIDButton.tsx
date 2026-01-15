@@ -49,7 +49,7 @@ export function FaceIDButton({ onFaceID }: FaceIDButtonProps) {
         }}
       >
         <img
-          src="/img/login/Icon-faceid.svg"
+          src="/img/icons/login/Icon-faceid.svg"
           alt="Face ID"
           style={{
             width: spacing[16], // 64px

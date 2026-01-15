@@ -1,5 +1,5 @@
 /**
- * Design Tokens - Send App
+ * Design Tokens - Nexxdi Cash
  * 
  * Tokens de diseño centralizados para mantener consistencia
  * en toda la aplicación. Estos tokens pueden ser importados
@@ -10,9 +10,31 @@
 // Colores
 // ============================================
 
+// ============================================
+// Colores Primitivos - Colores base del sistema
+// ============================================
+const primitiveColors = {
+  // Colores base
+  white: '#ffffff',
+  black: '#000000',
+  transparent: 'transparent',
+  
+  // Colores de gradientes para header
+  gradient: {
+    giftHomeStart: '#3023C3', // Inicio del gradiente del regalo en home
+    giftHomeEnd: '#25133D', // Fin del gradiente del regalo en home
+    tarjetaStart: '#FFFFFF', // Inicio del gradiente en tarjeta (blanco)
+    tarjetaEnd: '#F97FC4', // Fin del gradiente en tarjeta (rosa)
+  },
+  // Colores de iconos
+  icon: {
+    default: '#101828', // Color por defecto de iconos
+  },
+} as const;
+
 export const colors = {
   // ============================================
-  // Colores Primarios - Nexxdi Send
+  // Colores Primarios - Nexxdi Cash
   // ============================================
   primary: {
     main: '#3A29E9', // Color principal (splash)
@@ -21,29 +43,50 @@ export const colors = {
   },
   
   // ============================================
-  // Colores Semánticos - Nexxdi Send
+  // Colores Semánticos - Nexxdi Cash
   // ============================================
   semantic: {
     // Backgrounds
     background: {
       main: '#F0EFF8', // Fondo general
       imageCircle: 'rgba(255, 255, 255, 0.4)', // Círculo detrás de imágenes (40% opacidad)
-      white: '#FFFFFF',
-      tabButtonActive: 'rgba(255, 255, 255, 0.4)', // Fondo del tab button activo (colors.semantic.background.white con 40% opacidad)
-      tabBar: 'rgba(255, 255, 255, 0.4)', // Fondo del tab bar (colors.semantic.background.white con 40% opacidad)
+      white: primitiveColors.white, // Blanco (referencia a primitivo)
+      tabButtonActive: 'rgba(255, 255, 255, 0.4)', // Fondo del tab button activo
+      tabBar: 'rgba(255, 255, 255, 0.4)', // Fondo del tab bar
+      navItemActive: 'rgba(239, 238, 253, 0.8)', // #EFEEFD con 80% de opacidad (item activo bottom navigation)
+      cardButtonIcon: 'rgba(255, 255, 255, 0.15)', // Fondo del botón de icono en la card (15% opacidad)
+      cardButtonIconHover: 'rgba(255, 255, 255, 0.25)', // Hover del botón de icono en la card (25% opacidad)
+      frequentSendIcon: '#00000010', // Fondo del icono en cards de envíos frecuentes (#00000010 - hex con alpha)
     },
     
     // Text
     text: {
-      primary: '#101828', // Texto primario
+      primary: primitiveColors.icon.default, // Texto primario (referencia a primitivo)
       secondary: '#6b7280', // Texto secundario
       tertiary: '#9ca3af', // Texto terciario
-      tabInactive: '#9ca3af', // Color para tabs inactivos (iconos y textos) - más claro y tokenizado
+      tabInactive: '#9ca3af', // Color para tabs inactivos (iconos y textos)
+      contactName: '#080816', // Color específico para nombres de contactos
+    },
+    
+    // Iconos
+    icon: {
+      default: primitiveColors.icon.default, // Color por defecto de iconos (referencia a primitivo)
+      // Gradientes semánticos
+      gradient: {
+        giftHome: {
+          start: primitiveColors.gradient.giftHomeStart,
+          end: primitiveColors.gradient.giftHomeEnd,
+        },
+        tarjeta: {
+          start: primitiveColors.gradient.tarjetaStart,
+          end: primitiveColors.gradient.tarjetaEnd,
+        },
+      },
     },
     
     // Buttons
     button: {
-      primary: '#101828', // Botón primario
+      primary: primitiveColors.icon.default, // Botón primario (referencia a primitivo)
       primaryHover: '#1f2937', // Hover del botón primario
       secondary: 'rgba(0, 0, 0, 0.05)', // Botón secundario (5% opacidad)
       secondaryHover: 'rgba(0, 0, 0, 0.08)', // Hover del botón secundario
@@ -51,8 +94,9 @@ export const colors = {
     
     // Borders
     border: {
-      light: 'rgba(0, 0, 0, 0.1)',
-      medium: 'rgba(0, 0, 0, 0.2)',
+      light: 'rgba(0, 0, 0, 0.05)', // Borde muy suave (5% opacidad)
+      medium: 'rgba(0, 0, 0, 0.1)',
+      dark: 'rgba(0, 0, 0, 0.2)',
     },
   },
   
@@ -103,7 +147,7 @@ export const colors = {
   error: {
     50: '#fef2f2',
     100: '#fee2e2',
-    500: '#ef4444',
+    500: '#F04438', // Color del indicador de notificación del header
     600: '#dc2626',
     700: '#b91c1c',
   },
@@ -138,10 +182,15 @@ export const colors = {
     900: '#111827',
   },
 
-  // Colores base
-  white: '#ffffff',
-  black: '#000000',
-  transparent: 'transparent',
+  // Colores base (referencias a primitivos)
+  white: primitiveColors.white,
+  black: primitiveColors.black,
+  transparent: primitiveColors.transparent,
+  
+  // ============================================
+  // Colores Primitivos - Exportados para referencia directa
+  // ============================================
+  primitive: primitiveColors,
 } as const;
 
 // ============================================
@@ -201,6 +250,24 @@ export const typography = {
     relaxed: '1.625',
     loose: '2',
   },
+  
+  // Títulos de sección (tokenizados)
+  sectionTitle: {
+    fontSize: typography.fontSize['4xl'], // 36px
+    fontWeight: typography.fontWeight.extrabold, // 800
+    lineHeight: typography.lineHeight.none, // normal
+    color: colors.semantic.text.primary, // #101828
+    fontFamily: typography.fontFamily.sans.join(', '), // Manrope
+  },
+  
+  // Texto de código de moneda en cards de divisa/stablecoin
+  currencyCode: {
+    fontSize: '0.875rem', // 14px
+    fontWeight: typography.fontWeight.bold, // 700
+    lineHeight: '1.25rem', // 20px
+    letterSpacing: '0%', // 0%
+    fontFamily: typography.fontFamily.sans.join(', '), // Manrope
+  },
 } as const;
 
 // ============================================
@@ -212,6 +279,7 @@ export const spacing = {
   0: '0',
   0.5: '0.125rem',  // 2px (caso especial)
   1: '0.25rem',     // 4px (caso especial)
+  1.5: '0.375rem',  // 6px (caso especial para notification dot)
   2: '0.5rem',      // 8px (base)
   3: '0.75rem',     // 12px (8px + 4px)
   4: '1rem',        // 16px (8px * 2)
@@ -247,7 +315,7 @@ export const borderRadius = {
 
 export const borderWidth = {
   0: '0',
-  1: '1px',
+  1: '2px', // 2px para bordes estándar
   2: '2px',
   4: '4px',
   8: '8px',
@@ -287,9 +355,12 @@ export const bottomNavigation = {
   },
   // Colores
   colors: {
-    activeText: colors.primary.dark, // #2a1ad1 según Figma
+    activeText: '#2A1AD1', // Color del texto activo en navigation bar
     inactiveText: '#8d8d8e', // Gris según Figma
-    activeBackground: '#efeefd', // Morado muy claro según Figma
+    activeBackground: colors.semantic.background.navItemActive, // #EFEEFD al 80% (tokenizado)
+    // Colores de iconos (tokenizados globalmente)
+    iconActive: colors.primary.main, // #3A29E9 - Color azul para iconos activos
+    iconInactive: '#8d8d8e', // Gris para iconos inactivos
   },
   // Espaciado
   spacing: {
@@ -316,14 +387,21 @@ export const bottomNavigation = {
   },
   // Efectos
   effects: {
-    backgroundTransition: `left ${motion.duration.medium} ${motion.easing.smoothOut}, width ${motion.duration.medium} ${motion.easing.smoothOut}`,
+    backgroundTransition: `left ${motion.duration.base} ${motion.easing.smoothOut}, width ${motion.duration.base} ${motion.easing.smoothOut}`,
     colorTransition: `color ${motion.duration.base} ${motion.easing.easeInOut}`,
     backgroundColorTransition: `background-color ${motion.duration.base} ${motion.easing.easeInOut}`,
   },
   // Bordes
   borders: {
     none: borderWidth[0], // Sin borde
-    radius: borderRadius.full, // Full rounded
+    radius: borderRadius.full, // Full rounded (9999px)
+  },
+  // Estilos del navigation bar
+  navigationBar: {
+    background: 'rgba(255, 255, 255, 0.51)', // Background del navigation bar
+    border: '1px solid rgba(154, 150, 184, 0.10)', // Border tokenizado
+    borderRadius: borderRadius.full, // 9999px
+    backdropFilter: 'blur(6px)', // blur(6px) tokenizado
   },
 } as const;
 
@@ -369,6 +447,8 @@ export const liquidGlass = {
   border: {
     light: 'rgba(255, 255, 255, 0.18)',
     dark: 'rgba(0, 0, 0, 0.1)',
+    // Navigation bar border específico
+    navigationBar: 'rgba(154, 150, 184, 0.10)', // Border del navigation bar
   },
   // Saturation for the glass effect
   saturation: {
@@ -442,6 +522,78 @@ export const theme = {
     secondary: colors.secondary[400],
     muted: colors.gray[800],
     border: colors.gray[700],
+  },
+} as const;
+
+// ============================================
+// Tokens para Header
+// ============================================
+
+export const header = {
+  // Tamaños
+  sizes: {
+    profileImage: spacing[12], // 48px
+    actionIcon: spacing[10], // 40px
+    notificationDot: spacing[3], // 12px de diámetro
+  },
+  // Espaciado
+  spacing: {
+    actionsGap: spacing[3], // 12px entre acciones del header
+  },
+  // Colores (referencias a semánticos y primitivos)
+  colors: {
+    // Fondo del header según la vista
+    background: {
+      home: colors.semantic.background.white, // Blanco en home (referencia a semántico)
+      wallet: colors.semantic.background.white, // Blanco en wallet (referencia a semántico)
+      tarjeta: 'rgba(255, 255, 255, 0.1)', // Blanco al 10% en tarjeta
+    },
+    // Fondo de botones de iconos según la vista (tokenizado por componente)
+    buttonBackground: {
+      home: colors.semantic.background.white, // Blanco en home
+      wallet: colors.semantic.background.white, // Blanco en wallet
+      tarjeta: 'rgba(255, 255, 255, 0.1)', // Blanco al 10% en tarjeta
+    },
+    // Hover state de botones de iconos (tokenizado por componente)
+    buttonBackgroundHover: {
+      home: colors.gray[50], // Gris claro en home/wallet (referencia a primitivo)
+      wallet: colors.gray[50], // Gris claro en home/wallet (referencia a primitivo)
+      tarjeta: 'rgba(255, 255, 255, 0.15)', // Blanco al 15% en tarjeta (hover)
+    },
+    // Fondo del avatar
+    avatarBackground: colors.gray[300], // Gris claro para fondo del avatar (referencia a primitivo)
+    // Color de iconos según la vista (referencias a semánticos)
+    icon: {
+      default: colors.semantic.icon.default, // Color por defecto (referencia a semántico)
+      home: colors.semantic.icon.default, // Color en home (referencia a semántico)
+      wallet: colors.semantic.icon.default, // Color en wallet (referencia a semántico)
+      // En tarjeta: ojo y búsqueda usan default, solo regalo usa gradiente
+      tarjeta: colors.semantic.icon.default, // Color default también en tarjeta para ojo y búsqueda
+      tarjetaGift: colors.semantic.background.white, // Solo para regalo en tarjeta (gradiente)
+    },
+    // Gradientes para iconos específicos (referencias a semánticos)
+    gradients: {
+      // Gradiente para el icono de regalo en home
+      giftHome: {
+        id: 'paint0_linear_gift_home',
+        start: colors.semantic.icon.gradient.giftHome.start, // Referencia a semántico
+        end: colors.semantic.icon.gradient.giftHome.end, // Referencia a semántico
+      },
+      // Gradiente para iconos en tarjeta
+      tarjeta: {
+        id: 'paint0_linear_tarjeta',
+        start: colors.semantic.icon.gradient.tarjeta.start, // Referencia a semántico
+        end: colors.semantic.icon.gradient.tarjeta.end, // Referencia a semántico
+      },
+    },
+    // Indicador de notificación
+    notification: colors.error[500], // #F04438
+    // Borde del indicador de notificación (igual al fondo de contenido)
+    notificationBorder: colors.semantic.background.main, // #F0EFF8 (referencia a semántico)
+  },
+  // Bordes
+  borders: {
+    notificationBorderWidth: borderWidth[1], // 2px
   },
 } as const;
 

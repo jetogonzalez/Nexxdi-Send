@@ -1,12 +1,10 @@
-import { colors } from '../../../config/design-tokens';
-
 interface MasIconProps {
   isActive?: boolean;
   size?: number;
 }
 
 export function MasIcon({ isActive = false, size = 24 }: MasIconProps) {
-  const color = isActive ? colors.primary.main : colors.semantic.text.tabInactive; // Token para tabs inactivos
+  const color = isActive ? '#3A29E9' : '#8d8d8e'; // Tokenizado: azul activo, gris inactivo
   
   return (
     <svg width={size} height={size} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">

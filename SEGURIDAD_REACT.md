@@ -1,4 +1,4 @@
-# 🔒 Seguridad React - Análisis para Send App
+# 🔒 Seguridad React - Análisis para Nexxdi Cash
 
 ## Estado: ✅ NO AFECTADO
 

@@ -39,8 +39,8 @@ npx cap init
 ```
 
 Cuando te pregunte:
-- **App name:** Send App
-- **App ID:** com.nexxdi.send (o el que prefieras)
+- **App name:** Nexxdi Cash
+- **App ID:** com.nexxdi.cash (o el que prefieras)
 - **Web dir:** dist
 
 ### Paso 3: Agregar plataformas
@@ -127,7 +127,7 @@ En Firebase Console → App Distribution → Testers & Groups:
 firebase appdistribution:distribute path/to/app.ipa \
   --app YOUR_IOS_APP_ID \
   --groups "beta-testers" \
-  --release-notes "Versión inicial de Send App"
+  --release-notes "Versión inicial de Nexxdi Cash"
 ```
 
 **Para obtener el App ID de iOS:**
@@ -141,13 +141,13 @@ firebase appdistribution:distribute path/to/app.ipa \
 firebase appdistribution:distribute path/to/app-release.aab \
   --app YOUR_ANDROID_APP_ID \
   --groups "beta-testers" \
-  --release-notes "Versión inicial de Send App"
+  --release-notes "Versión inicial de Nexxdi Cash"
 
 # O para APK
 firebase appdistribution:distribute path/to/app-release.apk \
   --app YOUR_ANDROID_APP_ID \
   --groups "beta-testers" \
-  --release-notes "Versión inicial de Send App"
+  --release-notes "Versión inicial de Nexxdi Cash"
 ```
 
 ## 🔄 Workflow de Desarrollo

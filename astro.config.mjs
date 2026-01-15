@@ -11,6 +11,9 @@ export default defineConfig({
     }),
   ],
   output: 'static',
+  server: {
+    port: 3001,
+  },
   build: {
     assets: 'assets',
   },

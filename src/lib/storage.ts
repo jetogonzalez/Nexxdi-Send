@@ -2,7 +2,7 @@
  * Utilidades para guardar y recuperar credenciales de forma segura
  */
 
-const STORAGE_KEY = 'send_app_saved_credentials';
+const STORAGE_KEY = 'cash_app_saved_credentials';
 
 interface SavedCredentials {
   email: string;

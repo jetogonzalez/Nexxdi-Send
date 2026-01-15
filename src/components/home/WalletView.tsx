@@ -1,45 +1,60 @@
 import { colors, spacing, typography } from '../../config/design-tokens';
+import { formatBalance } from '../../lib/formatBalance';
 
-export function WalletView() {
+interface WalletViewProps {
+  isBalanceVisible?: boolean;
+  titleRef?: (el: HTMLElement | null) => void;
+  scrollProgress?: number;
+}
+
+export function WalletView({ isBalanceVisible = true, titleRef, scrollProgress = 0 }: WalletViewProps) {
+  const title = 'Wallet';
+  const balance = 2344.02;
+
   return (
     <div
       style={{
         flex: 1,
         display: 'flex',
         flexDirection: 'column',
-        padding: spacing[5],
+        paddingTop: spacing[4], // 16px
+        paddingBottom: spacing[10], // 40px
         backgroundColor: colors.semantic.background.main,
       }}
     >
       <h1
+        ref={(el) => {
+          if (titleRef) titleRef(el);
+        }}
+        style={{
+          fontSize: typography.sectionTitle.fontSize,
+          fontWeight: typography.sectionTitle.fontWeight,
+          lineHeight: typography.sectionTitle.lineHeight,
+          color: typography.sectionTitle.color,
+          fontFamily: typography.sectionTitle.fontFamily,
+        }}
+      >
+        {title}
+      </h1>
+      
+      {/* Balance principal */}
+      <div
         style={{
           fontSize: typography.fontSize['3xl'],
           fontWeight: typography.fontWeight.bold,
           color: colors.semantic.text.primary,
           fontFamily: typography.fontFamily.sans.join(', '),
-          marginBottom: spacing[4],
         }}
       >
-        Wallet
-      </h1>
+        {formatBalance(balance, isBalanceVisible)}
+      </div>
+      
       <p
         style={{
           fontSize: typography.fontSize.base,
           color: colors.semantic.text.secondary,
           fontFamily: typography.fontFamily.sans.join(', '),
           lineHeight: typography.lineHeight.relaxed,
-          marginBottom: spacing[4],
-        }}
-      >
-        Tu billetera digital
-      </p>
-      <p
-        style={{
-          fontSize: typography.fontSize.base,
-          color: colors.semantic.text.secondary,
-          fontFamily: typography.fontFamily.sans.join(', '),
-          lineHeight: typography.lineHeight.relaxed,
-          marginBottom: spacing[4],
         }}
       >
         Este es un texto de ejemplo para verificar el contraste del tab bar con respecto al contenido. 
@@ -53,7 +68,6 @@ export function WalletView() {
           color: colors.semantic.text.secondary,
           fontFamily: typography.fontFamily.sans.join(', '),
           lineHeight: typography.lineHeight.relaxed,
-          marginBottom: spacing[6],
         }}
       >
         Puedes agregar más contenido aquí para probar diferentes escenarios de contraste y asegurarte 
@@ -67,8 +81,6 @@ export function WalletView() {
           fontWeight: typography.fontWeight.bold,
           color: colors.semantic.text.primary,
           fontFamily: typography.fontFamily.sans.join(', '),
-          marginBottom: spacing[3],
-          marginTop: spacing[6],
         }}
       >
         Título de Nivel 2
@@ -79,7 +91,6 @@ export function WalletView() {
           color: colors.semantic.text.secondary,
           fontFamily: typography.fontFamily.sans.join(', '),
           lineHeight: typography.lineHeight.relaxed,
-          marginBottom: spacing[4],
         }}
       >
         Este es un párrafo normal que sigue a un título de nivel 2. El texto debe ser legible y tener 
@@ -92,8 +103,6 @@ export function WalletView() {
           fontWeight: typography.fontWeight.semibold,
           color: colors.semantic.text.primary,
           fontFamily: typography.fontFamily.sans.join(', '),
-          marginBottom: spacing[2],
-          marginTop: spacing[5],
         }}
       >
         Título de Nivel 3
@@ -104,7 +113,6 @@ export function WalletView() {
           color: colors.semantic.text.secondary,
           fontFamily: typography.fontFamily.sans.join(', '),
           lineHeight: typography.lineHeight.relaxed,
-          marginBottom: spacing[4],
         }}
       >
         Este es un párrafo más pequeño que sigue a un título de nivel 3. Los diferentes tamaños de texto 
@@ -117,8 +125,6 @@ export function WalletView() {
           fontWeight: typography.fontWeight.semibold,
           color: colors.semantic.text.primary,
           fontFamily: typography.fontFamily.sans.join(', '),
-          marginBottom: spacing[2],
-          marginTop: spacing[4],
         }}
       >
         Título de Nivel 4
@@ -129,7 +135,6 @@ export function WalletView() {
           color: colors.semantic.text.tertiary,
           fontFamily: typography.fontFamily.sans.join(', '),
           lineHeight: typography.lineHeight.relaxed,
-          marginBottom: spacing[6],
         }}
       >
         Este es un texto terciario más pequeño. Diferentes niveles de jerarquía y colores de texto 
@@ -142,8 +147,6 @@ export function WalletView() {
           fontWeight: typography.fontWeight.bold,
           color: colors.semantic.text.primary,
           fontFamily: typography.fontFamily.sans.join(', '),
-          marginBottom: spacing[3],
-          marginTop: spacing[6],
         }}
       >
         Lista de Elementos
@@ -154,14 +157,12 @@ export function WalletView() {
           color: colors.semantic.text.secondary,
           fontFamily: typography.fontFamily.sans.join(', '),
           lineHeight: typography.lineHeight.relaxed,
-          marginBottom: spacing[4],
-          paddingLeft: spacing[5],
         }}
       >
-        <li style={{ marginBottom: spacing[2] }}>Primer elemento de la lista</li>
-        <li style={{ marginBottom: spacing[2] }}>Segundo elemento de la lista</li>
-        <li style={{ marginBottom: spacing[2] }}>Tercer elemento de la lista</li>
-        <li style={{ marginBottom: spacing[2] }}>Cuarto elemento de la lista</li>
+        <li>Primer elemento de la lista</li>
+        <li>Segundo elemento de la lista</li>
+        <li>Tercer elemento de la lista</li>
+        <li>Cuarto elemento de la lista</li>
       </ul>
 
       <p
@@ -171,8 +172,6 @@ export function WalletView() {
           color: colors.semantic.text.primary,
           fontFamily: typography.fontFamily.sans.join(', '),
           lineHeight: typography.lineHeight.relaxed,
-          marginBottom: spacing[4],
-          marginTop: spacing[6],
         }}
       >
         Este es un párrafo con texto en negrita para mostrar otro nivel de jerarquía visual. 
@@ -185,7 +184,6 @@ export function WalletView() {
           color: colors.semantic.text.tertiary,
           fontFamily: typography.fontFamily.sans.join(', '),
           lineHeight: typography.lineHeight.relaxed,
-          marginBottom: spacing[8],
         }}
       >
         Este es un texto muy pequeño (xs) con color terciario. Incluso en este tamaño, el tab bar 

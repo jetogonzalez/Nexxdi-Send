@@ -1,4 +1,4 @@
-# Configuración - Send App
+# Configuración - Nexxdi Cash
 
 Esta carpeta contiene los archivos de configuración centralizados para la aplicación.
 

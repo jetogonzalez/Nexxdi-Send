@@ -1,5 +1,5 @@
 /**
- * Motion & Transitions - Send App
+ * Motion & Transitions - Nexxdi Cash
  * 
  * Configuración centralizada de animaciones y transiciones
  */

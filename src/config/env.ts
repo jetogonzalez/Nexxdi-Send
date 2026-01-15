@@ -1,5 +1,5 @@
 /**
- * Variables de Entorno - Send App
+ * Variables de Entorno - Nexxdi Cash
  * 
  * Configuración centralizada para variables de entorno.
  * Usa import.meta.env en Astro para acceder a las variables.
@@ -20,7 +20,7 @@ export const env = {
   PUBLIC_FIREBASE_MEASUREMENT_ID: import.meta.env.PUBLIC_FIREBASE_MEASUREMENT_ID || '',
   
   // App Info
-  PUBLIC_APP_NAME: import.meta.env.PUBLIC_APP_NAME || 'Send App',
+  PUBLIC_APP_NAME: import.meta.env.PUBLIC_APP_NAME || 'Nexxdi Cash',
   PUBLIC_APP_VERSION: import.meta.env.PUBLIC_APP_VERSION || '1.0.0',
   PUBLIC_APP_URL: import.meta.env.PUBLIC_APP_URL || 'https://your-app.web.app',
   

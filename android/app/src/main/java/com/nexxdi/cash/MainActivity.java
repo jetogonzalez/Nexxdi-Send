@@ -1,4 +1,4 @@
-package com.nexxdi.send;
+package com.nexxdi.cash;
 
 import com.getcapacitor.BridgeActivity;
 

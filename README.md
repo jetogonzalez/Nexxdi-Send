@@ -1,4 +1,4 @@
-# Send App - Nexxdi Send
+# Nexxdi Cash
 
 Aplicación móvil construida con Astro, Capacitor y Firebase. Disponible como PWA y apps nativas iOS/Android.
 
