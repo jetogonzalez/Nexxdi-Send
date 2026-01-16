@@ -80,6 +80,24 @@ export function CardDeck({ children, onCardChange }: CardDeckProps) {
   const pendingYRef = useRef(0);
   const isDragStartedRef = useRef(false); // Para detectar si el drag realmente comenzó
   const initialMoveThreshold = 0; // Sin umbral inicial como en CodePen (drag inmediato)
+  
+  // Función para limpiar completamente el estado del drag
+  const resetDragState = () => {
+    draggingRef.current = false;
+    isDragStartedRef.current = false;
+    preventBodyScroll(false);
+    // Liberar pointer capture si existe
+    if (deckRef.current && deckRef.current.releasePointerCapture) {
+      // Intentar liberar todos los pointers posibles
+      try {
+        for (let i = 0; i < 10; i++) {
+          deckRef.current.releasePointerCapture(i);
+        }
+      } catch (err) {
+        // Ignorar errores
+      }
+    }
+  };
 
   // Funciones helper
   const clamp = (v: number, a: number, b: number) => Math.max(a, Math.min(b, v));
@@ -304,10 +322,13 @@ export function CardDeck({ children, onCardChange }: CardDeckProps) {
   // Prevenir scroll del body durante drag
   const preventBodyScroll = (prevent: boolean) => {
     if (prevent) {
-      document.body.style.overflow = 'hidden';
-      document.body.style.position = 'fixed';
-      document.body.style.width = '100%';
-      document.body.style.top = `-${window.scrollY}px`;
+      // Solo prevenir scroll si realmente estamos haciendo drag
+      if (draggingRef.current) {
+        document.body.style.overflow = 'hidden';
+        document.body.style.position = 'fixed';
+        document.body.style.width = '100%';
+        document.body.style.top = `-${window.scrollY}px`;
+      }
     } else {
       const scrollY = document.body.style.top;
       document.body.style.overflow = '';
@@ -360,6 +381,7 @@ export function CardDeck({ children, onCardChange }: CardDeckProps) {
   const handlePointerMove = (e: React.PointerEvent) => {
     // Implementación exacta del CodePen (sin umbral inicial)
     if (!draggingRef.current) return;
+    if (!isDragStartedRef.current) return;
 
     // Prevenir scroll durante el drag
     e.preventDefault();
@@ -378,31 +400,47 @@ export function CardDeck({ children, onCardChange }: CardDeckProps) {
     dragTransform(dyRawRef.current);
   };
 
-  const handlePointerUp = () => {
+  const handlePointerUp = (e: React.PointerEvent) => {
     // Implementación exacta del CodePen
     if (!draggingRef.current) {
-      preventBodyScroll(false);
+      resetDragState();
       return;
     }
     
-    draggingRef.current = false;
-    isDragStartedRef.current = false;
-    
-    // Restaurar scroll del body
-    preventBodyScroll(false);
-
+    const wasDragging = draggingRef.current;
     const yCommit = dyRawRef.current < 0 ? dyVisualRef.current : softDown(dyRawRef.current);
     const commit =
       Math.abs(yCommit) > threshold() || Math.abs(velocityYRef.current) > VELOCITY_COMMIT;
 
-    if (!commit) {
+    // Limpiar estado primero
+    resetDragState();
+    
+    // Liberar pointer capture si existe
+    if (deckRef.current && deckRef.current.releasePointerCapture) {
+      try {
+        deckRef.current.releasePointerCapture(e.pointerId);
+      } catch (err) {
+        // Ignorar errores si el pointer no está capturado
+      }
+    }
+
+    if (!commit || !wasDragging) {
       layout(true);
       return;
     }
     animateCommit(dyRawRef.current < 0, dyRawRef.current);
   };
 
-  const handlePointerCancel = () => {
+  const handlePointerCancel = (e: React.PointerEvent) => {
+    // Liberar pointer capture si existe
+    if (deckRef.current && deckRef.current.releasePointerCapture) {
+      try {
+        deckRef.current.releasePointerCapture(e.pointerId);
+      } catch (err) {
+        // Ignorar errores si el pointer no está capturado
+      }
+    }
+    
     // Restaurar scroll del body
     preventBodyScroll(false);
     
@@ -416,6 +454,7 @@ export function CardDeck({ children, onCardChange }: CardDeckProps) {
     const handleGlobalPointerMove = (e: PointerEvent) => {
       // Implementación exacta del CodePen (sin umbral inicial)
       if (!draggingRef.current) return;
+      if (!isDragStartedRef.current) return;
       
       // Prevenir scroll durante el drag
       e.preventDefault();
@@ -441,6 +480,15 @@ export function CardDeck({ children, onCardChange }: CardDeckProps) {
         return;
       }
       
+      // Liberar pointer capture si existe
+      if (deckRef.current && deckRef.current.releasePointerCapture) {
+        try {
+          deckRef.current.releasePointerCapture(e.pointerId);
+        } catch (err) {
+          // Ignorar errores si el pointer no está capturado
+        }
+      }
+      
       draggingRef.current = false;
       isDragStartedRef.current = false;
       
@@ -459,9 +507,19 @@ export function CardDeck({ children, onCardChange }: CardDeckProps) {
     };
 
     const handleGlobalTouchMove = (e: TouchEvent) => {
-      if (e.touches.length !== 1) return;
+      if (e.touches.length !== 1) {
+        // Si hay múltiples toques, cancelar el drag
+        if (draggingRef.current) {
+          draggingRef.current = false;
+          isDragStartedRef.current = false;
+          preventBodyScroll(false);
+          layout(true);
+        }
+        return;
+      }
       
       if (!draggingRef.current) return;
+      if (!isDragStartedRef.current) return;
       
       const touch = e.touches[0];
       
@@ -522,6 +580,8 @@ export function CardDeck({ children, onCardChange }: CardDeckProps) {
       }
       
       e.preventDefault();
+      e.stopPropagation();
+      
       draggingRef.current = false;
       isDragStartedRef.current = false;
       
@@ -547,13 +607,15 @@ export function CardDeck({ children, onCardChange }: CardDeckProps) {
     };
 
     // Usar capture phase para interceptar eventos antes de que lleguen a otros elementos
-    document.addEventListener('pointermove', handleGlobalPointerMove, { passive: false, capture: true });
-    document.addEventListener('pointerup', handleGlobalPointerUp, { capture: true });
-    document.addEventListener('pointercancel', handleGlobalPointerUp, { capture: true });
-    document.addEventListener('touchmove', handleGlobalTouchMove, { passive: false, capture: true });
-    document.addEventListener('touchstart', handleGlobalTouchStart, { passive: false, capture: true });
-    document.addEventListener('touchend', handleGlobalTouchEnd, { passive: false, capture: true });
-    document.addEventListener('touchcancel', handleGlobalTouchCancel, { passive: false, capture: true });
+    // Solo agregar listeners cuando realmente necesitamos capturar eventos globales
+    const options = { passive: false, capture: true };
+    document.addEventListener('pointermove', handleGlobalPointerMove, options);
+    document.addEventListener('pointerup', handleGlobalPointerUp, options);
+    document.addEventListener('pointercancel', handleGlobalPointerUp, options);
+    document.addEventListener('touchmove', handleGlobalTouchMove, options);
+    document.addEventListener('touchstart', handleGlobalTouchStart, options);
+    document.addEventListener('touchend', handleGlobalTouchEnd, options);
+    document.addEventListener('touchcancel', handleGlobalTouchCancel, options);
 
     return () => {
       document.removeEventListener('pointermove', handleGlobalPointerMove, { capture: true } as any);
