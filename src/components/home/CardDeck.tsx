@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect, useLayoutEffect } from 'react';
+import React, { useState, useRef, useEffect, useLayoutEffect, useMemo } from 'react';
 import type { ReactNode } from 'react';
 import { spacing, colors } from '../../config/design-tokens';
 
@@ -13,52 +13,36 @@ interface CardDeckProps {
  */
 export function CardDeck({ children, onCardChange }: CardDeckProps) {
   const deckRef = useRef<HTMLDivElement>(null);
-  // Normalizar children a array
-  const cards = Array.isArray(children)
-    ? children.filter(Boolean)
-    : children
-    ? [children]
-    : [];
+  // Normalizar children a array y memoizar para evitar recreación cuando cambian props
+  const cards = useMemo(() => {
+    return Array.isArray(children)
+      ? children.filter(Boolean)
+      : children
+      ? [children]
+      : [];
+  }, [children]);
+  
+  // Ref persistente para mantener el orden de las cards incluso cuando cambian las props
+  const persistentOrderRef = useRef<number[] | null>(null);
 
-  // Constantes del CodePen
-  const PEEK = 56; // Distancia entre tarjetas: 56px
+  // Constantes del CodePen (valores exactos)
+  const PEEK = 56; // Distancia entre tarjetas: 56px (ajustado para nuestro diseño, CodePen usa 52)
   const GAP_TO_BACK = 8;
   const BACK_Y = -PEEK * 2; // -112
   const FRONT_UP_LIMIT = BACK_Y + GAP_TO_BACK; // -104
 
-  // UP (hacia arriba) - límites ajustados
+  // UP (hacia arriba) - valores exactos del CodePen
   const MID_DOWN_MAX = 64;
   const UP_RUBBER = 0.22;
   const UP_MAX_LIMIT = -PEEK; // Límite máximo hacia arriba: -56px (una tarjeta)
 
-  // DOWN (hacia abajo) - límites ajustados para movimiento más natural
-  const DOWN_SOFT_START = 50; // Inicio más temprano para transición más suave
-  const DOWN_RUBBER = 0.35; // Aumentado para movimiento más fluido y natural
+  // DOWN (hacia abajo) - valores exactos del CodePen
+  const DOWN_SOFT_START = 80; // Valor exacto del CodePen
+  const DOWN_RUBBER = 0.32; // Valor exacto del CodePen
   const DOWN_PARALLAX_MID = 0.12;
   const DOWN_PARALLAX_BACK = 0.06;
-  
-  // Función para calcular el límite inferior dinámico basado en el contenido siguiente
-  const getDownMaxLimit = () => {
-    if (!deckRef.current) return 100; // Límite por defecto
-    
-    const deckRect = deckRef.current.getBoundingClientRect();
-    const deckBottom = deckRect.bottom;
-    
-    // Buscar el siguiente elemento hermano
-    const nextSibling = deckRef.current.nextElementSibling;
-    if (!nextSibling) return 100; // Si no hay siguiente elemento, usar límite por defecto
-    
-    const nextRect = nextSibling.getBoundingClientRect();
-    const nextTop = nextRect.top;
-    
-    // Calcular la distancia disponible antes de sobreponerse
-    const availableSpace = nextTop - deckBottom;
-    
-    // Retornar el límite máximo (máximo 100px, pero no más de lo disponible)
-    return Math.min(100, Math.max(0, availableSpace - 10)); // 10px de margen de seguridad
-  };
 
-  // Tiempos de commit
+  // Tiempos de commit - valores exactos del CodePen
   const DOWN_COMMIT_MS = 190;
   const DOWN_FALLBACK_MS = 230;
   const DOWN_OUT_Y = 54;
@@ -66,8 +50,25 @@ export function CardDeck({ children, onCardChange }: CardDeckProps) {
   const VELOCITY_COMMIT = 900;
   const THRESHOLD_RATIO = 0.26;
 
-  // Estado del drag
-  const [order, setOrder] = useState<number[]>(() => cards.map((_, i) => i));
+  // Estado del drag - usar ref persistente para mantener el orden cuando cambian las props
+  const [order, setOrder] = useState<number[]>(() => {
+    // Si ya existe un orden persistente y tiene la misma longitud, usarlo
+    if (persistentOrderRef.current && persistentOrderRef.current.length === cards.length) {
+      return persistentOrderRef.current;
+    }
+    // Sino, inicializar con el orden por defecto
+    const initialOrder = cards.map((_, i) => i);
+    persistentOrderRef.current = initialOrder;
+    return initialOrder;
+  });
+  
+  // Sincronizar el ref persistente con el estado cuando cambia el orden
+  useEffect(() => {
+    if (order.length === cards.length) {
+      persistentOrderRef.current = order;
+    }
+  }, [order, cards.length]);
+  
   const draggingRef = useRef(false);
   const startYRef = useRef(0);
   const dyRawRef = useRef(0);
@@ -78,7 +79,7 @@ export function CardDeck({ children, onCardChange }: CardDeckProps) {
   const rafPendingRef = useRef(false);
   const pendingYRef = useRef(0);
   const isDragStartedRef = useRef(false); // Para detectar si el drag realmente comenzó
-  const initialMoveThreshold = 1; // Umbral mínimo de movimiento para activar drag (1px - más sensible)
+  const initialMoveThreshold = 0; // Sin umbral inicial como en CodePen (drag inmediato)
 
   // Funciones helper
   const clamp = (v: number, a: number, b: number) => Math.max(a, Math.min(b, v));
@@ -92,23 +93,10 @@ export function CardDeck({ children, onCardChange }: CardDeckProps) {
   };
 
   const softDown = (y: number) => {
-    // Calcular límite máximo dinámico basado en el contenido siguiente
-    const dynamicMaxLimit = getDownMaxLimit();
-    // Aplicar límite máximo hacia abajo
-    const clampedY = Math.min(y, dynamicMaxLimit);
-    
-    // Movimiento más natural: aplicar resistencia progresiva desde el inicio
-    if (clampedY <= DOWN_SOFT_START) {
-      // Movimiento libre hasta DOWN_SOFT_START
-      return clampedY;
-    }
-    
-    // Aplicar efecto rubber band de forma más suave y natural
-    const over = clampedY - DOWN_SOFT_START;
-    const resistance = DOWN_SOFT_START + over * DOWN_RUBBER;
-    
-    // Asegurar que no exceda el límite dinámico
-    return Math.min(resistance, dynamicMaxLimit);
+    // Implementación exacta del CodePen (sin límite dinámico)
+    if (y <= DOWN_SOFT_START) return y;
+    const over = y - DOWN_SOFT_START;
+    return DOWN_SOFT_START + over * DOWN_RUBBER;
   };
 
   const threshold = () => {
@@ -270,7 +258,7 @@ export function CardDeck({ children, onCardChange }: CardDeckProps) {
     };
 
     if (!up) {
-      // DOWN con animación más natural y suave
+      // DOWN - implementación exacta del CodePen
       front.style.zIndex = '5';
       const start = softDown(dyRaw);
 
@@ -278,8 +266,8 @@ export function CardDeck({ children, onCardChange }: CardDeckProps) {
       front.style.transform = `translate3d(0,${start}px,0)`;
 
       requestAnimationFrame(() => {
-        // Curva de animación más natural para movimiento hacia abajo
-        front.style.transition = `transform ${DOWN_COMMIT_MS}ms cubic-bezier(0.25, 0.46, 0.45, 0.94)`;
+        // Curva de animación exacta del CodePen
+        front.style.transition = `transform ${DOWN_COMMIT_MS}ms cubic-bezier(.2,.9,.2,1)`;
         front.style.transform = `translate3d(0,${DOWN_OUT_Y}px,0) scale(0.985)`;
       });
 
@@ -338,7 +326,7 @@ export function CardDeck({ children, onCardChange }: CardDeckProps) {
     const cardElements = Array.from(deckRef.current.children) as HTMLDivElement[];
     if (cardElements.length === 0) return;
     
-    // Buscar la tarjeta del frente y verificar si el click fue en ella
+    // Buscar la tarjeta del frente y verificar si el click fue en ella (como en CodePen)
     const front = cardElements[order[0]];
     if (!front) return;
     
@@ -352,13 +340,14 @@ export function CardDeck({ children, onCardChange }: CardDeckProps) {
     
     if (!clickedOnFront) return;
 
-    // Inicializar estado del drag (pero no activar todavía)
+    // Inicializar estado del drag (activar inmediatamente como en CodePen)
+    draggingRef.current = true;
     startYRef.current = e.clientY;
     lastYRef.current = e.clientY;
     lastTRef.current = performance.now();
     velocityYRef.current = 0;
     dyRawRef.current = 0;
-    isDragStartedRef.current = false;
+    isDragStartedRef.current = true;
 
     // Prevenir scroll del body inmediatamente
     preventBodyScroll(true);
@@ -369,31 +358,14 @@ export function CardDeck({ children, onCardChange }: CardDeckProps) {
   };
 
   const handlePointerMove = (e: React.PointerEvent) => {
-    // Calcular movimiento desde el inicio
-    const dy = e.clientY - startYRef.current;
-    
-    // Si el drag no ha comenzado todavía, verificar si superamos el umbral
-    if (!isDragStartedRef.current) {
-      if (Math.abs(dy) >= initialMoveThreshold) {
-        // Activar el drag solo cuando hay movimiento suficiente
-        isDragStartedRef.current = true;
-        draggingRef.current = true;
-        // Prevenir scroll inmediatamente cuando se activa el drag
-        e.preventDefault();
-        e.stopPropagation();
-      } else {
-        // Aún no hay suficiente movimiento, no hacer nada
-        return;
-      }
-    }
-
+    // Implementación exacta del CodePen (sin umbral inicial)
     if (!draggingRef.current) return;
 
     // Prevenir scroll durante el drag
     e.preventDefault();
     e.stopPropagation();
 
-    dyRawRef.current = dy;
+    dyRawRef.current = e.clientY - startYRef.current;
 
     const now = performance.now();
     const dt = now - lastTRef.current;
@@ -407,18 +379,17 @@ export function CardDeck({ children, onCardChange }: CardDeckProps) {
   };
 
   const handlePointerUp = () => {
-    // Restaurar scroll del body siempre
-    preventBodyScroll(false);
-    
-    // Solo procesar si el drag realmente comenzó
-    if (!isDragStartedRef.current || !draggingRef.current) {
-      draggingRef.current = false;
-      isDragStartedRef.current = false;
+    // Implementación exacta del CodePen
+    if (!draggingRef.current) {
+      preventBodyScroll(false);
       return;
     }
     
     draggingRef.current = false;
     isDragStartedRef.current = false;
+    
+    // Restaurar scroll del body
+    preventBodyScroll(false);
 
     const yCommit = dyRawRef.current < 0 ? dyVisualRef.current : softDown(dyRawRef.current);
     const commit =
@@ -443,31 +414,14 @@ export function CardDeck({ children, onCardChange }: CardDeckProps) {
   // Event listeners globales para touch en móviles
   useEffect(() => {
     const handleGlobalPointerMove = (e: PointerEvent) => {
-      // Calcular movimiento desde el inicio
-      const dy = e.clientY - startYRef.current;
-      
-      // Si el drag no ha comenzado todavía, verificar si superamos el umbral
-      if (!isDragStartedRef.current) {
-        if (Math.abs(dy) >= initialMoveThreshold) {
-          // Activar el drag solo cuando hay movimiento suficiente
-          isDragStartedRef.current = true;
-          draggingRef.current = true;
-          // Prevenir scroll inmediatamente cuando se activa el drag
-          e.preventDefault();
-          e.stopPropagation();
-        } else {
-          // Aún no hay suficiente movimiento, no hacer nada
-          return;
-        }
-      }
-
+      // Implementación exacta del CodePen (sin umbral inicial)
       if (!draggingRef.current) return;
       
       // Prevenir scroll durante el drag
       e.preventDefault();
       e.stopPropagation();
       
-      dyRawRef.current = dy;
+      dyRawRef.current = e.clientY - startYRef.current;
 
       const now = performance.now();
       const dt = now - lastTRef.current;
@@ -477,22 +431,21 @@ export function CardDeck({ children, onCardChange }: CardDeckProps) {
         lastTRef.current = now;
       }
 
-      dragTransform(dy);
+      dragTransform(dyRawRef.current);
     };
 
     const handleGlobalPointerUp = (e: PointerEvent) => {
-      // Restaurar scroll del body siempre
-      preventBodyScroll(false);
-      
-      // Solo procesar si el drag realmente comenzó
-      if (!isDragStartedRef.current || !draggingRef.current) {
-        draggingRef.current = false;
-        isDragStartedRef.current = false;
+      // Implementación exacta del CodePen
+      if (!draggingRef.current) {
+        preventBodyScroll(false);
         return;
       }
       
       draggingRef.current = false;
       isDragStartedRef.current = false;
+      
+      // Restaurar scroll del body
+      preventBodyScroll(false);
 
       const yCommit = dyRawRef.current < 0 ? dyVisualRef.current : softDown(dyRawRef.current);
       const commit =
@@ -508,40 +461,24 @@ export function CardDeck({ children, onCardChange }: CardDeckProps) {
     const handleGlobalTouchMove = (e: TouchEvent) => {
       if (e.touches.length !== 1) return;
       
-      const touch = e.touches[0];
-      const dy = touch.clientY - startYRef.current;
+      if (!draggingRef.current) return;
       
-      // Si el drag no ha comenzado todavía, verificar si superamos el umbral
-      if (!isDragStartedRef.current) {
-        if (Math.abs(dy) >= initialMoveThreshold) {
-          // Activar el drag solo cuando hay movimiento suficiente
-          isDragStartedRef.current = true;
-          draggingRef.current = true;
-          // Prevenir scroll inmediatamente cuando se activa el drag
-          e.preventDefault();
-          e.stopPropagation();
-        } else {
-          // Aún no hay suficiente movimiento, permitir scroll normal
-          return;
-        }
+      const touch = e.touches[0];
+      
+      e.preventDefault(); // Prevenir scroll durante drag
+      e.stopPropagation(); // Evitar que el evento se propague
+      
+      dyRawRef.current = touch.clientY - startYRef.current;
+
+      const now = performance.now();
+      const dt = now - lastTRef.current;
+      if (dt > 0) {
+        velocityYRef.current = ((touch.clientY - lastYRef.current) / dt) * 1000;
+        lastYRef.current = touch.clientY;
+        lastTRef.current = now;
       }
 
-      if (draggingRef.current) {
-        e.preventDefault(); // Prevenir scroll durante drag
-        e.stopPropagation(); // Evitar que el evento se propague
-        
-        dyRawRef.current = dy;
-
-        const now = performance.now();
-        const dt = now - lastTRef.current;
-        if (dt > 0) {
-          velocityYRef.current = ((touch.clientY - lastYRef.current) / dt) * 1000;
-          lastYRef.current = touch.clientY;
-          lastTRef.current = now;
-        }
-
-        dragTransform(dy);
-      }
+      dragTransform(dyRawRef.current);
     };
 
     const handleGlobalTouchStart = (e: TouchEvent) => {
@@ -563,13 +500,14 @@ export function CardDeck({ children, onCardChange }: CardDeckProps) {
       if (clickedOnFront && e.touches.length === 1) {
         const touch = e.touches[0];
         
-        // Inicializar estado del drag (pero no activar todavía)
+        // Inicializar estado del drag (activar inmediatamente como en CodePen)
+        draggingRef.current = true;
+        isDragStartedRef.current = true;
         startYRef.current = touch.clientY;
         lastYRef.current = touch.clientY;
         lastTRef.current = performance.now();
         velocityYRef.current = 0;
         dyRawRef.current = 0;
-        isDragStartedRef.current = false;
         
         // Prevenir scroll del body inmediatamente
         preventBodyScroll(true);
@@ -577,19 +515,18 @@ export function CardDeck({ children, onCardChange }: CardDeckProps) {
     };
 
     const handleGlobalTouchEnd = (e: TouchEvent) => {
-      // Restaurar scroll del body siempre
-      preventBodyScroll(false);
-      
-      // Solo procesar si el drag realmente comenzó
-      if (!isDragStartedRef.current || !draggingRef.current) {
-        draggingRef.current = false;
-        isDragStartedRef.current = false;
+      // Implementación exacta del CodePen
+      if (!draggingRef.current) {
+        preventBodyScroll(false);
         return;
       }
       
       e.preventDefault();
       draggingRef.current = false;
       isDragStartedRef.current = false;
+      
+      // Restaurar scroll del body
+      preventBodyScroll(false);
 
       const yCommit = dyRawRef.current < 0 ? dyVisualRef.current : softDown(dyRawRef.current);
       const commit =
@@ -632,20 +569,27 @@ export function CardDeck({ children, onCardChange }: CardDeckProps) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [order]);
 
+  // Ref para rastrear si el componente ya se inicializó
+  const isInitializedRef = useRef(false);
+
   // Layout inicial cuando se monta el componente - sin animación y sincronizado
   // Usar useLayoutEffect para ejecutar antes del paint y asegurar que todas las cards se rendericen al mismo tiempo
   useLayoutEffect(() => {
-    if (cards.length > 0 && deckRef.current) {
+    if (cards.length > 0 && deckRef.current && !isInitializedRef.current) {
       // Layout inicial sin animación para posicionar correctamente desde el inicio
       // Esto asegura que todas las cards se posicionen simultáneamente sin animación
+      // Solo ejecutar una vez al montar, no cuando cambian las props
       layout(false);
+      isInitializedRef.current = true;
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, []); // Solo ejecutar una vez al montar
 
-  // Layout cuando cambia el orden
+  // Layout cuando cambia el orden (solo cuando el usuario hace drag, no cuando cambian props)
   useEffect(() => {
-    if (cards.length > 0 && deckRef.current && order.length === cards.length) {
+    // Solo aplicar layout cuando el orden cambia y el componente ya está inicializado
+    // Esto evita que se resetee cuando cambian las props como isBalanceVisible
+    if (cards.length > 0 && deckRef.current && order.length === cards.length && isInitializedRef.current) {
       requestAnimationFrame(() => {
         layout(true);
       });
@@ -677,6 +621,8 @@ export function CardDeck({ children, onCardChange }: CardDeckProps) {
       onPointerCancel={handlePointerCancel}
     >
       {cards.map((card, index) => {
+        // Usar el índice original de la card como key estable para evitar que React recree los elementos
+        // cuando cambian las props como isBalanceVisible
         const cardOrder = order.indexOf(index);
         const isFront = cardOrder === 0;
         const isMiddle = cardOrder === 1;
@@ -749,7 +695,7 @@ export function CardDeck({ children, onCardChange }: CardDeckProps) {
 
         return (
           <div
-            key={index}
+            key={`card-${index}`} // Key estable basada en el índice original para evitar recreación
             data-card-index={index}
             style={{
               position: isFront ? 'relative' : 'absolute',

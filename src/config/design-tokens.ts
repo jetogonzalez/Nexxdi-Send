@@ -98,6 +98,13 @@ export const colors = {
       medium: 'rgba(0, 0, 0, 0.1)',
       dark: 'rgba(0, 0, 0, 0.2)',
     },
+    
+    // Colores de fondo para avatares de movimientos (capa media)
+    movementAvatar: {
+      carulla: '#7DBE42', // Verde Carulla
+      netflix: '#141414', // Color oscuro Netflix
+      amazon: '#ffffff', // Blanco Amazon
+    },
   },
   
   // Colores legacy (mantener compatibilidad)
@@ -285,6 +292,7 @@ export const spacing = {
   4: '1rem',        // 16px (8px * 2)
   5: '1.25rem',     // 20px (8px * 2.5)
   6: '1.5rem',      // 24px (8px * 3)
+  7: '1.75rem',     // 28px (8px * 3.5)
   8: '2rem',        // 32px (8px * 4)
   10: '2.5rem',     // 40px (8px * 5)
   12: '3rem',       // 48px (8px * 6)

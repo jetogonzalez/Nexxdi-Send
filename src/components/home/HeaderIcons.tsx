@@ -1,3 +1,5 @@
+"use client";
+
 import { header, colors } from '../../config/design-tokens';
 
 interface IconProps {

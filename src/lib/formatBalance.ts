@@ -5,11 +5,11 @@
  * 
  * @param amount - Cantidad en dólares
  * @param isVisible - Si el balance es visible o debe mostrarse oculto
- * @returns String formateado (ej: "1.000.000,23 USD" o "••• USD")
+ * @returns String formateado (ej: "1.000.000,23 USD" o "•••")
  */
 export function formatBalance(amount: number, isVisible: boolean = true): string {
   if (!isVisible) {
-    return '••• USD';
+    return '•••'; // Sin código de moneda cuando está oculto
   }
   
   // REGLA: Puntos para miles/millones, coma para decimales

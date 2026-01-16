@@ -1,39 +1,38 @@
+"use client";
+
+import { useState } from 'react';
 import { borderRadius, colors, spacing, typography } from '../../config/design-tokens';
-import { useState, useEffect } from 'react';
 
 interface MovementAvatarProps {
-  /** URL del logo interno (20x20px) */
+  /** URL del logo interno (24x24px) */
   logoUrl?: string;
   /** Nombre completo del contacto para generar iniciales */
   contactName?: string;
   /** URL de la imagen del contacto */
   imageUrl?: string;
-  /** Badge a mostrar en la esquina (ej: "+", icono SVG, etc.) */
-  badge?: React.ReactNode;
-  /** URL del icono SVG para el badge (12x12px, color #101828, stroke 1px) */
-  badgeIconUrl?: string;
-  /** Estilo del badge: 'default' (fondo gris) o 'light' (fondo blanco con borde) */
-  badgeStyle?: 'default' | 'light';
-  /** Tamaño del avatar (por defecto 34px) */
+  /** Tamaño del avatar (por defecto 40px) */
   size?: number;
+  /** Color del borde doble (ej: #7DBE42 para Carulla) */
+  borderColor?: string;
 }
 
 /**
  * Componente genérico para avatares de movimientos
- * - Contenedor: 34x34px con fondo negro al 5% de opacidad
- * - Logo interno: 20x20px
- * - Iniciales: Primer nombre + Primer apellido
+ * - Avatar: 40x40px con fondo negro al 5% de opacidad
+ * - Logo interno: 24x24px
+ * - Iniciales: Primer nombre
  * - Imagen: Reemplaza el fondo cuando está disponible
  */
 export function MovementAvatar({
   logoUrl,
   contactName,
   imageUrl,
-  badge,
-  badgeIconUrl,
-  badgeStyle = 'default',
-  size = 34,
+  size = 40,
+  borderColor,
 }: MovementAvatarProps) {
+  const [logoError, setLogoError] = useState(false);
+  const [imageError, setImageError] = useState(false);
+
   // Generar iniciales desde el nombre completo (solo primer nombre)
   const getInitials = (name: string): string => {
     const parts = name.trim().split(/\s+/);
@@ -47,19 +46,27 @@ export function MovementAvatar({
   };
 
   // Determinar el contenido a mostrar
-  const hasImage = Boolean(imageUrl);
-  const hasLogo = Boolean(logoUrl);
+  const hasImage = Boolean(imageUrl) && !imageError;
+  const hasLogo = Boolean(logoUrl) && !logoError;
   const hasInitials = Boolean(contactName);
   
-  // Tamaño del logo interno (20x20px según especificación)
-  const logoSize = 20;
+  // Tamaño del logo interno (24x24px según especificación)
+  const logoSize = 24;
   
   // Tamaño de fuente para iniciales (ajustado proporcionalmente)
-  const fontSize = size * 0.5; // Aproximadamente 17px para 34px
+  const fontSize = size * 0.5; // Aproximadamente 20px para 40px
 
-  // Contenedor principal de 40x40px que incluye avatar y badge
-  const containerSize = 40;
+  // Avatar ocupa todo el espacio de 40x40px
+  const containerSize = size;
   
+  // Tamaños de las capas concéntricas cuando hay borderColor
+  // Capa 3 (exterior): fondo default - 40px
+  // Capa 2 (media): color del anillo (#7DBE42) - 40px (mismo tamaño que el exterior)
+  // Capa 1 (interior): logo - 24px
+  const outerSize = size; // 40px - Capa exterior (fondo default)
+  const middleSize = borderColor ? size : size; // 40px - Capa media (color del anillo) - mismo tamaño que exterior
+  const innerSize = logoSize; // 24px - Capa interior (logo)
+
   return (
     <div
       style={{
@@ -67,15 +74,21 @@ export function MovementAvatar({
         height: `${containerSize}px`,
         position: 'relative',
         flexShrink: 0,
-        marginRight: spacing[3], // 12px de espacio a la derecha
+        marginRight: spacing[4], // 16px de espacio a la derecha (12px + 4px adicional)
+        border: 'none', // Sin borde
       }}
     >
-      {/* Avatar principal */}
+      {/* Capa 3 (exterior): Fondo default */}
       <div
         style={{
-          width: `${size}px`,
-          height: `${size}px`,
+          position: 'absolute',
+          top: '50%',
+          left: '50%',
+          transform: 'translate(-50%, -50%)',
+          width: `${outerSize}px`,
+          height: `${outerSize}px`,
           borderRadius: borderRadius.full,
+          border: 'none', // Sin borde
           backgroundColor: hasImage 
             ? 'transparent' // Sin fondo cuando hay imagen
             : 'rgba(0, 0, 0, 0.05)', // Fondo negro al 5% de opacidad
@@ -83,29 +96,74 @@ export function MovementAvatar({
           backgroundSize: hasImage ? 'cover' : undefined,
           backgroundPosition: hasImage ? 'center' : undefined,
           backgroundRepeat: hasImage ? 'no-repeat' : undefined,
+          zIndex: 1,
+        }}
+      />
+
+      {/* Capa 2 (media): Color del anillo (#7DBE42, #141414, #ffffff) */}
+      {borderColor && (
+        <div
+          style={{
+            position: 'absolute',
+            top: '50%',
+            left: '50%',
+            transform: 'translate(-50%, -50%)',
+            width: `${middleSize}px`,
+            height: `${middleSize}px`,
+            borderRadius: borderRadius.full,
+            // Si el fondo es blanco, agregar borde de 1px más claro (nivel 300)
+            border: borderColor.toLowerCase() === '#ffffff' || borderColor.toLowerCase() === '#fff' || borderColor.toLowerCase() === 'white'
+              ? `1px solid ${colors.gray[300]}` // Borde claro (nivel 300) - sutil para fondo blanco
+              : 'none',
+            backgroundColor: borderColor,
+            zIndex: 2,
+            pointerEvents: 'none',
+          }}
+        />
+      )}
+
+      {/* Capa 1 (interior): Logo */}
+      <div
+        style={{
+          position: 'absolute',
+          top: '50%',
+          left: '50%',
+          transform: 'translate(-50%, -50%)',
+          width: `${innerSize}px`,
+          height: `${innerSize}px`,
+          borderRadius: borderRadius.full,
+          border: 'none', // Sin borde
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
-          overflow: 'hidden', // Para que la imagen no sobresalga
-          position: 'absolute',
-          top: 0,
-          left: 0,
+          overflow: 'hidden',
+          zIndex: 3,
+          backgroundColor: borderColor ? 'transparent' : undefined, // Transparente cuando hay anillo de color
         }}
       >
-        {/* Contenido principal */}
+        {/* Contenido del logo */}
         {hasImage ? (
-          // Si hay imagen, solo mostrar la imagen (el fondo ya está configurado)
+          // Si hay imagen, solo mostrar la imagen (el fondo ya está configurado en la capa exterior)
           null
         ) : hasLogo ? (
-          // Mostrar logo interno (20x20px)
+          // Mostrar logo interno (24x24px)
           <img
             src={logoUrl}
             alt=""
             style={{
-              width: `${logoSize}px`,
-              height: `${logoSize}px`,
+              width: `${innerSize}px`,
+              height: `${innerSize}px`,
               display: 'block',
               objectFit: 'contain',
+              border: 'none', // Sin borde
+            }}
+            onError={(e) => {
+              console.error('Error loading logo:', logoUrl, e);
+              setLogoError(true);
+            }}
+            onLoad={() => {
+              console.log('Logo loaded successfully:', logoUrl);
+              setLogoError(false);
             }}
           />
         ) : hasInitials ? (
@@ -137,44 +195,6 @@ export function MovementAvatar({
         )}
       </div>
 
-      {/* Badge fuera del avatar, alineado a la derecha y abajo */}
-      {(badge || badgeIconUrl) && (
-        <div
-          style={{
-            width: '18px',
-            height: '18px',
-            borderRadius: borderRadius.full,
-            backgroundColor: '#F0EFF8',
-            border: `1px solid ${colors.semantic.background.white}`,
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            position: 'absolute',
-            bottom: 0,
-            right: 0,
-          }}
-        >
-          {badgeIconUrl ? (
-            // Renderizar icono SVG con tamaño y color correctos (12x12px, #101828, stroke 1px)
-            <img
-              src={badgeIconUrl}
-              alt=""
-              style={{
-                width: '12px',
-                height: '12px',
-                display: 'block',
-                filter: 'brightness(0) saturate(100%) invert(8%) sepia(8%) saturate(1234%) hue-rotate(177deg) brightness(95%) contrast(95%)', // Convertir a #101828
-              }}
-            />
-          ) : typeof badge === 'string' ? (
-            <span style={{ fontSize: '10px', color: colors.semantic.text.primary }}>
-              {badge}
-            </span>
-          ) : (
-            badge
-          )}
-        </div>
-      )}
     </div>
   );
 }

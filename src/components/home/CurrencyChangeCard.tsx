@@ -8,7 +8,7 @@ interface CurrencyChangeCardProps {
   vsCurrency?: string; // Moneda de comparación (ej: "USD")
   timeFrame?: string; // Marco temporal (ej: "hoy")
   autoUpdate?: boolean; // Si debe actualizarse automáticamente
-  updateInterval?: number; // Intervalo de actualización en minutos (default: 1 para tiempo real)
+  updateInterval?: number; // Intervalo de actualización en segundos (default: 20 para tiempo real)
 }
 
 /**
@@ -23,7 +23,7 @@ export function CurrencyChangeCard({
   vsCurrency = 'USD',
   timeFrame = 'hoy',
   autoUpdate = true,
-  updateInterval = 1, // 1 minuto por defecto para actualización en tiempo real
+  updateInterval = 20, // 20 segundos para actualización en tiempo real
 }: CurrencyChangeCardProps) {
   const [currentRate, setCurrentRate] = useState<number>(0);
   const [rate24HoursAgo, setRate24HoursAgo] = useState<number>(0); // Tasa de hace 24 horas para calcular porcentaje
@@ -66,18 +66,18 @@ export function CurrencyChangeCard({
             // Inicializar gráfica con datos históricos REALES + tasa actual
             // Todos los datos vienen de la misma fuente (API) y tienen el mismo descuento aplicado
             const historicalRates = validHistory.map((item) => item.rate);
-            const allRates = [...historicalRates, current]; // Agregar tasa actual al final
+            const allRates = [...historicalRates, current]; // Agregar tasa actual al final (7 días + hoy = 8 puntos)
             
-            // Mantener solo los últimos puntos que caben en 120px (aproximadamente 18-20 puntos)
-            const maxPoints = 20;
-            setChartData(allRates.length > maxPoints ? allRates.slice(-maxPoints) : allRates);
+            // Usar todos los datos de la semana (máximo 8 puntos: 7 días históricos + tasa actual)
+            setChartData(allRates);
           } else {
             // Solo usar fallback si realmente no hay datos válidos
             console.warn('No hay datos históricos válidos de la API');
-            const fallbackHistory = Array.from({ length: 5 }, (_, i) => {
+            const fallbackHistory = Array.from({ length: 7 }, (_, i) => {
               const date = new Date();
-              date.setDate(date.getDate() - (4 - i));
-              const variation = (Math.random() - 0.5) * 0.02; // ±1% variación
+              date.setDate(date.getDate() - (6 - i)); // Últimos 7 días
+              // Usar variación determinística basada en el índice para consistencia
+              const variation = (Math.sin(i * 0.5) * 0.01); // Variación determinística
               return {
                 date: date.toISOString().split('T')[0],
                 rate: current * (1 + variation),
@@ -89,9 +89,9 @@ export function CurrencyChangeCard({
         } else {
           // Solo usar fallback si realmente no hay historial
           console.warn('No hay historial disponible de la API');
-          const fallbackHistory = Array.from({ length: 5 }, (_, i) => {
+          const fallbackHistory = Array.from({ length: 7 }, (_, i) => {
             const date = new Date();
-            date.setDate(date.getDate() - (4 - i));
+            date.setDate(date.getDate() - (6 - i)); // Últimos 7 días
             const variation = (Math.random() - 0.5) * 0.02; // ±1% variación
             return {
               date: date.toISOString().split('T')[0],
@@ -108,18 +108,21 @@ export function CurrencyChangeCard({
         const fallbackRate = 4080 * 1.005; // Aplicar descuento del 0.5%
         setCurrentRate(fallbackRate);
         setRate24HoursAgo(fallbackRate * 0.998); // Tasa de ayer ligeramente menor para variación
-        // Generar historial de ejemplo realista
-        const fallbackHistory = Array.from({ length: 5 }, (_, i) => {
+        // Generar historial de ejemplo realista (7 días) con variación determinística
+        const fallbackHistory = Array.from({ length: 7 }, (_, i) => {
           const date = new Date();
-          date.setDate(date.getDate() - (4 - i));
-          const variation = (Math.random() - 0.5) * 0.02; // ±1% variación
+          date.setDate(date.getDate() - (6 - i)); // Últimos 7 días
+          // Usar variación determinística basada en el índice para consistencia
+          const variation = (Math.sin(i * 0.5) * 0.01); // Variación determinística
           return {
             date: date.toISOString().split('T')[0],
             rate: fallbackRate * (1 + variation),
           };
         });
         setHistoryData(fallbackHistory);
-        setChartData(fallbackHistory.map((item) => item.rate));
+        // Incluir tasa actual al final para tener 8 puntos (7 días + hoy)
+        const fallbackRates = fallbackHistory.map((item) => item.rate);
+        setChartData([...fallbackRates, fallbackRate]);
       } finally {
         setLoading(false);
       }
@@ -129,7 +132,7 @@ export function CurrencyChangeCard({
 
     // Configurar actualización automática si está habilitada
     if (autoUpdate) {
-      const intervalMs = updateInterval * 60 * 1000; // Convertir minutos a milisegundos
+      const intervalMs = updateInterval * 1000; // Convertir segundos a milisegundos
       const intervalId = setInterval(loadData, intervalMs);
       
       return () => clearInterval(intervalId);
@@ -137,12 +140,12 @@ export function CurrencyChangeCard({
   }, [vsCurrency, currencyCode, autoUpdate, updateInterval]);
 
   // Calcular cambio porcentual basado en datos REALES de la API
-  // Usar el primer y último valor del historial real para calcular el cambio porcentual
+  // Comparar el valor actual vs el de hace 7 días (primer valor del historial de una semana)
   // Esto asegura que el porcentaje corresponda a los datos reales mostrados en la gráfica
   const changePercentage = historyData.length >= 2
     ? calculatePercentageChange(
-        historyData[historyData.length - 1].rate, // Último valor del historial (más reciente)
-        historyData[0].rate // Primer valor del historial (más antiguo)
+        currentRate, // Valor actual (más reciente)
+        historyData[0].rate // Primer valor del historial (hace 7 días)
       )
     : currentRate > 0 && rate24HoursAgo > 0
     ? calculatePercentageChange(currentRate, rate24HoursAgo) // Fallback: usar tasa actual vs hace 24h
@@ -165,6 +168,10 @@ export function CurrencyChangeCard({
 
   // Color del cambio (verde específico para positivo, rojo para negativo)
   const changeColor = changeDirection === 'up' ? '#0BBD2B' : colors.error[500];
+  
+  // Color del icono: igual al del porcentaje pero un poco más oscuro
+  // Usar brightness para oscurecer el color del porcentaje
+  const iconColor = changeColor;
 
   // Usar datos del gráfico que crece hacia la derecha
   const displayChartData = chartData.length > 0 
@@ -172,7 +179,7 @@ export function CurrencyChangeCard({
     : [4080, 4075, 4085, 4070, 4080]; // Datos de fallback si no hay datos
   
   // Constantes del gráfico usando tokens
-  const chartWidth = 120; // Ancho fijo del gráfico: 120px
+  const chartWidth = 100; // Ancho fijo del gráfico: 100px (reducido de 120px)
   const padding = 2; // Padding interno para evitar que la línea toque los bordes
   
   // Calcular altura proporcional basada en los datos
@@ -206,19 +213,8 @@ export function CurrencyChangeCard({
       normalizedVal = (chartHeight - padding * 2) / 2; // Centro si no hay variación
     }
     
-    // Si la tendencia es descendente (baja), asegurar que la visualización refleje la bajada
-    // Ajustar la posición Y para que el primer punto esté más arriba y el último más abajo
+    // Calcular posición Y sin ajustes artificiales - mostrar los datos reales
     let y = chartHeight - normalizedVal - padding;
-    
-    // Si la tendencia es descendente y el cambio porcentual es negativo,
-    // asegurar que la línea muestre claramente la bajada
-    if (isDescendingTrend && changePercentage < 0) {
-      // Asegurar que el último punto esté más abajo que el primero
-      const progress = index / divisor; // 0 al inicio, 1 al final
-      // Aplicar un ajuste suave para que la línea descienda consistentemente
-      const descentAdjustment = progress * (chartHeight * 0.3); // Ajuste del 30% de la altura
-      y = Math.min(y + descentAdjustment, chartHeight - padding);
-    }
     
     // Asegurar que el valor mínimo esté en la parte inferior y el máximo en la superior
     y = Math.max(padding, Math.min(chartHeight - padding, y));
@@ -266,9 +262,9 @@ export function CurrencyChangeCard({
           display: 'flex',
           alignItems: 'flex-end', // Alineado abajo (igual que el contenido real)
           justifyContent: 'flex-start', // Alineado a la izquierda
-          gap: spacing[6], // 24px de espacio entre secciones
+          gap: spacing[4], // 16px de espacio entre secciones (ajustado)
           marginBottom: spacing[6],
-          height: '146px', // Altura fija para el skeleton
+          height: '180px', // Altura fija para el skeleton (ajustada de 146px)
           boxSizing: 'border-box',
         }}
       >
@@ -328,7 +324,7 @@ export function CurrencyChangeCard({
         display: 'flex',
         alignItems: 'flex-end', // Alineado abajo
         justifyContent: 'flex-start', // Alineado a la izquierda
-        gap: spacing[6], // 24px de espacio entre secciones
+        gap: spacing[4], // 16px de espacio entre secciones
         marginBottom: spacing[6], // 24px de margin inferior
         boxSizing: 'border-box',
       }}
@@ -338,7 +334,7 @@ export function CurrencyChangeCard({
         style={{
           display: 'flex',
           flexDirection: 'column',
-          gap: spacing[1], // 4px entre elementos
+          gap: spacing[0.5], // 2px entre elementos (reducido para el espacio entre valor y porcentaje)
           flex: 1,
           alignItems: 'flex-start', // Alineado a la izquierda
           justifyContent: 'flex-end', // Alineado abajo
@@ -354,6 +350,7 @@ export function CurrencyChangeCard({
             lineHeight: spacing[6], // 24px (1.5rem)
             letterSpacing: '0%',
             height: spacing[6], // 24px (1.5rem)
+            marginBottom: spacing[2], // 8px adicionales de espacio debajo del título para separarlo del valor
           }}
         >
           {currencyName}
@@ -368,53 +365,89 @@ export function CurrencyChangeCard({
             color: colors.semantic.text.primary, // #101828 (mismo que text.primary)
             lineHeight: spacing[8], // 32px (2rem)
             letterSpacing: '-0.04em', // -4%
-            marginBottom: '2px', // 2px de espacio debajo
+            marginBottom: 0, // Sin margin adicional, el gap del contenedor lo maneja
+            whiteSpace: 'nowrap', // Evitar que se parta en múltiples líneas
           }}
         >
-          {formattedValue} {currencyCode}
+          {currencyCode === 'COP' 
+            ? `1 ${vsCurrency} = ${formattedValue} ${currencyCode}`
+            : `${formattedValue} ${currencyCode}`
+          }
         </div>
 
         {/* Indicador de cambio - Debajo del valor principal */}
         <div
           style={{
             display: 'flex',
-            alignItems: 'center',
-            gap: spacing[1], // 4px entre icono y texto
-            fontFamily: typography.fontFamily.sans.join(', '), // Manrope
-            fontSize: typography.fontSize.xs, // 12px (0.75rem)
-            fontWeight: typography.fontWeight.normal, // 400 (Regular) - se sobrescribe en los spans hijos
-            color: colors.semantic.text.secondary,
-            lineHeight: '18px', // 18px (1.5 * 12px) - usando valor calculado ya que no hay token exacto
-            letterSpacing: '0%',
+            flexDirection: 'column',
+            gap: spacing[3], // 12px entre elementos (aumentado para el espacio entre porcentaje y link)
+            alignItems: 'flex-start',
           }}
         >
-          {changeDirection === 'up' ? (
-            <img
-              src="/img/icons/global/trend-up.svg"
-              alt="Trend up"
-              style={{
-                width: '18px', // 18px
-                height: '18px', // 18px
-                display: 'block',
-                filter: `brightness(0) saturate(100%) invert(45%) sepia(93%) saturate(1352%) hue-rotate(87deg) brightness(96%) contrast(89%)`, // Filtro para convertir a verde #0BBD2B
-              }}
-            />
-          ) : (
-            <img
-              src="/img/icons/global/trend-down.svg"
-              alt="Trend down"
-              style={{
-                width: '18px', // 18px
-                height: '18px', // 18px
-                display: 'block',
-                filter: `brightness(0) saturate(100%) invert(27%) sepia(95%) saturate(7471%) hue-rotate(349deg) brightness(95%) contrast(96%)`, // Filtro para convertir a rojo (similar al error[500])
-              }}
-            />
-          )}
-          <span style={{ color: changeColor, fontWeight: typography.fontWeight.bold, fontFamily: typography.fontFamily.sans.join(', ') }}>
-            {formattedPercentage}%
-          </span>
-          <span style={{ fontWeight: typography.fontWeight.medium, fontSize: '13px' }}>vs {vsCurrency} {timeFrame}</span>
+          {/* Primera línea: icono porcentaje vs USD hoy */}
+          <div
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: spacing[1], // 4px entre icono y texto
+              fontFamily: typography.fontFamily.sans.join(', '), // Manrope
+              fontSize: typography.fontSize.xs, // 12px (0.75rem)
+              fontWeight: typography.fontWeight.normal, // 400 (Regular) - se sobrescribe en los spans hijos
+              color: colors.semantic.text.secondary,
+              lineHeight: '18px', // 18px (1.5 * 12px)
+              letterSpacing: '0%',
+            }}
+          >
+            <div style={{ color: changeColor, display: 'flex', alignItems: 'center' }}>
+              {changeDirection === 'up' ? (
+                <svg width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ display: 'block' }}>
+                  <path d="M16.5 5.25L10.5985 11.1515C10.3015 11.4485 10.153 11.597 9.98176 11.6526C9.83113 11.7016 9.66887 11.7016 9.51824 11.6526C9.34699 11.597 9.19849 11.4485 8.90147 11.1515L6.84853 9.09853C6.55152 8.80152 6.40301 8.65301 6.23176 8.59737C6.08113 8.54842 5.91887 8.54842 5.76824 8.59737C5.59699 8.65301 5.44848 8.80152 5.15147 9.09853L1.5 12.75M16.5 5.25H11.25M16.5 5.25V10.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                </svg>
+              ) : (
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ display: 'block' }}>
+                  <path d="M22 17L14.1314 9.13137C13.7354 8.73535 13.5373 8.53735 13.309 8.46316C13.1082 8.3979 12.8918 8.3979 12.691 8.46316C12.4627 8.53735 12.2646 8.73535 11.8686 9.13137L9.13137 11.8686C8.73535 12.2646 8.53735 12.4627 8.30902 12.5368C8.10817 12.6021 7.89183 12.6021 7.69098 12.5368C7.46265 12.4627 7.26465 12.2646 6.86863 11.8686L2 7M22 17H15M22 17V10" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                </svg>
+              )}
+            </div>
+            <span style={{ color: changeColor, fontWeight: typography.fontWeight.bold, fontFamily: typography.fontFamily.sans.join(', ') }}>
+              {formattedPercentage}%
+            </span>
+            <span style={{ fontWeight: typography.fontWeight.medium, fontSize: '13px' }}>vs {vsCurrency} hace 7 días</span>
+          </div>
+          
+          {/* Segunda línea: Link "Calcula tu cambio →" */}
+          <a
+            href="#"
+            onClick={(e) => {
+              e.preventDefault();
+              // Aquí puedes agregar la lógica para abrir el calculador de cambio
+            }}
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              fontFamily: typography.fontFamily.sans.join(', '), // Manrope
+              fontSize: typography.fontSize.sm, // 14px (0.875rem) - aumentado de xs (12px)
+              fontWeight: typography.fontWeight.bold, // Bold
+              color: colors.semantic.text.primary,
+              textDecoration: 'underline',
+              textUnderlineOffset: '4px', // Espacio entre el texto y el underline
+              textDecorationThickness: '1px', // Grosor del underline
+              lineHeight: '20px', // Ajustado para el nuevo tamaño
+              letterSpacing: '0%',
+              cursor: 'pointer',
+              padding: 0, // Sin padding
+              margin: 0, // Sin margin
+              borderRadius: borderRadius.full, // Border radius completo
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.opacity = '0.7';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.opacity = '1';
+            }}
+          >
+            Calcula tu cambio →
+          </a>
         </div>
       </div>
 

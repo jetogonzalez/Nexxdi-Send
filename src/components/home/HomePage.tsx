@@ -147,12 +147,16 @@ export default function HomePage() {
     setScrollProgress(0);
   };
 
+  // Valores de saldo compartidos entre vistas (USD y COP)
+  const currencyBalanceUSD = 5678.90; // Valor de ejemplo para USD
+  const currencyBalanceCOP = 1500000.50; // Valor de ejemplo para COP (peso colombiano)
+
   const renderContent = () => {
     switch (activeTab) {
       case 'home':
-        return <HomeView titleRef={(el) => { titleRefs.current['home'] = el; }} scrollProgress={scrollProgress} isBalanceVisible={isBalanceVisible} />;
+        return <HomeView titleRef={(el) => { titleRefs.current['home'] = el; }} scrollProgress={scrollProgress} isBalanceVisible={isBalanceVisible} usdBalance={currencyBalanceUSD} copBalance={currencyBalanceCOP} />;
       case 'wallet':
-        return <WalletView isBalanceVisible={isBalanceVisible} titleRef={(el) => { titleRefs.current['wallet'] = el; }} scrollProgress={scrollProgress} />;
+        return <WalletView isBalanceVisible={isBalanceVisible} titleRef={(el) => { titleRefs.current['wallet'] = el; }} scrollProgress={scrollProgress} usdBalance={currencyBalanceUSD} copBalance={currencyBalanceCOP} />;
       case 'cash':
         return <CashView />;
       case 'tarjeta':
@@ -160,7 +164,7 @@ export default function HomePage() {
       case 'mas':
         return <MasView />;
       default:
-        return <HomeView titleRef={(el) => { titleRefs.current['home'] = el; }} scrollProgress={scrollProgress} isBalanceVisible={isBalanceVisible} />;
+        return <HomeView titleRef={(el) => { titleRefs.current['home'] = el; }} scrollProgress={scrollProgress} isBalanceVisible={isBalanceVisible} usdBalance={currencyBalanceUSD} copBalance={currencyBalanceCOP} />;
     }
   };
 

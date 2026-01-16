@@ -19,6 +19,7 @@ export function CashView() {
           lineHeight: typography.sectionTitle.lineHeight,
           color: typography.sectionTitle.color,
           fontFamily: typography.sectionTitle.fontFamily,
+          marginBottom: spacing[6], // 1.5rem después del título (default para todas las páginas)
         }}
       >
         Cash
