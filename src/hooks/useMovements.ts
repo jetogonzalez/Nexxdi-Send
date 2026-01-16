@@ -173,6 +173,19 @@ export function useMovements() {
             needsUpdate = true;
           }
           
+          // Actualizar logo de Netflix si existe con la ruta antigua
+          const netflixMovements = updatedMovements.filter((m: Movement) => m.id === 'card-2' || (m.name && m.name.includes('Netflix')));
+          netflixMovements.forEach((movement) => {
+            if (movement.logoUrl && (
+              movement.logoUrl.includes('Netflix_2015_logo') || 
+              movement.logoUrl.includes('logo-local-netflix_files') ||
+              movement.logoUrl !== '/img/icons/logos/logo-local-netflix.svg'
+            )) {
+              movement.logoUrl = '/img/icons/logos/logo-local-netflix.svg';
+              needsUpdate = true;
+            }
+          });
+          
           if (cardMovements.length < 3) {
             const defaultCardMovements: Movement[] = [
               {

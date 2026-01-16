@@ -132,15 +132,14 @@ export function HomeView({ titleRef, scrollProgress = 0, isBalanceVisible = true
         <h2
           style={{
             fontFamily: typography.fontFamily.sans.join(', '), // Manrope
-            fontSize: typography.fontSize.lg, // 18px (1.125rem)
+            fontSize: typography.fontSize.xl, // 20px (1.25rem) - Tokenizado
             fontWeight: typography.fontWeight.bold, // 700 Bold
-            lineHeight: '24px', // 24px
+            lineHeight: typography.lineHeight.tight, // 1.25 - Tokenizado (mejor proporción para títulos)
             letterSpacing: '0%',
-            height: '24px', // Altura del header: 24px
             color: '#101828', // Color del texto
             margin: 0,
             padding: 0,
-            marginBottom: spacing[4], // 16px de espacio debajo del header
+            marginBottom: '1rem', // 1rem de espacio debajo del header
           }}
         >
           Envíos frecuentes

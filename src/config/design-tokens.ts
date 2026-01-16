@@ -480,21 +480,7 @@ export const breakpoints = {
 // ============================================
 // Transiciones
 // ============================================
-
-export const transitions = {
-  duration: {
-    fast: '150ms',
-    base: '200ms',
-    slow: '300ms',
-    slower: '500ms',
-  },
-  easing: {
-    linear: 'linear',
-    easeIn: 'cubic-bezier(0.4, 0, 1, 1)',
-    easeOut: 'cubic-bezier(0, 0, 0.2, 1)',
-    easeInOut: 'cubic-bezier(0.4, 0, 0.2, 1)',
-  },
-} as const;
+// Importado desde transitions-tokens.ts para evitar problemas de bundling
 
 // ============================================
 // Z-index layers
@@ -606,6 +592,16 @@ export const header = {
 } as const;
 
 // ============================================
+// Tokens para Segmented Button y Transiciones
+// ============================================
+
+import { segmentedButton } from './segmented-button-tokens';
+import { transitions } from './transitions-tokens';
+
+// Re-exportar para mantener compatibilidad
+export { segmentedButton, transitions };
+
+// ============================================
 // Exportación por defecto
 // ============================================
 
@@ -622,6 +618,10 @@ export const designTokens = {
   theme,
   button,
   bottomNavigation,
+  segmentedButton,
 } as const;
 
 export default designTokens;
+
+// Re-exportación explícita para asegurar disponibilidad
+export { segmentedButton, transitions };
