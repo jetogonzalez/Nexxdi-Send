@@ -1,33 +1,144 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { colors, spacing, typography, borderRadius } from '../../config/design-tokens';
 import { LoginForm } from './LoginForm';
+import { BiometricErrorDialog } from './BiometricErrorDialog';
+import { BiometricInfoDialog } from './BiometricInfoDialog';
+import {
+  authenticateWithBiometric,
+  isBiometricAvailable,
+  isBiometricEnrolled,
+  hasStoredToken,
+  storeSessionToken,
+  type BiometricAuthError,
+} from '../../lib/biometricAuth';
+
+type ErrorState = {
+  show: boolean;
+  error: BiometricAuthError | null;
+  message: string;
+};
 
 export default function WelcomeScreen() {
   const [showLoginSheet, setShowLoginSheet] = useState(false);
   const [isAuthenticating, setIsAuthenticating] = useState(false);
+  const [errorState, setErrorState] = useState<ErrorState>({
+    show: false,
+    error: null,
+    message: '',
+  });
+  const [showInfoDialog, setShowInfoDialog] = useState(false);
 
-  // Función de autenticación del sistema (biometría o PIN/patrón del celular)
-  const handleSystemAuth = async () => {
-    setIsAuthenticating(true);
+  // Verificar disponibilidad de biometría al montar
+  useEffect(() => {
+    checkBiometricAvailability();
+  }, []);
+
+  const checkBiometricAvailability = async () => {
+    const available = await isBiometricAvailable();
+    const enrolled = await isBiometricEnrolled();
     
+    if (!available || !enrolled) {
+      // No mostrar diálogo automáticamente, solo cuando el usuario intente usar Face ID
+    }
+  };
+
+  // Función de autenticación biométrica
+  const handleBiometricAuth = async () => {
+    setIsAuthenticating(true);
+    setErrorState({ show: false, error: null, message: '' });
+
     try {
-      // Simular autenticación del sistema operativo
-      // En producción, aquí se integraría con:
-      // - Capacitor BiometricAuth plugin para biometría
-      // - O WebAuthn API para autenticación del sistema
-      
-      // Pequeño delay para simular el proceso de autenticación
-      await new Promise(resolve => setTimeout(resolve, 1200));
-      
-      // Redirigir al home (autenticación exitosa simulada)
-      window.location.href = '/home';
+      // Verificar si hay token guardado
+      if (!hasStoredToken()) {
+        setErrorState({
+          show: true,
+          error: 'NO_TOKEN',
+          message: 'No hay sesión guardada. Por favor, iniciá sesión con tu usuario y contraseña.',
+        });
+        setIsAuthenticating(false);
+        return;
+      }
+
+      // Intentar autenticación biométrica
+      const result = await authenticateWithBiometric('Confirmá tu identidad para ingresar');
+
+      if (result.success) {
+        // Autenticación exitosa: renovar token y navegar al home
+        storeSessionToken(result.token);
+        window.location.href = '/home';
+      } else {
+        // Manejar diferentes tipos de errores
+        handleBiometricError(result.error);
+      }
     } catch (error) {
-      console.error('Error en autenticación del sistema:', error);
+      console.error('Error en autenticación biométrica:', error);
+      setErrorState({
+        show: true,
+        error: 'FAILED',
+        message: 'No se pudo verificar tu identidad.',
+      });
+    } finally {
       setIsAuthenticating(false);
     }
   };
 
-  const handleLoginSuccess = () => {
+  const handleBiometricError = (error: BiometricAuthError) => {
+    let message = 'No se pudo verificar tu identidad.';
+
+    switch (error) {
+      case 'NOT_AVAILABLE':
+      case 'NOT_ENROLLED':
+        setShowInfoDialog(true);
+        setIsAuthenticating(false);
+        return;
+      
+      case 'NO_TOKEN':
+        message = 'No hay sesión guardada. Por favor, iniciá sesión con tu usuario y contraseña.';
+        break;
+      
+      case 'CANCELLED':
+        // Usuario canceló, no mostrar error
+        setIsAuthenticating(false);
+        return;
+      
+      case 'LOCKED':
+        message = 'Face ID está bloqueado. Por favor, desbloqueá tu dispositivo y volvé a intentar.';
+        break;
+      
+      case 'FAILED':
+      default:
+        message = 'No se pudo verificar tu identidad.';
+        break;
+    }
+
+    setErrorState({
+      show: true,
+      error,
+      message,
+    });
+  };
+
+  const handleRetryBiometric = () => {
+    setErrorState({ show: false, error: null, message: '' });
+    handleBiometricAuth();
+  };
+
+  const handleUsePassword = () => {
+    setErrorState({ show: false, error: null, message: '' });
+    setShowLoginSheet(true);
+  };
+
+  const handleLoginSuccess = async (email: string, password: string) => {
+    // Simular login con usuario/contraseña
+    // En producción: llamar al backend
+    await new Promise(resolve => setTimeout(resolve, 500));
+    
+    // Generar token de sesión
+    const sessionToken = `session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+    
+    // Guardar token (en producción: en Keychain/Keystore con protección biométrica)
+    storeSessionToken(sessionToken);
+    
     setShowLoginSheet(false);
     window.location.href = '/home';
   };
@@ -114,10 +225,10 @@ export default function WelcomeScreen() {
           backgroundColor: colors.semantic.background.main,
         }}
       >
-        {/* Botón Facephi - Principal */}
+        {/* Botón Face ID - Principal */}
         <button
           type="button"
-          onClick={handleSystemAuth}
+          onClick={handleBiometricAuth}
           disabled={isAuthenticating}
           style={{
             width: '100%',
@@ -237,15 +348,32 @@ export default function WelcomeScreen() {
             
             {/* Formulario de login */}
             <LoginForm
-              onLogin={async (email: string, password: string) => {
-                // Simular login
-                await new Promise(resolve => setTimeout(resolve, 500));
-                handleLoginSuccess();
-              }}
+              onLogin={handleLoginSuccess}
               onForgotPassword={() => console.log('Forgot password')}
             />
           </div>
         </>
+      )}
+
+      {/* Diálogo de error de biometría */}
+      {errorState.show && (
+        <BiometricErrorDialog
+          message={errorState.message}
+          onRetry={handleRetryBiometric}
+          onUsePassword={handleUsePassword}
+          onClose={() => setErrorState({ show: false, error: null, message: '' })}
+        />
+      )}
+
+      {/* Diálogo informativo (biometría no disponible/no enrolada) */}
+      {showInfoDialog && (
+        <BiometricInfoDialog
+          message="Activá Face ID en tu dispositivo para usar este acceso."
+          onUnderstand={() => {
+            setShowInfoDialog(false);
+            setShowLoginSheet(true);
+          }}
+        />
       )}
 
       <style>{`
