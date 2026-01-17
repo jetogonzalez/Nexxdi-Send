@@ -80,7 +80,7 @@ export function TarjetaView({ titleRef, scrollProgress = 0, isBalanceVisible = t
               margin: 0,
             }}
           >
-            Tarjeta
+            Tarjeta virtual
           </h1>
           {/* Botón de tres puntos */}
           <button
@@ -125,7 +125,7 @@ export function TarjetaView({ titleRef, scrollProgress = 0, isBalanceVisible = t
           style={{
             height: '24px',
             fontFamily: typography.fontFamily.sans.join(', '), // Manrope
-            fontWeight: typography.fontWeight.normal, // 400
+            fontWeight: typography.fontWeight.medium, // 500
             fontSize: typography.fontSize.base, // 16px
             color: 'rgba(255, 255, 255, 0.7)',
             lineHeight: '24px',
