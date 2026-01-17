@@ -52,7 +52,7 @@ export function WalletView({ isBalanceVisible = true, titleRef, scrollProgress =
         display: 'flex',
         flexDirection: 'column',
         paddingTop: spacing[4], // 16px
-        paddingBottom: spacing[10], // 40px
+        paddingBottom: spacing[6], // 24px - espacio hasta navigation bar
         backgroundColor: colors.semantic.background.main,
       }}
     >

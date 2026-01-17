@@ -28,6 +28,10 @@ const primitiveColors = {
     giftHomeEnd: '#25133D', // Fin del gradiente del regalo en home
     tarjetaStart: '#F16DE6', // Inicio del gradiente en tarjeta (rosa claro)
     tarjetaEnd: '#AD419B', // Fin del gradiente en tarjeta (rosa oscuro)
+    // Gradiente de fondo para vista Tarjeta
+    tarjetaViewStart: '#0D0097', // Azul oscuro (inicio)
+    tarjetaViewMid: '#3A29E9', // Azul principal (medio)
+    tarjetaViewEnd: '#F0EFF8', // Gris claro (fin - igual que background.main)
   },
   // Colores de iconos
   icon: {
@@ -304,6 +308,7 @@ export const spacing = {
   16: '4rem',       // 64px (8px * 8)
   20: '5rem',       // 80px (8px * 10)
   24: '6rem',       // 96px (8px * 12)
+  25: '6.25rem',    // 100px - header overlap
   32: '8rem',       // 128px (8px * 16)
   // Tamaños específicos para imágenes
   imageCircle: '17.5rem', // 280px - círculo detrás de imágenes

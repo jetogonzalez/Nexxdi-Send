@@ -81,20 +81,47 @@ export function Header({ activeTab, onBalanceVisibilityChange, showTitle = false
   // Animación del avatar: de 48px a 40px al hacer scroll (mismo tamaño que los iconos)
   // Solo aplica en home, wallet y tarjeta
   const shouldAnimateAvatar = activeTab === 'home' || activeTab === 'wallet' || activeTab === 'tarjeta';
-  const avatarStartSize = 48; // header.sizes.profileImage = spacing[12] = 48px
-  const avatarEndSize = 40; // header.sizes.actionIcon = spacing[10] = 40px
-  const avatarScrollThreshold = 60; // Scroll necesario para completar la transición
+  // Valores en px: spacing[12]=48px, spacing[10]=40px, spacing[3]=12px
+  const avatarStartSize = 48; // header.sizes.profileImage = spacing[12]
+  const avatarEndSize = 40; // header.sizes.actionIcon = spacing[10]
+  const avatarScrollThreshold = 80; // Scroll necesario para completar la transición (más suave)
   
-  // Calcular el tamaño actual del avatar basado en el scroll
-  const avatarProgress = shouldAnimateAvatar 
+  // Calcular el progreso con una función de easing suave (ease-out quadratic)
+  const rawProgress = shouldAnimateAvatar 
     ? Math.min(scrollTop / avatarScrollThreshold, 1) 
     : 0;
+  // Aplicar easing cuadrático para una transición más fluida
+  const avatarProgress = rawProgress * (2 - rawProgress); // ease-out quad
   const currentAvatarSize = avatarStartSize - (avatarProgress * (avatarStartSize - avatarEndSize));
   
   // Calcular el tamaño del punto de notificación proporcionalmente
-  const notificationStartSize = 12; // header.sizes.notificationDot = spacing[3] = 12px
+  const notificationStartSize = 12; // header.sizes.notificationDot = spacing[3]
   const notificationEndSize = 10; // Proporcionalmente más pequeño
   const currentNotificationSize = notificationStartSize - (avatarProgress * (notificationStartSize - notificationEndSize));
+
+  // Padding dinámico: de 24px a 16px al hacer scroll (solo en home, wallet, tarjeta)
+  const paddingStartValue = 24; // spacing[6] = 1.5rem = 24px
+  const paddingEndValue = 16; // spacing[4] = 1rem = 16px
+  const currentPadding = shouldAnimateAvatar 
+    ? paddingStartValue - (avatarProgress * (paddingStartValue - paddingEndValue))
+    : paddingStartValue;
+
+  // Color dinámico del stroke de notificación según vista y scroll
+  // Transición suave: el color se desvanece gradualmente al hacer scroll
+  const strokeScrollThreshold = 60; // Scroll necesario para completar la transición del stroke
+  const strokeProgress = Math.min(scrollTop / strokeScrollThreshold, 1);
+  // Aplicar easing para transición más suave
+  const strokeAlpha = 1 - (strokeProgress * (2 - strokeProgress)); // ease-out quad inverso
+  
+  const getNotificationStrokeColor = () => {
+    if (activeTab === 'tarjeta') {
+      // Tarjeta: de azul oscuro (#0D0097) a transparente con transición suave
+      return `rgba(13, 0, 151, ${strokeAlpha})`;
+    }
+    // Home/Wallet: de gris claro (#F0EFF8) a transparente con transición suave
+    return `rgba(240, 239, 248, ${strokeAlpha})`;
+  };
+  const notificationStrokeColor = getNotificationStrokeColor();
 
   return (
     <div
@@ -107,15 +134,15 @@ export function Header({ activeTab, onBalanceVisibilityChange, showTitle = false
         marginRight: `-${spacing[5]}`, // -20px para compensar el margin del contenedor padre
         paddingLeft: spacing[5], // 20px para alinear con el contenido
         paddingRight: spacing[5], // 20px para alinear con el contenido
-        paddingTop: `calc(${spacing[6]} + env(safe-area-inset-top))`, // 24px + safe area top
-        paddingBottom: spacing[6], // 24px
+        paddingTop: `calc(${currentPadding}px + env(safe-area-inset-top))`, // Dinámico + safe area top
+        paddingBottom: `${currentPadding}px`, // Dinámico
         background: shouldApplyBlur
           ? `linear-gradient(to bottom, ${gradientStops})`
           : 'transparent',
         backdropFilter: shouldApplyBlur ? 'blur(20px) saturate(180%)' : 'none',
         WebkitBackdropFilter: shouldApplyBlur ? 'blur(20px) saturate(180%)' : 'none',
-        transition: 'background 0.2s ease-out, backdrop-filter 0.2s ease-out',
-        willChange: shouldApplyBlur ? 'background, backdrop-filter' : 'auto',
+        transition: 'padding 0.25s ease-out, background 0.2s ease-out, backdrop-filter 0.2s ease-out',
+        willChange: shouldApplyBlur ? 'background, backdrop-filter, padding' : 'auto',
       }}
     >
       <div
@@ -132,7 +159,7 @@ export function Header({ activeTab, onBalanceVisibilityChange, showTitle = false
           position: 'relative',
           width: `${currentAvatarSize}px`,
           height: `${currentAvatarSize}px`,
-          transition: 'width 0.15s cubic-bezier(0.4, 0, 0.2, 1), height 0.15s cubic-bezier(0.4, 0, 0.2, 1)',
+          willChange: 'width, height',
         }}
       >
         {/* Avatar con imagen */}
@@ -143,7 +170,6 @@ export function Header({ activeTab, onBalanceVisibilityChange, showTitle = false
             borderRadius: borderRadius.full,
             overflow: 'hidden',
             backgroundColor: header.colors.avatarBackground, // Tokenizado por componente
-            transition: 'width 0.15s cubic-bezier(0.4, 0, 0.2, 1), height 0.15s cubic-bezier(0.4, 0, 0.2, 1)',
           }}
         >
           <img
@@ -167,10 +193,10 @@ export function Header({ activeTab, onBalanceVisibilityChange, showTitle = false
             height: `${currentNotificationSize}px`,
             backgroundColor: header.colors.notification,
             borderRadius: borderRadius.full,
-            outline: `${header.borders.notificationBorderWidth} solid ${header.colors.notificationBorder}`,
+            outline: `${header.borders.notificationBorderWidth} solid ${notificationStrokeColor}`,
             outlineOffset: '0px',
             zIndex: 10,
-            transition: 'width 0.15s cubic-bezier(0.4, 0, 0.2, 1), height 0.15s cubic-bezier(0.4, 0, 0.2, 1)',
+            willChange: 'width, height, outline-color',
           }}
         />
       </div>

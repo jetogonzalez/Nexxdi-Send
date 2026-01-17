@@ -41,20 +41,20 @@ export function TarjetaView({ titleRef, scrollProgress = 0, isBalanceVisible = t
         flex: 1,
         display: 'flex',
         flexDirection: 'column',
-        paddingBottom: spacing[10], // 40px
+        paddingBottom: spacing[6], // 24px - espacio hasta navigation bar
         backgroundColor: colors.semantic.background.main,
       }}
     >
       {/* Contenedor con gradiente - desde antes del header hasta después de las acciones */}
       <div
         style={{
-          background: 'linear-gradient(180deg, #0D0097 0%, #3A29E9 50%, #F0EFF8 100%)',
+          background: `linear-gradient(180deg, #0D0097 0%, ${colors.primary.main} 50%, ${colors.semantic.background.main} 100%)`,
           marginLeft: `-${spacing[5]}`, // -20px para compensar el padding del contenedor padre
           marginRight: `-${spacing[5]}`, // -20px para compensar el padding del contenedor padre
           marginTop: '-100px', // Extender hacia arriba para cubrir detrás del header
           paddingLeft: spacing[5], // 20px para mantener el contenido alineado
           paddingRight: spacing[5], // 20px para mantener el contenido alineado
-          paddingTop: `calc(100px + ${spacing[4]})`, // Compensar el margin negativo + 16px igual que WalletView
+          paddingTop: `calc(100px + ${spacing[4]})`, // 100px + 16px compensar el margin negativo
           paddingBottom: 0, // Sin padding abajo
         }}
       >
