@@ -5,18 +5,20 @@ import { colors, spacing, typography, borderRadius, button } from '../../config/
 import { motion } from '../../lib/motion';
 
 interface LoginFormProps {
-  onLogin?: (email: string, password: string) => void;
+  onLogin?: (email: string, password: string, activateBiometric?: boolean) => void;
   onForgotPassword?: () => void;
   onSignUp?: () => void;
   onFaceID?: () => Promise<boolean> | boolean;
+  showBiometricCheckbox?: boolean;
 }
 
-export function LoginForm({ onLogin, onForgotPassword, onSignUp, onFaceID }: LoginFormProps) {
+export function LoginForm({ onLogin, onForgotPassword, onSignUp, onFaceID, showBiometricCheckbox = false }: LoginFormProps) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [errors, setErrors] = useState<{ email?: string; password?: string }>({});
   const [isLoading, setIsLoading] = useState(false);
   const [isFormValid, setIsFormValid] = useState(false);
+  const [activateBiometric, setActivateBiometric] = useState(false);
 
   const validateEmail = (email: string): boolean => {
     return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
@@ -55,7 +57,7 @@ export function LoginForm({ onLogin, onForgotPassword, onSignUp, onFaceID }: Log
     setIsLoading(true);
     
     try {
-      await onLogin?.(email, password);
+      await onLogin?.(email, password, activateBiometric);
     } catch (error) {
       console.error('Login error:', error);
     } finally {
@@ -85,7 +87,7 @@ export function LoginForm({ onLogin, onForgotPassword, onSignUp, onFaceID }: Log
         />
       </div>
 
-      <div style={{ marginBottom: spacing[10] }}>
+      <div style={{ marginBottom: spacing[6] }}>
         <Input
           type="password"
           label="Contraseña"
@@ -102,6 +104,37 @@ export function LoginForm({ onLogin, onForgotPassword, onSignUp, onFaceID }: Log
           showPasswordToggle={true}
         />
       </div>
+
+      {/* Checkbox para activar Face ID */}
+      {showBiometricCheckbox && (
+        <div style={{ marginBottom: spacing[6], display: 'flex', alignItems: 'center', gap: spacing[3] }}>
+          <input
+            type="checkbox"
+            id="activate-biometric"
+            checked={activateBiometric}
+            onChange={(e) => setActivateBiometric(e.target.checked)}
+            style={{
+              width: '20px',
+              height: '20px',
+              cursor: 'pointer',
+              accentColor: colors.primary.main,
+            }}
+          />
+          <label
+            htmlFor="activate-biometric"
+            style={{
+              fontFamily: typography.fontFamily.sans.join(', '),
+              fontSize: typography.fontSize.sm,
+              fontWeight: typography.fontWeight.normal,
+              color: colors.semantic.text.primary,
+              cursor: 'pointer',
+              userSelect: 'none',
+            }}
+          >
+            Activar Face ID para ingresar más rápido
+          </label>
+        </div>
+      )}
 
       <button
         type="submit"

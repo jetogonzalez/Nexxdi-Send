@@ -53,7 +53,7 @@ export function BiometricInfoDialog({ message, onUnderstand }: BiometricInfoDial
             lineHeight: '1.5',
           }}
         >
-          {message}
+          Activá Face ID en tu dispositivo para usar este acceso.
         </p>
         
         {/* Botón */}

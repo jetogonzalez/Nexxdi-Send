@@ -3,12 +3,13 @@ import { colors, spacing, typography, borderRadius } from '../../config/design-t
 import { LoginForm } from './LoginForm';
 import { BiometricErrorDialog } from './BiometricErrorDialog';
 import { BiometricInfoDialog } from './BiometricInfoDialog';
+import { BiometricActivateDialog } from './BiometricActivateDialog';
 import {
   authenticateWithBiometric,
   isBiometricAvailable,
   isBiometricEnrolled,
-  hasStoredToken,
-  storeSessionToken,
+  hasBiometricCredential,
+  createBiometricCredential,
   type BiometricAuthError,
 } from '../../lib/biometricAuth';
 
@@ -27,6 +28,7 @@ export default function WelcomeScreen() {
     message: '',
   });
   const [showInfoDialog, setShowInfoDialog] = useState(false);
+  const [showActivateBiometricDialog, setShowActivateBiometricDialog] = useState(false);
 
   // Verificar disponibilidad de biometría al montar
   useEffect(() => {
@@ -48,13 +50,10 @@ export default function WelcomeScreen() {
     setErrorState({ show: false, error: null, message: '' });
 
     try {
-      // Verificar si hay token guardado
-      if (!hasStoredToken()) {
-        setErrorState({
-          show: true,
-          error: 'NO_TOKEN',
-          message: 'No hay sesión guardada. Por favor, iniciá sesión con tu usuario y contraseña.',
-        });
+      // Verificar si hay credencial biométrica guardada
+      if (!hasBiometricCredential()) {
+        // No hay credencial biométrica activada: mostrar diálogo informativo
+        setShowActivateBiometricDialog(true);
         setIsAuthenticating(false);
         return;
       }
@@ -63,8 +62,8 @@ export default function WelcomeScreen() {
       const result = await authenticateWithBiometric('Confirmá tu identidad para ingresar');
 
       if (result.success) {
-        // Autenticación exitosa: renovar token y navegar al home
-        storeSessionToken(result.token);
+        // Autenticación exitosa: navegar al home
+        // El token de sesión se obtiene del backend usando la credencial biométrica
         window.location.href = '/home';
       } else {
         // Manejar diferentes tipos de errores
@@ -75,7 +74,7 @@ export default function WelcomeScreen() {
       setErrorState({
         show: true,
         error: 'FAILED',
-        message: 'No se pudo verificar tu identidad.',
+        message: 'No pudimos verificar tu identidad.',
       });
     } finally {
       setIsAuthenticating(false);
@@ -83,7 +82,7 @@ export default function WelcomeScreen() {
   };
 
   const handleBiometricError = (error: BiometricAuthError) => {
-    let message = 'No se pudo verificar tu identidad.';
+    let message = 'No pudimos verificar tu identidad.';
 
     switch (error) {
       case 'NOT_AVAILABLE':
@@ -92,9 +91,11 @@ export default function WelcomeScreen() {
         setIsAuthenticating(false);
         return;
       
-      case 'NO_TOKEN':
-        message = 'No hay sesión guardada. Por favor, iniciá sesión con tu usuario y contraseña.';
-        break;
+      case 'NO_CREDENTIAL':
+        // No hay credencial biométrica activada: mostrar diálogo para activar
+        setShowActivateBiometricDialog(true);
+        setIsAuthenticating(false);
+        return;
       
       case 'CANCELLED':
         // Usuario canceló, no mostrar error
@@ -107,7 +108,7 @@ export default function WelcomeScreen() {
       
       case 'FAILED':
       default:
-        message = 'No se pudo verificar tu identidad.';
+        message = 'No pudimos verificar tu identidad.';
         break;
     }
 
@@ -128,16 +129,21 @@ export default function WelcomeScreen() {
     setShowLoginSheet(true);
   };
 
-  const handleLoginSuccess = async (email: string, password: string) => {
+  const handleLoginSuccess = async (email: string, password: string, activateBiometric: boolean = false) => {
     // Simular login con usuario/contraseña
     // En producción: llamar al backend
     await new Promise(resolve => setTimeout(resolve, 500));
     
-    // Generar token de sesión
-    const sessionToken = `session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-    
-    // Guardar token (en producción: en Keychain/Keystore con protección biométrica)
-    storeSessionToken(sessionToken);
+    // Si el usuario quiere activar Face ID, crear credencial biométrica
+    if (activateBiometric) {
+      const userId = email.split('@')[0]; // Extraer userId del email
+      const success = await createBiometricCredential(userId);
+      
+      if (!success) {
+        // Si falla la creación de credencial biométrica, continuar con login normal
+        console.warn('No se pudo activar Face ID, continuando con login normal');
+      }
+    }
     
     setShowLoginSheet(false);
     window.location.href = '/home';
@@ -350,6 +356,7 @@ export default function WelcomeScreen() {
             <LoginForm
               onLogin={handleLoginSuccess}
               onForgotPassword={() => console.log('Forgot password')}
+              showBiometricCheckbox={true}
             />
           </div>
         </>
@@ -372,6 +379,19 @@ export default function WelcomeScreen() {
           onUnderstand={() => {
             setShowInfoDialog(false);
             setShowLoginSheet(true);
+          }}
+        />
+      )}
+
+      {/* Diálogo para activar Face ID (no hay credencial biométrica guardada) */}
+      {showActivateBiometricDialog && (
+        <BiometricActivateDialog
+          onActivate={() => {
+            setShowActivateBiometricDialog(false);
+            setShowLoginSheet(true);
+          }}
+          onCancel={() => {
+            setShowActivateBiometricDialog(false);
           }}
         />
       )}

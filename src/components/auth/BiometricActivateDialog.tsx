@@ -1,18 +1,11 @@
 import { colors, spacing, typography, borderRadius } from '../../config/design-tokens';
 
-interface BiometricErrorDialogProps {
-  message: string;
-  onRetry: () => void;
-  onUsePassword: () => void;
-  onClose?: () => void;
+interface BiometricActivateDialogProps {
+  onActivate: () => void;
+  onCancel: () => void;
 }
 
-export function BiometricErrorDialog({ 
-  message, 
-  onRetry, 
-  onUsePassword,
-  onClose 
-}: BiometricErrorDialogProps) {
+export function BiometricActivateDialog({ onActivate, onCancel }: BiometricActivateDialogProps) {
   return (
     <>
       {/* Overlay */}
@@ -27,7 +20,7 @@ export function BiometricErrorDialog({
           zIndex: 2000,
           animation: 'fadeIn 0.3s ease',
         }}
-        onClick={onClose}
+        onClick={onCancel}
       />
       
       {/* Dialog */}
@@ -47,6 +40,21 @@ export function BiometricErrorDialog({
           animation: 'scaleIn 0.3s ease',
         }}
       >
+        {/* Título */}
+        <h2
+          style={{
+            fontFamily: typography.fontFamily.sans.join(', '),
+            fontSize: typography.fontSize.xl,
+            fontWeight: typography.fontWeight.bold,
+            color: colors.semantic.text.primary,
+            textAlign: 'center',
+            margin: 0,
+            marginBottom: spacing[4],
+          }}
+        >
+          Face ID no está activado
+        </h2>
+        
         {/* Mensaje */}
         <p
           style={{
@@ -60,7 +68,7 @@ export function BiometricErrorDialog({
             lineHeight: '1.5',
           }}
         >
-          No pudimos verificar tu identidad.
+          Actívalo iniciando con tu usuario y contraseña una vez.
         </p>
         
         {/* Botones */}
@@ -71,10 +79,10 @@ export function BiometricErrorDialog({
             gap: spacing[3],
           }}
         >
-          {/* Botón Reintentar */}
+          {/* Botón Iniciar con usuario y contraseña */}
           <button
             type="button"
-            onClick={onRetry}
+            onClick={onActivate}
             style={{
               width: '100%',
               height: '48px',
@@ -95,13 +103,13 @@ export function BiometricErrorDialog({
               e.currentTarget.style.opacity = '1';
             }}
           >
-            Reintentar Face ID
+            Iniciar con usuario y contraseña
           </button>
           
-          {/* Botón Usuario y contraseña */}
+          {/* Botón Cancelar */}
           <button
             type="button"
-            onClick={onUsePassword}
+            onClick={onCancel}
             style={{
               width: '100%',
               height: '48px',
@@ -122,7 +130,7 @@ export function BiometricErrorDialog({
               e.currentTarget.style.backgroundColor = 'transparent';
             }}
           >
-            Usuario y contraseña
+            Cancelar
           </button>
         </div>
       </div>
