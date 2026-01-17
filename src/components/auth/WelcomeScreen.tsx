@@ -11,44 +11,14 @@ export default function WelcomeScreen() {
     setIsAuthenticating(true);
     
     try {
-      // Verificar si WebAuthn está disponible
-      if ('credentials' in navigator && window.PublicKeyCredential) {
-        const isAvailable = await PublicKeyCredential.isUserVerifyingPlatformAuthenticatorAvailable();
-        
-        if (isAvailable) {
-          // Crear challenge aleatorio para la autenticación
-          const challenge = new Uint8Array(32);
-          window.crypto.getRandomValues(challenge);
-          
-          // Opciones para solicitar autenticación biométrica real
-          const publicKeyCredentialRequestOptions: PublicKeyCredentialRequestOptions = {
-            challenge: challenge,
-            timeout: 60000,
-            userVerification: 'required', // Forzar biometría (Face ID, Touch ID, huella)
-            rpId: window.location.hostname,
-          };
-          
-          try {
-            // Esto dispara el prompt nativo de biometría del sistema operativo
-            await navigator.credentials.get({
-              publicKey: publicKeyCredentialRequestOptions,
-            });
-          } catch (credError) {
-            // Si no hay credenciales registradas, simular éxito para demo
-            // En producción, aquí manejarías el registro de credenciales
-            console.log('Demo mode: credenciales no registradas, simulando autenticación');
-            await new Promise(resolve => setTimeout(resolve, 800));
-          }
-        } else {
-          // Biometría no disponible en este dispositivo
-          await new Promise(resolve => setTimeout(resolve, 800));
-        }
-      } else {
-        // Fallback para navegadores sin WebAuthn
-        await new Promise(resolve => setTimeout(resolve, 800));
-      }
+      // Simular autenticación biométrica para demo
+      // En producción, aquí se integraría con el SDK nativo de Facephi
+      // o con Capacitor BiometricAuth plugin
       
-      // Redirigir al home
+      // Pequeño delay para simular el proceso de autenticación
+      await new Promise(resolve => setTimeout(resolve, 1200));
+      
+      // Redirigir al home (autenticación exitosa simulada)
       window.location.href = '/home';
     } catch (error) {
       console.error('Error en autenticación biométrica:', error);

@@ -147,9 +147,9 @@ export function BottomNavigation({ activeTab, onTabChange }: BottomNavigationPro
                       height: bottomNavigation.icon.size,
                       display: 'block',
                       // Aplicar filtro de color según estado activo/inactivo
-                      // Activo: #3A29E9 (azul), Inactivo: #8d8d8e (gris)
+                      // Activo: #402FEC (bottomNavigation.colors.iconActive), Inactivo: #8d8d8e (bottomNavigation.colors.iconInactive)
                       filter: isActive 
-                        ? 'brightness(0) saturate(100%) invert(15%) sepia(95%) saturate(5551%) hue-rotate(243deg) brightness(91%) contrast(101%)'
+                        ? 'brightness(0) saturate(100%) invert(18%) sepia(98%) saturate(4500%) hue-rotate(246deg) brightness(92%) contrast(103%)'
                         : 'brightness(0) saturate(100%) invert(60%) sepia(5%) saturate(145%) hue-rotate(201deg) brightness(91%) contrast(89%)',
                     }}
                   />

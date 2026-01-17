@@ -373,11 +373,11 @@ export const bottomNavigation = {
   },
   // Colores
   colors: {
-    activeText: '#2A1AD1', // Color del texto activo en navigation bar
+    activeText: '#402FEC', // Color del texto activo en navigation bar
     inactiveText: '#8d8d8e', // Gris según Figma
     activeBackground: colors.semantic.background.navItemActive, // #EFEEFD al 80% (tokenizado)
     // Colores de iconos (tokenizados globalmente)
-    iconActive: colors.primary.main, // #3A29E9 - Color azul para iconos activos
+    iconActive: '#402FEC', // Color azul para iconos activos
     iconInactive: '#8d8d8e', // Gris para iconos inactivos
   },
   // Espaciado
