@@ -583,25 +583,6 @@ export function TarjetaView({ titleRef, scrollProgress = 0, isBalanceVisible = t
                   console.log('Retirar en ATM');
                 },
               },
-              {
-                id: 'change-design',
-                label: 'Cambiar diseño',
-                icon: (
-                  <img
-                    src="/img/icons/global/color-card.svg"
-                    alt="Cambiar diseño"
-                    style={{
-                      width: '20px', // Token: ACTION_ICON_IMAGE_SIZE (20px)
-                      height: '20px', // Token: ACTION_ICON_IMAGE_SIZE (20px)
-                      display: 'block',
-                    }}
-                  />
-                ),
-                onClick: () => {
-                  // TODO: Implementar acción de cambiar diseño
-                  console.log('Cambiar diseño');
-                },
-              },
             ]}
           />
           
@@ -616,6 +597,25 @@ export function TarjetaView({ titleRef, scrollProgress = 0, isBalanceVisible = t
                 onClick: () => {
                   // TODO: Implementar navegación a Seguridad
                   console.log('Seguridad');
+                },
+              },
+              {
+                id: 'customize-card',
+                label: 'Cambiar diseño',
+                icon: (
+                  <img
+                    src="/img/icons/global/color-card.svg"
+                    alt="Cambiar diseño"
+                    style={{
+                      width: '20px',
+                      height: '20px',
+                      display: 'block',
+                    }}
+                  />
+                ),
+                onClick: () => {
+                  // TODO: Implementar navegación a Cambiar diseño
+                  console.log('Cambiar diseño');
                 },
               },
               {

@@ -26,7 +26,7 @@ export function getTabIconConfig(tabId: string, label: string): TabIconConfig {
   const basePath = '/img/icons/button-bar';
   
   // Lista de tabs que tienen SVG/PNG disponibles
-  const svgTabs = ['home', 'wallet', 'cash'];
+  const svgTabs = ['home', 'wallet', 'cash', 'tarjeta'];
   
   if (svgTabs.includes(tabId)) {
     // Para cash, usar PNG para activo si está disponible, SVG para inactivo
@@ -36,6 +36,16 @@ export function getTabIconConfig(tabId: string, label: string): TabIconConfig {
         label,
         iconActive: `${basePath}/icon-${tabId}-active.png`,
         iconInactive: `${basePath}/icon-${tabId}-inactive.svg`,
+      };
+    }
+    
+    // Para tarjeta, usar el nombre 'card' en los archivos
+    if (tabId === 'tarjeta') {
+      return {
+        id: tabId,
+        label,
+        iconActive: `${basePath}/icon-card-active.svg`,
+        iconInactive: `${basePath}/icon-card-inactive.svg`,
       };
     }
     
