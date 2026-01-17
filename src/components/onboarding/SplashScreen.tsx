@@ -16,14 +16,14 @@ export default function SplashScreen() {
       
       // Redirigir después del fade out (400ms = motion.duration.base)
       redirectTimerRef.current = setTimeout(() => {
-        console.log('Redirigiendo a /onboarding');
+        console.log('Redirigiendo a /welcome');
         if (typeof window !== 'undefined') {
           try {
-            window.location.href = '/onboarding';
+            window.location.href = '/welcome';
           } catch (error) {
             console.error('Error al redirigir:', error);
             // Fallback: usar replace
-            window.location.replace('/onboarding');
+            window.location.replace('/welcome');
           }
         }
       }, 400); // Esperar a que termine el fade out (motion.duration.base = 400ms)
