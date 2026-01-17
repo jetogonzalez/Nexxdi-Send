@@ -145,6 +145,8 @@ export default function HomePage() {
     setIsScrolled(false);
     setScrollTop(0);
     setScrollProgress(0);
+    // Scroll al inicio de la página cuando cambias de sección
+    window.scrollTo({ top: 0, behavior: 'instant' });
   };
 
   // Valores de saldo compartidos entre vistas (USD y COP)

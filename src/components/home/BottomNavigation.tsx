@@ -99,7 +99,11 @@ export function BottomNavigation({ activeTab, onTabChange }: BottomNavigationPro
             <button
               key={tab.id}
               type="button"
-              onClick={() => onTabChange(tab.id)}
+              onClick={() => {
+                // Deshabilitar la página "Más" - no hace nada al hacer clic
+                if (tab.id === 'mas') return;
+                onTabChange(tab.id);
+              }}
               style={{
                 position: 'relative',
                 display: 'flex',
@@ -112,13 +116,15 @@ export function BottomNavigation({ activeTab, onTabChange }: BottomNavigationPro
                 backgroundColor: 'transparent',
                 borderRadius: borderRadius.full,
                 border: 'none',
-                cursor: 'pointer',
+                cursor: tab.id === 'mas' ? 'default' : 'pointer', // Sin cursor de pointer para "Más"
                 flex: 1,
                 minHeight: spacing[12],
                 margin: '0',
                 transition: bottomNavigation.effects.backgroundColorTransition,
+                opacity: tab.id === 'mas' ? 0.5 : 1, // Reducir opacidad para indicar que está deshabilitado
               }}
               aria-label={tab.label}
+              aria-disabled={tab.id === 'mas'}
             >
               <div 
                 style={{ 

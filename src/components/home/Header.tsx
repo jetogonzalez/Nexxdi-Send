@@ -56,8 +56,8 @@ export function Header({ activeTab, onBalanceVisibilityChange, showTitle = false
     ? colors.semantic.background.white 
     : typography.sectionTitle.color;
 
-  // Aplicar blur glassmorphism solo en home y wallet cuando hay scroll
-  const shouldApplyBlur = (activeTab === 'home' || activeTab === 'wallet') && isScrolled;
+  // Aplicar blur glassmorphism en home, wallet y tarjeta cuando hay scroll
+  const shouldApplyBlur = (activeTab === 'home' || activeTab === 'wallet' || activeTab === 'tarjeta') && isScrolled;
   
   // Calcular opacidad máxima del gradiente basado en el scroll (progresivo, similar a Apple)
   // Opacidad mínima: 0.3, máxima: 0.8, transición suave entre 0 y 100px de scroll
@@ -77,6 +77,24 @@ export function Header({ activeTab, onBalanceVisibilityChange, showTitle = false
   const gradientStops = shouldApplyBlur
     ? `rgba(255, 255, 255, ${maxGradientOpacity}) 0%, rgba(255, 255, 255, ${maxGradientOpacity * 0.95}) 10%, rgba(255, 255, 255, ${maxGradientOpacity * 0.85}) 25%, rgba(255, 255, 255, ${maxGradientOpacity * 0.6}) 50%, rgba(255, 255, 255, ${maxGradientOpacity * 0.3}) 75%, rgba(255, 255, 255, ${maxGradientOpacity * 0.1}) 90%, rgba(255, 255, 255, 0) 100%`
     : 'transparent';
+
+  // Animación del avatar: de 48px a 40px al hacer scroll (mismo tamaño que los iconos)
+  // Solo aplica en home, wallet y tarjeta
+  const shouldAnimateAvatar = activeTab === 'home' || activeTab === 'wallet' || activeTab === 'tarjeta';
+  const avatarStartSize = 48; // header.sizes.profileImage = spacing[12] = 48px
+  const avatarEndSize = 40; // header.sizes.actionIcon = spacing[10] = 40px
+  const avatarScrollThreshold = 60; // Scroll necesario para completar la transición
+  
+  // Calcular el tamaño actual del avatar basado en el scroll
+  const avatarProgress = shouldAnimateAvatar 
+    ? Math.min(scrollTop / avatarScrollThreshold, 1) 
+    : 0;
+  const currentAvatarSize = avatarStartSize - (avatarProgress * (avatarStartSize - avatarEndSize));
+  
+  // Calcular el tamaño del punto de notificación proporcionalmente
+  const notificationStartSize = 12; // header.sizes.notificationDot = spacing[3] = 12px
+  const notificationEndSize = 10; // Proporcionalmente más pequeño
+  const currentNotificationSize = notificationStartSize - (avatarProgress * (notificationStartSize - notificationEndSize));
 
   return (
     <div
@@ -112,18 +130,20 @@ export function Header({ activeTab, onBalanceVisibilityChange, showTitle = false
       <div
         style={{
           position: 'relative',
-          width: header.sizes.profileImage,
-          height: header.sizes.profileImage,
+          width: `${currentAvatarSize}px`,
+          height: `${currentAvatarSize}px`,
+          transition: 'width 0.15s cubic-bezier(0.4, 0, 0.2, 1), height 0.15s cubic-bezier(0.4, 0, 0.2, 1)',
         }}
       >
         {/* Avatar con imagen */}
         <div
           style={{
-            width: header.sizes.profileImage,
-            height: header.sizes.profileImage,
+            width: '100%',
+            height: '100%',
             borderRadius: borderRadius.full,
             overflow: 'hidden',
             backgroundColor: header.colors.avatarBackground, // Tokenizado por componente
+            transition: 'width 0.15s cubic-bezier(0.4, 0, 0.2, 1), height 0.15s cubic-bezier(0.4, 0, 0.2, 1)',
           }}
         >
           <img
@@ -143,13 +163,14 @@ export function Header({ activeTab, onBalanceVisibilityChange, showTitle = false
             position: 'absolute',
             top: '0px',
             right: '0px',
-            width: header.sizes.notificationDot,
-            height: header.sizes.notificationDot,
+            width: `${currentNotificationSize}px`,
+            height: `${currentNotificationSize}px`,
             backgroundColor: header.colors.notification,
             borderRadius: borderRadius.full,
             outline: `${header.borders.notificationBorderWidth} solid ${header.colors.notificationBorder}`,
             outlineOffset: '0px',
             zIndex: 10,
+            transition: 'width 0.15s cubic-bezier(0.4, 0, 0.2, 1), height 0.15s cubic-bezier(0.4, 0, 0.2, 1)',
           }}
         />
       </div>
@@ -167,7 +188,9 @@ export function Header({ activeTab, onBalanceVisibilityChange, showTitle = false
           type="button"
           onClick={handleToggleBalance}
           style={{
-            backgroundColor: header.colors.buttonBackground[activeTab] || header.colors.buttonBackground.home, // Fallback a 'home' si no existe
+            backgroundColor: (activeTab === 'tarjeta' && isScrolled) 
+              ? 'rgba(255, 255, 255, 0.6)' 
+              : (header.colors.buttonBackground[activeTab] || header.colors.buttonBackground.home),
             borderRadius: borderRadius.full,
             width: header.sizes.actionIcon,
             height: header.sizes.actionIcon,
@@ -180,21 +203,27 @@ export function Header({ activeTab, onBalanceVisibilityChange, showTitle = false
             transition: 'background-color 0.2s ease',
           }}
           onMouseEnter={(e) => {
-            e.currentTarget.style.backgroundColor = header.colors.buttonBackgroundHover[activeTab] || header.colors.buttonBackgroundHover.home; // Fallback a 'home' si no existe
+            e.currentTarget.style.backgroundColor = (activeTab === 'tarjeta' && isScrolled)
+              ? colors.gray[100]
+              : (header.colors.buttonBackgroundHover[activeTab] || header.colors.buttonBackgroundHover.home);
           }}
           onMouseLeave={(e) => {
-            e.currentTarget.style.backgroundColor = header.colors.buttonBackground[activeTab] || header.colors.buttonBackground.home;
+            e.currentTarget.style.backgroundColor = (activeTab === 'tarjeta' && isScrolled)
+              ? 'rgba(255, 255, 255, 0.6)'
+              : (header.colors.buttonBackground[activeTab] || header.colors.buttonBackground.home);
           }}
           aria-label={isBalanceVisible ? 'Ocultar saldo' : 'Mostrar saldo'}
         >
-          <EyeIcon activeTab={activeTab} isVisible={isBalanceVisible} />
+          <EyeIcon activeTab={activeTab} isVisible={isBalanceVisible} isScrolled={isScrolled} />
         </button>
 
         {/* Icono Regalo - Referidos y promociones */}
         <button
           type="button"
           style={{
-            backgroundColor: header.colors.buttonBackground[activeTab] || header.colors.buttonBackground.home, // Fallback a 'home' si no existe
+            backgroundColor: (activeTab === 'tarjeta' && isScrolled) 
+              ? 'rgba(255, 255, 255, 0.6)' 
+              : (header.colors.buttonBackground[activeTab] || header.colors.buttonBackground.home),
             borderRadius: borderRadius.full,
             width: header.sizes.actionIcon,
             height: header.sizes.actionIcon,
@@ -207,21 +236,27 @@ export function Header({ activeTab, onBalanceVisibilityChange, showTitle = false
             transition: 'background-color 0.2s ease',
           }}
           onMouseEnter={(e) => {
-            e.currentTarget.style.backgroundColor = header.colors.buttonBackgroundHover[activeTab] || header.colors.buttonBackgroundHover.home; // Fallback a 'home' si no existe
+            e.currentTarget.style.backgroundColor = (activeTab === 'tarjeta' && isScrolled)
+              ? colors.gray[100]
+              : (header.colors.buttonBackgroundHover[activeTab] || header.colors.buttonBackgroundHover.home);
           }}
           onMouseLeave={(e) => {
-            e.currentTarget.style.backgroundColor = header.colors.buttonBackground[activeTab] || header.colors.buttonBackground.home;
+            e.currentTarget.style.backgroundColor = (activeTab === 'tarjeta' && isScrolled)
+              ? 'rgba(255, 255, 255, 0.6)'
+              : (header.colors.buttonBackground[activeTab] || header.colors.buttonBackground.home);
           }}
           aria-label="Referidos y promociones"
         >
-          <GiftIcon activeTab={activeTab} />
+          <GiftIcon activeTab={activeTab} isScrolled={isScrolled} />
         </button>
 
         {/* Icono Búsqueda */}
         <button
           type="button"
           style={{
-            backgroundColor: header.colors.buttonBackground[activeTab] || header.colors.buttonBackground.home, // Fallback a 'home' si no existe
+            backgroundColor: (activeTab === 'tarjeta' && isScrolled) 
+              ? 'rgba(255, 255, 255, 0.6)' 
+              : (header.colors.buttonBackground[activeTab] || header.colors.buttonBackground.home),
             borderRadius: borderRadius.full,
             width: header.sizes.actionIcon,
             height: header.sizes.actionIcon,
@@ -234,14 +269,18 @@ export function Header({ activeTab, onBalanceVisibilityChange, showTitle = false
             transition: 'background-color 0.2s ease',
           }}
           onMouseEnter={(e) => {
-            e.currentTarget.style.backgroundColor = header.colors.buttonBackgroundHover[activeTab] || header.colors.buttonBackgroundHover.home; // Fallback a 'home' si no existe
+            e.currentTarget.style.backgroundColor = (activeTab === 'tarjeta' && isScrolled)
+              ? colors.gray[100]
+              : (header.colors.buttonBackgroundHover[activeTab] || header.colors.buttonBackgroundHover.home);
           }}
           onMouseLeave={(e) => {
-            e.currentTarget.style.backgroundColor = header.colors.buttonBackground[activeTab] || header.colors.buttonBackground.home;
+            e.currentTarget.style.backgroundColor = (activeTab === 'tarjeta' && isScrolled)
+              ? 'rgba(255, 255, 255, 0.6)'
+              : (header.colors.buttonBackground[activeTab] || header.colors.buttonBackground.home);
           }}
           aria-label="Buscar"
         >
-          <SearchIcon activeTab={activeTab} />
+          <SearchIcon activeTab={activeTab} isScrolled={isScrolled} />
         </button>
       </div>
       </div>

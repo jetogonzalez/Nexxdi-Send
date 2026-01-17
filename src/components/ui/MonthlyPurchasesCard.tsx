@@ -3,67 +3,79 @@
 import { borderRadius, colors, spacing, typography } from '../../config/design-tokens';
 import { formatCurrency } from '../../lib/formatBalance';
 import { CircularProgress } from './CircularProgress';
-import { MovementAvatar } from '../home/MovementAvatar';
 
-export interface AvatarData {
-  /** URL de la imagen del avatar */
-  imageUrl?: string;
-  /** Nombre del contacto para generar iniciales */
-  contactName?: string;
-  /** URL del logo (si aplica) */
-  logoUrl?: string;
-}
+// Color de Carulla (verde) - Token semántico
+const CARULLA_COLOR = '#7DBE42';
+// Color de Netflix (oscuro) - Token semántico
+const NETFLIX_COLOR = '#141414';
 
-interface GroupCardProps {
-  /** Título de la tarjeta (ej: "Grupos") */
-  title: string;
-  /** Monto del grupo */
+interface MonthlyPurchasesCardProps {
+  /** Monto total de compras */
   amount: number;
   /** Moneda (default: "USD") */
   currency?: string;
-  /** Nombre del grupo (ej: "Viaje al Config - SF") */
-  groupName: string;
-  /** Valor del progreso (0-100) */
-  progress: number;
-  /** Array de avatares a mostrar */
-  avatars?: AvatarData[];
   /** Si el balance es visible */
   isBalanceVisible?: boolean;
+  /** Mes específico (opcional, por defecto usa el mes actual) */
+  month?: number; // 0-11 (0 = enero, 11 = diciembre)
+  /** Año específico (opcional, por defecto usa el año actual) */
+  year?: number;
 }
 
 /**
- * Componente reutilizable de tarjeta de grupo
- * - Layout horizontal: texto a la izquierda, progreso circular con avatares a la derecha
+ * Componente de tarjeta de compras mensuales
+ * - Similar a GroupCard pero para mostrar compras del mes
+ * - Progress bar dinámico basado en el día del mes actual
+ * - Muestra logos de Amazon y Carulla dentro del círculo
  * - Todo tokenizado: spacing, typography, colors, borderRadius
- * - Progreso animado desde 0% hasta el valor objetivo
  */
-export function GroupCard({
-  title,
+export function MonthlyPurchasesCard({
   amount,
   currency = 'USD',
-  groupName,
-  progress,
-  avatars = [],
   isBalanceVisible = true,
-}: GroupCardProps) {
-  // Avatares por defecto: Juan Robledo (izquierda/arriba) y Fernando (derecha/abajo, superpuesto)
-  const defaultAvatars: AvatarData[] = [
-    {
-      contactName: 'Juan Robledo',
-      imageUrl: '/img/user/juan-robledo.png', // Avatar izquierda/arriba (base)
-    },
-    {
-      contactName: 'Fernando',
-      imageUrl: '/img/user/fernando-plaza.jpg', // Avatar de Fernando (derecha/abajo, superpuesto sobre el otro)
-    },
+  month,
+  year,
+}: MonthlyPurchasesCardProps) {
+  // Obtener fecha actual o usar la proporcionada
+  const now = new Date();
+  const targetMonth = month !== undefined ? month : now.getMonth();
+  const targetYear = year !== undefined ? year : now.getFullYear();
+  
+  // Calcular el día del mes actual
+  const currentDay = now.getDate();
+  
+  // Calcular el número total de días en el mes
+  const daysInMonth = new Date(targetYear, targetMonth + 1, 0).getDate();
+  
+  // Calcular el progreso basado en el día del mes
+  // Si estamos al día 15 de un mes de 30 días, el progreso es (15/30) * 100 = 50%
+  const progress = Math.round((currentDay / daysInMonth) * 100);
+  
+  // Nombres de los meses en español
+  const monthNames = [
+    'enero',
+    'febrero',
+    'marzo',
+    'abril',
+    'mayo',
+    'junio',
+    'julio',
+    'agosto',
+    'septiembre',
+    'octubre',
+    'noviembre',
+    'diciembre',
   ];
-
-  const displayAvatars = avatars.length > 0 ? avatars : defaultAvatars;
-
+  
+  const monthName = monthNames[targetMonth];
+  
   // Formatear el monto
   const formattedAmount = isBalanceVisible
     ? formatCurrency(amount, currency, false) // Solo el número formateado
     : '•••';
+  
+  // Formatear rango de fechas: "Del 01 enero hasta la fecha"
+  const dateRange = `Del 01 ${monthName} hasta la fecha`;
 
   return (
     <div
@@ -106,7 +118,7 @@ export function GroupCard({
             padding: 0,
           }}
         >
-          {title}
+          Compras en {monthName}
         </h2>
 
         {/* Monto */}
@@ -129,7 +141,7 @@ export function GroupCard({
           {isBalanceVisible && (
             <span
               style={{
-                fontSize: typography.fontSize.base, // Token semántico: 16px (mismo estilo que referencia)
+                fontSize: typography.fontSize.sm, // Token semántico: 14px (más pequeño que el monto)
                 fontWeight: typography.fontWeight.bold, // Token semántico: 700 Bold
                 fontFamily: typography.fontFamily.sans.join(', '), // Token semántico: Manrope
                 color: colors.semantic.text.primary, // Token semántico: mismo color que el monto
@@ -140,7 +152,7 @@ export function GroupCard({
           )}
         </div>
 
-        {/* Nombre del grupo */}
+        {/* Rango de fechas */}
         <div
           style={{
             fontFamily: typography.fontFamily.sans.join(', '), // Token semántico: Manrope
@@ -152,11 +164,11 @@ export function GroupCard({
             padding: 0,
           }}
         >
-          {groupName}
+          {dateRange}
         </div>
       </div>
 
-      {/* Sección derecha: Progreso circular con avatares */}
+      {/* Sección derecha: Progreso circular con logos */}
       <div
         style={{
           flexShrink: 0,
@@ -173,7 +185,7 @@ export function GroupCard({
           progressColor={colors.primary.main} // Token semántico: color primario
           backgroundColor={colors.semantic.border.light} // Token semántico: borde suave (light gray)
         >
-          {/* Contenedor de avatares: 36x36px fijo, sin padding/margin/spacing */}
+          {/* Contenedor de logos: 36x36px fijo, sin padding/margin/spacing */}
           <div
             style={{
               position: 'relative',
@@ -184,7 +196,7 @@ export function GroupCard({
               boxSizing: 'border-box',
             }}
           >
-            {/* Avatar 1: Fernando - bottom-right con borde circular */}
+            {/* Logo Netflix - bottom-right con borde circular */}
             <div
               style={{
                 position: 'absolute',
@@ -194,46 +206,28 @@ export function GroupCard({
                 height: '24px', // Tamaño fijo: 24px x 24px
                 borderRadius: borderRadius.full, // Círculo completo
                 overflow: 'hidden', // Clip a círculo
-                outline: `2px solid ${colors.semantic.background.white}`, // Borde circular de 2px fuera del avatar (tokenizado)
+                outline: `2px solid ${colors.semantic.background.white}`, // Borde circular de 2px fuera del logo (tokenizado)
                 outlineOffset: '0', // Sin offset, borde justo fuera
-                zIndex: 2, // Fernando siempre adelante
+                zIndex: 2, // Netflix siempre adelante
+                backgroundColor: NETFLIX_COLOR, // Token semántico: fondo oscuro Netflix (#141414)
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
               }}
             >
-              {displayAvatars[1]?.imageUrl ? (
-                <img
-                  src={displayAvatars[1].imageUrl}
-                  alt={displayAvatars[1].contactName || ''}
-                  style={{
-                    width: '40px', // Área de cover: 40px
-                    height: '40px', // Área de cover: 40px
-                    objectFit: 'cover', // Cover behavior
-                    objectPosition: 'center', // Centrado
-                    position: 'absolute',
-                    top: '50%',
-                    left: '50%',
-                    transform: 'translate(-50%, -50%)', // Centrado perfecto
-                  }}
-                />
-              ) : (
-                <div
-                  style={{
-                    width: '100%',
-                    height: '100%',
-                    backgroundColor: 'rgba(0, 0, 0, 0.05)',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    fontFamily: typography.fontFamily.sans.join(', '),
-                    fontSize: typography.fontSize.sm,
-                    color: colors.semantic.text.primary,
-                  }}
-                >
-                  {displayAvatars[1]?.contactName?.charAt(0).toUpperCase() || 'F'}
-                </div>
-              )}
+              <img
+                src="/img/icons/logos/logo-local-netflix.svg"
+                alt="Netflix"
+                style={{
+                  width: '20px', // Tamaño del logo dentro del círculo
+                  height: '20px', // Tamaño del logo dentro del círculo
+                  objectFit: 'contain', // Contener el logo sin recortar
+                  objectPosition: 'center', // Centrado
+                }}
+              />
             </div>
 
-            {/* Avatar 2: Segundo usuario - top-left */}
+            {/* Logo Carulla - top-left */}
             <div
               style={{
                 position: 'absolute',
@@ -243,41 +237,23 @@ export function GroupCard({
                 height: '24px', // Tamaño fijo: 24px x 24px
                 borderRadius: borderRadius.full, // Círculo completo
                 overflow: 'hidden', // Clip a círculo
-                zIndex: 1, // Segundo usuario detrás
+                zIndex: 1, // Carulla detrás
+                backgroundColor: CARULLA_COLOR, // Token semántico: verde Carulla (#7DBE42)
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
               }}
             >
-              {displayAvatars[0]?.imageUrl ? (
-                <img
-                  src={displayAvatars[0].imageUrl}
-                  alt={displayAvatars[0].contactName || ''}
-                  style={{
-                    width: '40px', // Área de cover: 40px
-                    height: '40px', // Área de cover: 40px
-                    objectFit: 'cover', // Cover behavior
-                    objectPosition: 'center', // Centrado
-                    position: 'absolute',
-                    top: '50%',
-                    left: '50%',
-                    transform: 'translate(-50%, -50%)', // Centrado perfecto
-                  }}
-                />
-              ) : (
-                <div
-                  style={{
-                    width: '100%',
-                    height: '100%',
-                    backgroundColor: 'rgba(0, 0, 0, 0.05)',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    fontFamily: typography.fontFamily.sans.join(', '),
-                    fontSize: typography.fontSize.sm,
-                    color: colors.semantic.text.primary,
-                  }}
-                >
-                  {displayAvatars[0]?.contactName?.charAt(0).toUpperCase() || 'J'}
-                </div>
-              )}
+              <img
+                src="/img/icons/logos/logo-local-carulla.png"
+                alt="Carulla"
+                style={{
+                  width: '20px', // Tamaño del logo dentro del círculo
+                  height: '20px', // Tamaño del logo dentro del círculo
+                  objectFit: 'contain', // Contener el logo sin recortar
+                  objectPosition: 'center', // Centrado
+                }}
+              />
             </div>
           </div>
         </CircularProgress>

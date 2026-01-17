@@ -367,6 +367,9 @@ export function CurrencyChangeCard({
             letterSpacing: '-0.04em', // -4%
             marginBottom: 0, // Sin margin adicional, el gap del contenedor lo maneja
             whiteSpace: 'nowrap', // Evitar que se parta en múltiples líneas
+            display: 'flex',
+            alignItems: 'baseline',
+            gap: spacing[1], // 4px entre número y moneda
           }}
         >
           {currencyCode === 'COP' 

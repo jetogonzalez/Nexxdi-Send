@@ -5,6 +5,7 @@ import { CurrencyCard } from './CurrencyCard';
 import { CardDeck } from './CardDeck';
 import { CurrencyChangeCard } from './CurrencyChangeCard';
 import { RecentMovementsSection } from './RecentMovementsSection';
+import { BalanceCard } from '../ui/BalanceCard';
 
 interface HomeViewProps {
   titleRef?: (el: HTMLElement | null) => void;
@@ -17,9 +18,7 @@ interface HomeViewProps {
 export function HomeView({ titleRef, scrollProgress = 0, isBalanceVisible = true, usdBalance = 5678.90, copBalance = 1500000.50 }: HomeViewProps) {
   const title = 'Hola, Luis';
   
-  // Calcular saldo total: sumar USD y convertir COP a USD (aproximadamente 1 USD = 4000 COP)
-  // Para simplificar, mostraremos el total en USD sumando ambos valores
-  // En producción, esto debería usar la tasa de cambio real
+  // Tasa de cambio: 1 USD = 4000 COP
   const exchangeRate = 4000; // Tasa aproximada: 1 USD = 4000 COP
   const copInUsd = copBalance / exchangeRate;
   const totalBalance = usdBalance + copInUsd;
@@ -77,13 +76,33 @@ export function HomeView({ titleRef, scrollProgress = 0, isBalanceVisible = true
         style={{
           fontSize: typography.fontSize['3xl'],
           fontWeight: typography.fontWeight.bold,
+          letterSpacing: '-0.04em', // -4% letter spacing
           color: colors.semantic.text.primary,
           fontFamily: typography.fontFamily.sans.join(', '),
           marginTop: 0, // Sin espacio entre label y saldo
           marginBottom: spacing[6], // 1.5rem después del contenido
+          display: 'flex',
+          alignItems: 'baseline',
+          gap: spacing[1], // 4px entre número y moneda
         }}
       >
-        {formatBalance(totalBalance, isBalanceVisible)}
+        {isBalanceVisible ? (
+          <>
+            <span>{formatBalance(totalBalance, isBalanceVisible).replace(' USD', '')}</span>
+            <span
+              style={{
+                fontSize: typography.fontSize.sm, // Token semántico: 14px (más pequeño que el monto)
+                fontWeight: typography.fontWeight.bold, // Token semántico: 700 Bold
+                fontFamily: typography.fontFamily.sans.join(', '), // Token semántico: Manrope
+                color: colors.semantic.text.primary, // Token semántico: mismo color que el monto
+              }}
+            >
+              USD
+            </span>
+          </>
+        ) : (
+          <span>•••</span>
+        )}
       </div>
       
       {/* Sección carddesk - Tarjetas apiladas con 56px de distancia */}

@@ -4,15 +4,18 @@ import { header, colors } from '../../config/design-tokens';
 
 interface IconProps {
   activeTab: 'home' | 'wallet' | 'cash' | 'tarjeta' | 'mas';
+  isScrolled?: boolean;
 }
 
 interface EyeIconProps extends IconProps {
   isVisible?: boolean;
 }
 
-export function EyeIcon({ activeTab, isVisible = true }: EyeIconProps) {
-  // En tarjeta, el ojo usa el color default (no el gradiente)
-  const iconColor = header.colors.icon.default; // Siempre usa el color default
+export function EyeIcon({ activeTab, isVisible = true, isScrolled = false }: EyeIconProps) {
+  // En tarjeta: blanco sin scroll, negro con scroll; en otras pestañas usa el color default
+  const iconColor = activeTab === 'tarjeta' 
+    ? (isScrolled ? header.colors.icon.default : '#FFFFFF') 
+    : header.colors.icon.default;
   
   if (!isVisible) {
     // Icono de ojo oculto
@@ -40,12 +43,13 @@ export function EyeIcon({ activeTab, isVisible = true }: EyeIconProps) {
   );
 }
 
-export function GiftIcon({ activeTab }: IconProps) {
+export function GiftIcon({ activeTab, isScrolled = false }: IconProps) {
   const isHome = activeTab === 'home';
   const isWallet = activeTab === 'wallet';
   const isTarjeta = activeTab === 'tarjeta';
   const useHomeGradient = isHome || isWallet; // Home y Wallet usan el mismo gradiente
-  // Para cash y mas, usar color default sin gradiente
+  // Para cash y mas: usar color default sin gradiente
+  // En tarjeta: usar gradiente rosa (#F16DE6 → #79114C) siempre
   const useDefaultColor = activeTab === 'cash' || activeTab === 'mas';
   const gradientId = useHomeGradient ? 'gift-gradient-home' : isTarjeta ? 'gift-gradient-tarjeta' : 'gift-gradient-default';
   
@@ -59,9 +63,9 @@ export function GiftIcon({ activeTab }: IconProps) {
               <stop offset="1" stopColor={header.colors.gradients.giftHome.end} />
             </linearGradient>
           ) : isTarjeta ? (
-            <linearGradient id={gradientId} x1="-3.19434" y1="0.304688" x2="18.3057" y2="20.8047" gradientUnits="userSpaceOnUse">
-              <stop stopColor={header.colors.gradients.tarjeta.start} />
-              <stop offset="1" stopColor={header.colors.gradients.tarjeta.end} />
+            <linearGradient id={gradientId} x1="0" y1="0" x2="20" y2="20" gradientUnits="userSpaceOnUse">
+              <stop offset="0%" stopColor="#F16DE6" />
+              <stop offset="100%" stopColor="#AD419B" />
             </linearGradient>
           ) : (
             <linearGradient id={gradientId} x1="0" y1="0" x2="20" y2="20" gradientUnits="userSpaceOnUse">
@@ -82,9 +86,11 @@ export function GiftIcon({ activeTab }: IconProps) {
   );
 }
 
-export function SearchIcon({ activeTab }: IconProps) {
-  // En tarjeta, la búsqueda usa el color default (no el gradiente)
-  const iconColor = header.colors.icon.default; // Siempre usa el color default
+export function SearchIcon({ activeTab, isScrolled = false }: IconProps) {
+  // En tarjeta: blanco sin scroll, negro con scroll; en otras pestañas usa el color default
+  const iconColor = activeTab === 'tarjeta' 
+    ? (isScrolled ? header.colors.icon.default : '#FFFFFF') 
+    : header.colors.icon.default;
   
   return (
     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">

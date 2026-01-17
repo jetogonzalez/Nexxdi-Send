@@ -29,8 +29,8 @@ interface CircularProgressProps {
 export function CircularProgress({
   progress,
   size = 64, // Tamaño total: 64px x 64px
-  strokeWidth = 6, // Grosor del anillo de progreso: 6px
-  backgroundStrokeWidth = 2, // Grosor del anillo de fondo: 2px (más delgado)
+  strokeWidth = 5, // Grosor del anillo de progreso: 5px (reducido de 6px)
+  backgroundStrokeWidth = 1, // Grosor del anillo de fondo: 1px (reducido de 2px)
   progressColor = colors.primary.main, // Token semántico: color primario
   backgroundColor = colors.semantic.border.light, // Token semántico: borde suave (light gray)
   children,

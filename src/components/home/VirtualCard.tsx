@@ -158,9 +158,28 @@ export function VirtualCard({
               color: textColor, // Color inteligente según el fondo (blanco para fondo oscuro)
               textAlign: 'left',
               zIndex: 1,
+              display: 'flex',
+              alignItems: 'baseline',
+              gap: spacing[1], // 4px entre número y moneda
             }}
           >
-            {formatBalance(balance, isBalanceVisible)}
+            {isBalanceVisible ? (
+              <>
+                <span>{formatBalance(balance, isBalanceVisible).replace(' USD', '')}</span>
+                <span
+                  style={{
+                    fontSize: typography.fontSize.sm, // Token semántico: 14px (más pequeño que el monto)
+                    fontWeight: typography.fontWeight.bold, // Token semántico: 700 Bold
+                    fontFamily: typography.fontFamily.sans.join(', '), // Token semántico: Manrope
+                    color: textColor, // Mismo color que el monto
+                  }}
+                >
+                  USD
+                </span>
+              </>
+            ) : (
+              <span>•••</span>
+            )}
           </div>
         )}
       </div>

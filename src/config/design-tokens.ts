@@ -6,6 +6,9 @@
  * y usados en componentes Astro y React.
  */
 
+import { segmentedButton } from './segmented-button-tokens';
+import { transitions } from './transitions-tokens';
+
 // ============================================
 // Colores
 // ============================================
@@ -23,8 +26,8 @@ const primitiveColors = {
   gradient: {
     giftHomeStart: '#3023C3', // Inicio del gradiente del regalo en home
     giftHomeEnd: '#25133D', // Fin del gradiente del regalo en home
-    tarjetaStart: '#FFFFFF', // Inicio del gradiente en tarjeta (blanco)
-    tarjetaEnd: '#F97FC4', // Fin del gradiente en tarjeta (rosa)
+    tarjetaStart: '#F16DE6', // Inicio del gradiente en tarjeta (rosa claro)
+    tarjetaEnd: '#AD419B', // Fin del gradiente en tarjeta (rosa oscuro)
   },
   // Colores de iconos
   icon: {
@@ -49,6 +52,7 @@ export const colors = {
     // Backgrounds
     background: {
       main: '#F0EFF8', // Fondo general
+      secondary: '#f3f4f6', // Fondo secundario (gris claro para hover)
       imageCircle: 'rgba(255, 255, 255, 0.4)', // Círculo detrás de imágenes (40% opacidad)
       white: primitiveColors.white, // Blanco (referencia a primitivo)
       tabButtonActive: 'rgba(255, 255, 255, 0.4)', // Fondo del tab button activo
@@ -94,6 +98,7 @@ export const colors = {
     
     // Borders
     border: {
+      subtle: 'rgba(0, 0, 0, 0.08)', // Borde sutil para cards
       light: 'rgba(0, 0, 0, 0.05)', // Borde muy suave (5% opacidad)
       medium: 'rgba(0, 0, 0, 0.1)',
       dark: 'rgba(0, 0, 0, 0.2)',
@@ -260,20 +265,20 @@ export const typography = {
   
   // Títulos de sección (tokenizados)
   sectionTitle: {
-    fontSize: typography.fontSize['4xl'], // 36px
-    fontWeight: typography.fontWeight.extrabold, // 800
-    lineHeight: typography.lineHeight.none, // normal
+    fontSize: '2.25rem', // 36px (4xl)
+    fontWeight: 800, // extrabold
+    lineHeight: '1', // none
     color: colors.semantic.text.primary, // #101828
-    fontFamily: typography.fontFamily.sans.join(', '), // Manrope
+    fontFamily: ['Manrope', 'sans-serif'].join(', '), // Manrope
   },
   
   // Texto de código de moneda en cards de divisa/stablecoin
   currencyCode: {
     fontSize: '0.875rem', // 14px
-    fontWeight: typography.fontWeight.bold, // 700
+    fontWeight: 700, // bold
     lineHeight: '1.25rem', // 20px
     letterSpacing: '0%', // 0%
-    fontFamily: typography.fontFamily.sans.join(', '), // Manrope
+    fontFamily: ['Manrope', 'sans-serif'].join(', '), // Manrope
   },
 } as const;
 
@@ -395,9 +400,9 @@ export const bottomNavigation = {
   },
   // Efectos
   effects: {
-    backgroundTransition: `left ${motion.duration.base} ${motion.easing.smoothOut}, width ${motion.duration.base} ${motion.easing.smoothOut}`,
-    colorTransition: `color ${motion.duration.base} ${motion.easing.easeInOut}`,
-    backgroundColorTransition: `background-color ${motion.duration.base} ${motion.easing.easeInOut}`,
+    backgroundTransition: `left ${transitions.duration.base} ${transitions.easing.easeOut}, width ${transitions.duration.base} ${transitions.easing.easeOut}`,
+    colorTransition: `color ${transitions.duration.base} ${transitions.easing.easeInOut}`,
+    backgroundColorTransition: `background-color ${transitions.duration.base} ${transitions.easing.easeInOut}`,
   },
   // Bordes
   borders: {
@@ -540,19 +545,25 @@ export const header = {
     background: {
       home: colors.semantic.background.white, // Blanco en home (referencia a semántico)
       wallet: colors.semantic.background.white, // Blanco en wallet (referencia a semántico)
+      cash: colors.semantic.background.white, // Blanco en cash
       tarjeta: 'rgba(255, 255, 255, 0.1)', // Blanco al 10% en tarjeta
+      mas: colors.semantic.background.white, // Blanco en mas
     },
     // Fondo de botones de iconos según la vista (tokenizado por componente)
     buttonBackground: {
       home: colors.semantic.background.white, // Blanco en home
       wallet: colors.semantic.background.white, // Blanco en wallet
+      cash: colors.semantic.background.white, // Blanco en cash
       tarjeta: 'rgba(255, 255, 255, 0.1)', // Blanco al 10% en tarjeta
+      mas: colors.semantic.background.white, // Blanco en mas
     },
     // Hover state de botones de iconos (tokenizado por componente)
     buttonBackgroundHover: {
       home: colors.gray[50], // Gris claro en home/wallet (referencia a primitivo)
       wallet: colors.gray[50], // Gris claro en home/wallet (referencia a primitivo)
+      cash: colors.gray[50], // Gris claro en cash
       tarjeta: 'rgba(255, 255, 255, 0.15)', // Blanco al 15% en tarjeta (hover)
+      mas: colors.gray[50], // Gris claro en mas
     },
     // Fondo del avatar
     avatarBackground: colors.gray[300], // Gris claro para fondo del avatar (referencia a primitivo)
@@ -561,9 +572,11 @@ export const header = {
       default: colors.semantic.icon.default, // Color por defecto (referencia a semántico)
       home: colors.semantic.icon.default, // Color en home (referencia a semántico)
       wallet: colors.semantic.icon.default, // Color en wallet (referencia a semántico)
+      cash: colors.semantic.icon.default, // Color en cash (referencia a semántico)
       // En tarjeta: ojo y búsqueda usan default, solo regalo usa gradiente
       tarjeta: colors.semantic.icon.default, // Color default también en tarjeta para ojo y búsqueda
       tarjetaGift: colors.semantic.background.white, // Solo para regalo en tarjeta (gradiente)
+      mas: colors.semantic.icon.default, // Color en mas (referencia a semántico)
     },
     // Gradientes para iconos específicos (referencias a semánticos)
     gradients: {
@@ -592,13 +605,9 @@ export const header = {
 } as const;
 
 // ============================================
-// Tokens para Segmented Button y Transiciones
+// Re-exportar tokens importados para mantener compatibilidad
 // ============================================
 
-import { segmentedButton } from './segmented-button-tokens';
-import { transitions } from './transitions-tokens';
-
-// Re-exportar para mantener compatibilidad
 export { segmentedButton, transitions };
 
 // ============================================
@@ -622,6 +631,3 @@ export const designTokens = {
 } as const;
 
 export default designTokens;
-
-// Re-exportación explícita para asegurar disponibilidad
-export { segmentedButton, transitions };

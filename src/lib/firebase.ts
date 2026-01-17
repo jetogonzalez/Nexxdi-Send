@@ -7,7 +7,7 @@
 import { initializeApp, getApps, type FirebaseApp } from 'firebase/app';
 import { getAuth, type Auth } from 'firebase/auth';
 import { getFirestore, type Firestore } from 'firebase/firestore';
-import { getStorage, type Storage } from 'firebase/storage';
+import { getStorage, type FirebaseStorage } from 'firebase/storage';
 import { getAnalytics, type Analytics } from 'firebase/analytics';
 import { env } from '@/config/env';
 
@@ -42,7 +42,7 @@ export const app: FirebaseApp = getApps().length === 0
 // Servicios de Firebase
 export const auth: Auth = getAuth(app);
 export const db: Firestore = getFirestore(app);
-export const storage: Storage = getStorage(app);
+export const storage: FirebaseStorage = getStorage(app);
 
 // Analytics solo funciona en el cliente (navegador)
 export const analytics: Analytics | null = typeof window !== 'undefined' 
