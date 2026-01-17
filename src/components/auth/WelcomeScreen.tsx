@@ -147,7 +147,7 @@ export default function WelcomeScreen() {
               filter: 'brightness(0) invert(1)',
             }}
           />
-          {isAuthenticating ? 'Autenticando...' : 'Inicia con Facephi'}
+          {isAuthenticating ? 'Autenticando...' : 'Inicia con Face ID'}
         </button>
 
         {/* Botón Login con usuario/contraseña - Secundario */}
