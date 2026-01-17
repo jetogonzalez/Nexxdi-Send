@@ -1,7 +1,9 @@
 import { useState } from 'react';
 import { colors, spacing, typography, borderRadius } from '../../config/design-tokens';
+import { LoginForm } from './LoginForm';
 
 export default function WelcomeScreen() {
+  const [showLoginSheet, setShowLoginSheet] = useState(false);
   const [isAuthenticating, setIsAuthenticating] = useState(false);
 
   // Función de autenticación del sistema (biometría o PIN/patrón del celular)
@@ -23,6 +25,11 @@ export default function WelcomeScreen() {
       console.error('Error en autenticación del sistema:', error);
       setIsAuthenticating(false);
     }
+  };
+
+  const handleLoginSuccess = () => {
+    setShowLoginSheet(false);
+    window.location.href = '/home';
   };
 
   return (
@@ -143,11 +150,10 @@ export default function WelcomeScreen() {
           {isAuthenticating ? 'Autenticando...' : 'Inicia con Facephi'}
         </button>
 
-        {/* Botón Login con PIN/Patrón del celular - Secundario */}
+        {/* Botón Login con usuario/contraseña - Secundario */}
         <button
           type="button"
-          onClick={handleSystemAuth}
-          disabled={isAuthenticating}
+          onClick={() => setShowLoginSheet(true)}
           style={{
             width: '100%',
             height: '56px',
@@ -158,15 +164,100 @@ export default function WelcomeScreen() {
             fontFamily: typography.fontFamily.sans.join(', '),
             fontSize: typography.fontSize.base,
             fontWeight: typography.fontWeight.bold,
-            cursor: isAuthenticating ? 'wait' : 'pointer',
+            cursor: 'pointer',
             transition: 'opacity 0.2s ease',
-            opacity: isAuthenticating ? 0.7 : 1,
           }}
         >
-          {isAuthenticating ? 'Autenticando...' : 'Inicia con PIN o patrón'}
+          Inicia con tu usuario y contraseña
         </button>
       </div>
 
+      {/* Bottom Sheet de Login */}
+      {showLoginSheet && (
+        <>
+          {/* Overlay */}
+          <div
+            style={{
+              position: 'fixed',
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              backgroundColor: 'rgba(0, 0, 0, 0.5)',
+              zIndex: 1000,
+              animation: 'fadeIn 0.3s ease',
+            }}
+            onClick={() => setShowLoginSheet(false)}
+          />
+          
+          {/* Sheet */}
+          <div
+            style={{
+              position: 'fixed',
+              bottom: 0,
+              left: 0,
+              right: 0,
+              backgroundColor: colors.semantic.background.white,
+              borderTopLeftRadius: borderRadius['3xl'],
+              borderTopRightRadius: borderRadius['3xl'],
+              padding: spacing[6],
+              paddingBottom: `calc(${spacing[8]} + env(safe-area-inset-bottom))`,
+              zIndex: 1001,
+              maxHeight: '90vh',
+              overflowY: 'auto',
+              animation: 'slideUp 0.3s ease',
+            }}
+          >
+            {/* Handle */}
+            <div
+              style={{
+                width: '36px',
+                height: '4px',
+                backgroundColor: colors.gray[300],
+                borderRadius: borderRadius.full,
+                margin: '0 auto',
+                marginBottom: spacing[6],
+              }}
+            />
+            
+            {/* Título */}
+            <h2
+              style={{
+                fontFamily: typography.fontFamily.sans.join(', '),
+                fontSize: typography.fontSize.xl,
+                fontWeight: typography.fontWeight.semibold,
+                color: colors.semantic.text.primary,
+                textAlign: 'center',
+                margin: 0,
+                marginBottom: spacing[6],
+              }}
+            >
+              Iniciar sesión
+            </h2>
+            
+            {/* Formulario de login */}
+            <LoginForm
+              onLogin={async (email: string, password: string) => {
+                // Simular login
+                await new Promise(resolve => setTimeout(resolve, 500));
+                handleLoginSuccess();
+              }}
+              onForgotPassword={() => console.log('Forgot password')}
+            />
+          </div>
+        </>
+      )}
+
+      <style>{`
+        @keyframes fadeIn {
+          from { opacity: 0; }
+          to { opacity: 1; }
+        }
+        @keyframes slideUp {
+          from { transform: translateY(100%); }
+          to { transform: translateY(0); }
+        }
+      `}</style>
     </div>
   );
 }
