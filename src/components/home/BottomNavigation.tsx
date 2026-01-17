@@ -147,10 +147,11 @@ export function BottomNavigation({ activeTab, onTabChange }: BottomNavigationPro
                       height: bottomNavigation.icon.size,
                       display: 'block',
                       // Aplicar filtro de color según estado activo/inactivo
-                      // Activo: #402FEC (bottomNavigation.colors.iconActive), Inactivo: #8d8d8e (bottomNavigation.colors.iconInactive)
+                      // Activo: #402FEC (RGB: 64, 47, 236) - bottomNavigation.colors.iconActive
+                      // Inactivo: #8d8d8e (RGB: 141, 141, 142) - bottomNavigation.colors.iconInactive
                       filter: isActive 
-                        ? 'brightness(0) saturate(100%) invert(18%) sepia(98%) saturate(4500%) hue-rotate(246deg) brightness(92%) contrast(103%)'
-                        : 'brightness(0) saturate(100%) invert(60%) sepia(5%) saturate(145%) hue-rotate(201deg) brightness(91%) contrast(89%)',
+                        ? 'brightness(0) saturate(100%) invert(25%) sepia(100%) saturate(5000%) hue-rotate(245deg) brightness(93%) contrast(105%)'
+                        : 'brightness(0) saturate(100%) invert(55%) sepia(0%) saturate(0%) hue-rotate(0deg) brightness(90%) contrast(90%)',
                     }}
                   />
                 ) : tab.icon ? (

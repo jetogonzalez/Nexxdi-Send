@@ -86,11 +86,14 @@ export default function HomePage() {
         window.requestAnimationFrame(() => {
           const currentScrollTop = window.scrollY || document.documentElement.scrollTop;
           
+          // Asegurar que scrollTop nunca sea negativo (previene problemas con pull-to-refresh)
+          const safeScrollTop = Math.max(0, currentScrollTop);
+          
           // Detectar si hay scroll (más de 10px)
-          const hasScrolled = currentScrollTop > 10;
+          const hasScrolled = safeScrollTop > 10;
           setIsScrolled(hasScrolled);
           // Redondear scrollTop para evitar cambios muy pequeños que causan vibración
-          setScrollTop(Math.round(currentScrollTop));
+          setScrollTop(Math.round(safeScrollTop));
           
           const currentTitleRef = titleRefs.current[activeTab];
           if (!currentTitleRef || !showHeader) {
@@ -107,7 +110,7 @@ export default function HomePage() {
           
           const startPoint = threshold;
           const endPoint = threshold + titleHeight;
-          const currentPosition = currentScrollTop;
+          const currentPosition = safeScrollTop;
           
           let progress = 0;
           if (currentPosition >= startPoint) {

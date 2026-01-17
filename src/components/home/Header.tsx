@@ -65,8 +65,10 @@ export function Header({ activeTab, onBalanceVisibilityChange, showTitle = false
   const maxScrollForOpacity = 100;
   const minOpacity = 0.3;
   const maxOpacity = 0.8;
+  // Asegurar que scrollTop nunca sea negativo (previene problemas con pull-to-refresh)
+  const safeScrollTopForOpacity = Math.max(0, scrollTop);
   const rawOpacity = shouldApplyBlur 
-    ? Math.min(maxOpacity, minOpacity + ((scrollTop / maxScrollForOpacity) * (maxOpacity - minOpacity)))
+    ? Math.min(maxOpacity, minOpacity + ((safeScrollTopForOpacity / maxScrollForOpacity) * (maxOpacity - minOpacity)))
     : 0;
   // Redondear a 2 decimales para suavizar los cambios
   const maxGradientOpacity = Math.round(rawOpacity * 100) / 100;
@@ -86,30 +88,38 @@ export function Header({ activeTab, onBalanceVisibilityChange, showTitle = false
   const avatarEndSize = 40; // header.sizes.actionIcon = spacing[10]
   const avatarScrollThreshold = 80; // Scroll necesario para completar la transición (más suave)
   
+  // Asegurar que scrollTop nunca sea negativo (previene problemas con pull-to-refresh)
+  const safeScrollTop = Math.max(0, scrollTop);
+  
   // Calcular el progreso con una función de easing suave (ease-out quadratic)
   const rawProgress = shouldAnimateAvatar 
-    ? Math.min(scrollTop / avatarScrollThreshold, 1) 
+    ? Math.min(Math.max(0, safeScrollTop / avatarScrollThreshold), 1) 
     : 0;
   // Aplicar easing cuadrático para una transición más fluida
   const avatarProgress = rawProgress * (2 - rawProgress); // ease-out quad
-  const currentAvatarSize = avatarStartSize - (avatarProgress * (avatarStartSize - avatarEndSize));
+  // Asegurar que el tamaño esté siempre entre los límites mínimo y máximo
+  const currentAvatarSize = Math.max(avatarEndSize, Math.min(avatarStartSize, avatarStartSize - (avatarProgress * (avatarStartSize - avatarEndSize))));
   
   // Calcular el tamaño del punto de notificación proporcionalmente
   const notificationStartSize = 12; // header.sizes.notificationDot = spacing[3]
   const notificationEndSize = 10; // Proporcionalmente más pequeño
-  const currentNotificationSize = notificationStartSize - (avatarProgress * (notificationStartSize - notificationEndSize));
+  // Asegurar que el tamaño esté siempre entre los límites mínimo y máximo
+  const currentNotificationSize = Math.max(notificationEndSize, Math.min(notificationStartSize, notificationStartSize - (avatarProgress * (notificationStartSize - notificationEndSize))));
 
   // Padding dinámico: de 24px a 16px al hacer scroll (solo en home, wallet, tarjeta)
   const paddingStartValue = 24; // spacing[6] = 1.5rem = 24px
   const paddingEndValue = 16; // spacing[4] = 1rem = 16px
+  // Asegurar que el padding esté siempre entre los límites mínimo y máximo
   const currentPadding = shouldAnimateAvatar 
-    ? paddingStartValue - (avatarProgress * (paddingStartValue - paddingEndValue))
+    ? Math.max(paddingEndValue, Math.min(paddingStartValue, paddingStartValue - (avatarProgress * (paddingStartValue - paddingEndValue))))
     : paddingStartValue;
 
   // Color dinámico del stroke de notificación según vista y scroll
   // Transición suave: el color se desvanece gradualmente al hacer scroll
   const strokeScrollThreshold = 60; // Scroll necesario para completar la transición del stroke
-  const strokeProgress = Math.min(scrollTop / strokeScrollThreshold, 1);
+  // Asegurar que scrollTop nunca sea negativo (previene problemas con pull-to-refresh)
+  const safeScrollTopForStroke = Math.max(0, scrollTop);
+  const strokeProgress = Math.min(Math.max(0, safeScrollTopForStroke / strokeScrollThreshold), 1);
   // Aplicar easing para transición más suave
   const strokeAlpha = 1 - (strokeProgress * (2 - strokeProgress)); // ease-out quad inverso
   
