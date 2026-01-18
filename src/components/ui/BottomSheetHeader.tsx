@@ -107,8 +107,9 @@ export function BottomSheetHeader({
         onTouchStart={(e) => {
           // Permitir que el drag funcione desde cualquier parte del header excepto botones
           const target = e.target as HTMLElement;
-          if (!target.closest('button')) {
-            // CRÍTICO: Prevenir comportamiento por defecto en iOS
+          const isButton = target.closest('button') !== null;
+          if (!isButton) {
+            // CRÍTICO: Prevenir comportamiento por defecto en iOS solo si NO es un botón
             e.preventDefault();
             e.stopPropagation();
             onGraberTouchStart?.(e);
@@ -116,7 +117,8 @@ export function BottomSheetHeader({
         }}
         onTouchMove={(e) => {
           const target = e.target as HTMLElement;
-          if (!target.closest('button')) {
+          const isButton = target.closest('button') !== null;
+          if (!isButton) {
             e.preventDefault();
             e.stopPropagation();
             onGraberTouchMove?.(e);
@@ -124,7 +126,8 @@ export function BottomSheetHeader({
         }}
         onTouchEnd={(e) => {
           const target = e.target as HTMLElement;
-          if (!target.closest('button')) {
+          const isButton = target.closest('button') !== null;
+          if (!isButton) {
             e.preventDefault();
             e.stopPropagation();
             onGraberTouchEnd?.();
@@ -132,7 +135,8 @@ export function BottomSheetHeader({
         }}
         onMouseDown={(e) => {
           const target = e.target as HTMLElement;
-          if (!target.closest('button')) {
+          const isButton = target.closest('button') !== null;
+          if (!isButton) {
             onGraberMouseDown?.(e);
           }
         }}
@@ -146,7 +150,7 @@ export function BottomSheetHeader({
           position: 'relative',
           zIndex: 0, // Debajo del graber visual
           cursor: 'grab', // Cursor de arrastre en toda el área
-          touchAction: 'none', // CRÍTICO: Prevenir scroll en iOS
+          touchAction: 'manipulation', // Permitir interacciones táctiles pero prevenir gestos
           WebkitTouchCallout: 'none', // Prevenir menú contextual en iOS
         }}
       >
@@ -156,12 +160,20 @@ export function BottomSheetHeader({
           type="button"
           onClick={(e) => {
             e.stopPropagation();
+            e.preventDefault();
             onLeftIconClick?.();
           }}
           onTouchStart={(e) => {
-            e.stopPropagation(); // Prevenir que el drag capture este evento
+            // NO prevenir el evento aquí para que el botón funcione
+            e.stopPropagation();
+          }}
+          onTouchEnd={(e) => {
+            // Asegurar que el click funcione en touch
+            e.stopPropagation();
           }}
           style={{
+            touchAction: 'manipulation', // Permitir interacciones táctiles
+            zIndex: 10, // Asegurar que esté por encima del área arrastrable
             width: bottomSheet.header.actionButtonSize, // 44px
             height: bottomSheet.header.actionButtonSize, // 44px
             minWidth: bottomSheet.header.actionButtonSize,
@@ -231,12 +243,20 @@ export function BottomSheetHeader({
           type="button"
           onClick={(e) => {
             e.stopPropagation();
+            e.preventDefault();
             onRightIconClick?.();
           }}
           onTouchStart={(e) => {
-            e.stopPropagation(); // Prevenir que el drag capture este evento
+            // NO prevenir el evento aquí para que el botón funcione
+            e.stopPropagation();
+          }}
+          onTouchEnd={(e) => {
+            // Asegurar que el click funcione en touch
+            e.stopPropagation();
           }}
           style={{
+            touchAction: 'manipulation', // Permitir interacciones táctiles
+            zIndex: 10, // Asegurar que esté por encima del área arrastrable
             width: bottomSheet.header.actionButtonSize, // 44px
             height: bottomSheet.header.actionButtonSize, // 44px
             minWidth: bottomSheet.header.actionButtonSize,

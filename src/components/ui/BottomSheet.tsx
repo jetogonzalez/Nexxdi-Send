@@ -61,10 +61,16 @@ export function BottomSheet({
   // Resetear posición cuando se abre/cierra y obtener altura base
   useEffect(() => {
     if (isOpen) {
-      // Iniciar animación de entrada
+      // Iniciar animación de entrada - mostrar inmediatamente SIN delay
       setIsVisible(true);
-      setTranslateY(0); // Tamaño original (hug content)
-      setStretchHeight(0); // Sin estiramiento
+      // Usar requestAnimationFrame para sincronizar con el render del navegador
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          // Doble RAF para asegurar que el DOM esté completamente renderizado
+          setTranslateY(0); // Tamaño original (hug content)
+          setStretchHeight(0); // Sin estiramiento
+        });
+      });
       // Esperar a que el contenido se renderice para obtener la altura base
       setTimeout(() => {
         if (sheetRef.current) {
@@ -73,7 +79,7 @@ export function BottomSheet({
         }
       }, 100);
     } else {
-      // Iniciar animación de salida
+      // Iniciar animación de salida - ambos overlay y sheet deben animar juntos SIN delay
       setTranslateY(100); // Mover hacia abajo para cerrar
       setStretchHeight(0);
       // Esperar a que termine la animación antes de ocultar completamente
@@ -88,7 +94,7 @@ export function BottomSheet({
         document.body.style.width = '';
         document.body.style.height = '';
         window.scrollTo(0, scrollY);
-      }, 300); // Duración de la transición (0.3s)
+      }, 300); // Duración de la transición (0.3s) - debe coincidir con CSS
       
       return () => clearTimeout(exitTimeout);
     }
@@ -276,7 +282,9 @@ export function BottomSheet({
           backgroundColor: 'rgba(0, 0, 0, 0.4)', // Opacidad ajustada según Apple HIG
           zIndex: 1000,
           opacity: isOpen && isVisible ? 1 : 0,
-          transition: 'opacity 0.3s ease-out',
+          pointerEvents: isOpen && isVisible ? 'auto' : 'none', // Prevenir interacciones cuando está oculto
+          transition: 'opacity 0.3s ease-out', // Transición sincronizada - siempre activa
+          willChange: isOpen ? 'opacity' : 'auto', // Optimizar para animaciones
           touchAction: 'none', // CRÍTICO: Prevenir scroll cuando se arrastra (especialmente iOS)
           WebkitOverflowScrolling: 'touch',
           WebkitTouchCallout: 'none', // Prevenir menú contextual en iOS
@@ -332,6 +340,8 @@ export function BottomSheet({
           transform: `translateY(${translateY}%)`, // Solo para arrastrar hacia abajo (cerrar)
           transition: isDragging ? 'none' : 'transform 0.3s ease-out, min-height 0.3s ease-out, opacity 0.3s ease-out',
           opacity: isOpen && isVisible ? 1 : 0,
+          pointerEvents: isOpen && isVisible ? 'auto' : 'none', // Prevenir interacciones cuando está oculto
+          willChange: isDragging ? 'transform' : isOpen ? 'transform, opacity' : 'auto', // Optimizar para animaciones
           boxShadow: '0 15px 75px rgba(0, 0, 0, 0.18)', // Drop shadow: X: 0, Y: 15, Blur: 75, Spread: 0, Color: #000000, Opacity: 18%
           touchAction: isDragging ? 'none' : 'pan-y', // Prevenir todo cuando se arrastra, permitir scroll vertical cuando no
           WebkitOverflowScrolling: 'touch',
