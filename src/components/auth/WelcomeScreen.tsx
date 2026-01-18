@@ -178,9 +178,11 @@ export default function WelcomeScreen() {
                 left: 0,
                 transform: 'rotate(-90deg)', // Rotar para que empiece desde arriba
                 zIndex: 2,
+                borderRadius: '50%', // Asegurar que el SVG sea completamente circular
+                overflow: 'visible', // Permitir que el stroke se vea completamente
               }}
             >
-              {/* Borde animado que se completa progresivamente - solo este borde */}
+              {/* Borde animado que se completa progresivamente - completamente circular */}
               <circle
                 cx="100"
                 cy="100"
@@ -191,6 +193,7 @@ export default function WelcomeScreen() {
                 strokeDasharray={2 * Math.PI * 97} // Circunferencia completa
                 strokeDashoffset={2 * Math.PI * 97 * (1 - authProgress / 100)} // Offset basado en progreso
                 strokeLinecap="round"
+                strokeLinejoin="round"
                 style={{
                   // Sin transición CSS, la animación se maneja con requestAnimationFrame para mayor control
                   willChange: 'stroke-dashoffset', // Optimización de rendimiento
