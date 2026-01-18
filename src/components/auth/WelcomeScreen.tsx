@@ -22,24 +22,41 @@ export default function WelcomeScreen() {
     setIsAuthenticating(true);
     setAuthProgress(0);
     
-    // Delay inicial antes de empezar la animación (300ms para que se vea natural)
-    await new Promise(resolve => setTimeout(resolve, 300));
+    // Delay inicial antes de empezar la animación (400ms para que se vea natural)
+    await new Promise(resolve => setTimeout(resolve, 400));
     
-    // Duración total de la animación (2 segundos estilo Apple - muy suave y natural)
-    const duration = 2000; // ms
+    // Duración total de la animación (2.2 segundos estilo Apple - cool e increíble)
+    const duration = 2200; // ms
     const startTime = Date.now();
     
-    // Función de easing estilo Apple (cubic-bezier muy suave)
-    const easeOutCubic = (t: number): number => {
-      return 1 - Math.pow(1 - t, 3);
+    // Función de easing personalizada estilo Apple:
+    // - Empieza lento (ease-in)
+    // - Acelera en el medio
+    // - Se desacelera al final (ease-out)
+    // - Curva muy suave y natural
+    const appleEasing = (t: number): number => {
+      // Curva personalizada que combina ease-in-out con un toque de elasticidad suave
+      // Empieza lento, acelera rápido en el medio, y se desacelera suavemente al final
+      if (t < 0.3) {
+        // Primera parte: empieza muy lento (0-30%)
+        return 0.15 * Math.pow(t / 0.3, 2);
+      } else if (t < 0.85) {
+        // Parte media: acelera rápido (30-85%)
+        const midT = (t - 0.3) / 0.55;
+        return 0.15 + 0.75 * (1 - Math.pow(1 - midT, 2.5));
+      } else {
+        // Parte final: se desacelera suavemente (85-100%)
+        const endT = (t - 0.85) / 0.15;
+        return 0.9 + 0.1 * (1 - Math.pow(1 - endT, 3));
+      }
     };
     
     const animate = () => {
       const elapsed = Date.now() - startTime;
       const normalizedTime = Math.min(elapsed / duration, 1);
       
-      // Aplicar easing para animación más natural estilo Apple
-      const easedProgress = easeOutCubic(normalizedTime) * 100;
+      // Aplicar easing personalizado estilo Apple
+      const easedProgress = appleEasing(normalizedTime) * 100;
       
       setAuthProgress(easedProgress);
       
@@ -49,7 +66,7 @@ export default function WelcomeScreen() {
         // Cuando llegue al 100%, esperar un momento y navegar al home
         setTimeout(() => {
           window.location.href = '/home';
-        }, 200);
+        }, 250);
       }
     };
     
