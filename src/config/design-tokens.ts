@@ -328,6 +328,7 @@ export const borderRadius = {
   xl: '0.75rem',    // 12px
   '2xl': '1rem',    // 16px
   '3xl': '1.5rem',  // 24px
+  '4xl': '2.125rem', // 34px - para bottom sheets
   full: '9999px',
 } as const;
 
@@ -420,6 +421,29 @@ export const bottomNavigation = {
     border: '1px solid rgba(154, 150, 184, 0.10)', // Border tokenizado
     borderRadius: borderRadius.full, // 9999px
     backdropFilter: 'blur(6px)', // blur(6px) tokenizado
+  },
+} as const;
+
+// ============================================
+// Tokens para Bottom Sheet
+// ============================================
+
+export const bottomSheet = {
+  // Padding general
+  padding: spacing[2], // 8px
+  // Border radius general
+  borderRadius: borderRadius['4xl'], // 34px
+  // Graber (barra superior para arrastrar)
+  graber: {
+    width: '34px', // Ancho del graber
+    height: '4px', // Altura del graber
+    topDistance: '5px', // Distancia del top (5px)
+    touchArea: '40px', // Área reactiva de 40x40px
+  },
+  // Header
+  header: {
+    height: '34px', // Altura del header
+    iconButtonSize: '34px', // Tamaño de botones de iconos (34x34px)
   },
 } as const;
 
@@ -632,6 +656,7 @@ export const designTokens = {
   theme,
   button,
   bottomNavigation,
+  bottomSheet,
   segmentedButton,
 } as const;
 

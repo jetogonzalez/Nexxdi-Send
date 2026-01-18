@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { colors, spacing, typography, borderRadius } from '../../config/design-tokens';
 import { LoginForm } from './LoginForm';
+import { BottomSheet } from '../ui/BottomSheet';
 import {
   createBiometricCredential,
 } from '../../lib/biometricAuth';
@@ -317,77 +318,37 @@ export default function WelcomeScreen() {
       </div>
 
       {/* Bottom Sheet de Login */}
-      {showLoginSheet && (
-        <>
-          {/* Overlay */}
-          <div
-            style={{
-              position: 'fixed',
-              top: 0,
-              left: 0,
-              right: 0,
-              bottom: 0,
-              backgroundColor: 'rgba(0, 0, 0, 0.5)',
-              zIndex: 1000,
-              animation: 'fadeIn 0.3s ease',
-            }}
-            onClick={() => setShowLoginSheet(false)}
-          />
-          
-          {/* Sheet */}
-          <div
-            style={{
-              position: 'fixed',
-              bottom: 0,
-              left: 0,
-              right: 0,
-              backgroundColor: colors.semantic.background.white,
-              borderTopLeftRadius: borderRadius['3xl'],
-              borderTopRightRadius: borderRadius['3xl'],
-              padding: spacing[6],
-              paddingBottom: `calc(${spacing[8]} + env(safe-area-inset-bottom))`,
-              zIndex: 1001,
-              maxHeight: '90vh',
-              overflowY: 'auto',
-              animation: 'slideUp 0.3s ease',
-            }}
+      <BottomSheet
+        isOpen={showLoginSheet}
+        onClose={() => setShowLoginSheet(false)}
+        title="Iniciar sesión"
+        rightIcon={
+          <svg
+            width="20"
+            height="20"
+            viewBox="0 0 20 20"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
           >
-            {/* Handle */}
-            <div
-              style={{
-                width: '36px',
-                height: '4px',
-                backgroundColor: colors.gray[300],
-                borderRadius: borderRadius.full,
-                margin: '0 auto',
-                marginBottom: spacing[6],
-              }}
+            <path
+              d="M15 5L5 15M5 5L15 15"
+              stroke={colors.semantic.text.primary}
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
             />
-            
-            {/* Título */}
-            <h2
-              style={{
-                fontFamily: typography.fontFamily.sans.join(', '),
-                fontSize: typography.fontSize.xl,
-                fontWeight: typography.fontWeight.semibold,
-                color: colors.semantic.text.primary,
-                textAlign: 'center',
-                margin: 0,
-                marginBottom: spacing[6],
-              }}
-            >
-              Iniciar sesión
-            </h2>
-            
-            {/* Formulario de login */}
-            <LoginForm
-              onLogin={handleLoginSuccess}
-              onForgotPassword={() => console.log('Forgot password')}
-              showBiometricCheckbox={true}
-            />
-          </div>
-        </>
-      )}
+          </svg>
+        }
+        onRightIconClick={() => setShowLoginSheet(false)}
+        initialHeight={50}
+        maxHeight={90}
+      >
+        <LoginForm
+          onLogin={handleLoginSuccess}
+          onForgotPassword={() => console.log('Forgot password')}
+          showBiometricCheckbox={true}
+        />
+      </BottomSheet>
 
 
       <style>{`
