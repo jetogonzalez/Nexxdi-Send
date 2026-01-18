@@ -108,9 +108,9 @@ export function BottomSheetHeader({
           // Permitir que el drag funcione desde cualquier parte del header excepto botones
           const target = e.target as HTMLElement;
           const isButton = target.closest('button') !== null;
-          // Si es un botón, NO hacer nada - dejar que el botón maneje el evento
-          if (isButton) {
-            return; // Salir inmediatamente sin prevenir nada
+          // Si es un botón o está dentro de un botón, NO hacer nada
+          if (isButton || target.tagName === 'BUTTON') {
+            return; // Salir inmediatamente sin prevenir nada - dejar que el botón maneje
           }
           // CRÍTICO: Prevenir comportamiento por defecto en iOS solo si NO es un botón
           e.preventDefault();
@@ -120,7 +120,7 @@ export function BottomSheetHeader({
         onTouchMove={(e) => {
           const target = e.target as HTMLElement;
           const isButton = target.closest('button') !== null;
-          if (isButton) {
+          if (isButton || target.tagName === 'BUTTON') {
             return; // Salir inmediatamente sin prevenir nada
           }
           e.preventDefault();
@@ -130,7 +130,7 @@ export function BottomSheetHeader({
         onTouchEnd={(e) => {
           const target = e.target as HTMLElement;
           const isButton = target.closest('button') !== null;
-          if (isButton) {
+          if (isButton || target.tagName === 'BUTTON') {
             return; // Salir inmediatamente sin prevenir nada
           }
           e.preventDefault();
@@ -140,7 +140,7 @@ export function BottomSheetHeader({
         onMouseDown={(e) => {
           const target = e.target as HTMLElement;
           const isButton = target.closest('button') !== null;
-          if (isButton) {
+          if (isButton || target.tagName === 'BUTTON') {
             return; // Salir inmediatamente sin prevenir nada
           }
           onGraberMouseDown?.(e);
@@ -165,31 +165,38 @@ export function BottomSheetHeader({
           type="button"
           onClick={(e) => {
             e.stopPropagation();
+            e.preventDefault();
             onLeftIconClick?.();
           }}
           onTouchStart={(e) => {
-            // Detener propagación para que el contenedor no capture el evento
+            // CRÍTICO: Detener TODA la propagación inmediatamente
             e.stopPropagation();
-            if (e.nativeEvent.stopImmediatePropagation) {
-              e.nativeEvent.stopImmediatePropagation();
+            const nativeEvent = e.nativeEvent as any;
+            if (nativeEvent.stopImmediatePropagation) {
+              nativeEvent.stopImmediatePropagation();
             }
           }}
           onTouchEnd={(e) => {
-            // Asegurar que el click funcione en touch
+            // CRÍTICO: Detener propagación y ejecutar el click
             e.stopPropagation();
-            if (e.nativeEvent.stopImmediatePropagation) {
-              e.nativeEvent.stopImmediatePropagation();
+            const nativeEvent = e.nativeEvent as any;
+            if (nativeEvent.stopImmediatePropagation) {
+              nativeEvent.stopImmediatePropagation();
             }
+            // Ejecutar el click manualmente en touch
+            onLeftIconClick?.();
           }}
           onMouseDown={(e) => {
             // Detener propagación para que el drag no se active
             e.stopPropagation();
-            if (e.nativeEvent.stopImmediatePropagation) {
-              e.nativeEvent.stopImmediatePropagation();
+            const nativeEvent = e.nativeEvent as any;
+            if (nativeEvent.stopImmediatePropagation) {
+              nativeEvent.stopImmediatePropagation();
             }
           }}
           style={{
             touchAction: 'manipulation', // Permitir interacciones táctiles
+            WebkitTapHighlightColor: 'transparent', // Remover highlight en iOS
             zIndex: 10, // Asegurar que esté por encima del área arrastrable
             position: 'relative', // Asegurar que el z-index funcione
             width: bottomSheet.header.actionButtonSize, // 44px
@@ -261,31 +268,38 @@ export function BottomSheetHeader({
           type="button"
           onClick={(e) => {
             e.stopPropagation();
+            e.preventDefault();
             onRightIconClick?.();
           }}
           onTouchStart={(e) => {
-            // Detener propagación para que el contenedor no capture el evento
+            // CRÍTICO: Detener TODA la propagación inmediatamente
             e.stopPropagation();
-            if (e.nativeEvent.stopImmediatePropagation) {
-              e.nativeEvent.stopImmediatePropagation();
+            const nativeEvent = e.nativeEvent as any;
+            if (nativeEvent.stopImmediatePropagation) {
+              nativeEvent.stopImmediatePropagation();
             }
           }}
           onTouchEnd={(e) => {
-            // Asegurar que el click funcione en touch
+            // CRÍTICO: Detener propagación y ejecutar el click
             e.stopPropagation();
-            if (e.nativeEvent.stopImmediatePropagation) {
-              e.nativeEvent.stopImmediatePropagation();
+            const nativeEvent = e.nativeEvent as any;
+            if (nativeEvent.stopImmediatePropagation) {
+              nativeEvent.stopImmediatePropagation();
             }
+            // Ejecutar el click manualmente en touch
+            onRightIconClick?.();
           }}
           onMouseDown={(e) => {
             // Detener propagación para que el drag no se active
             e.stopPropagation();
-            if (e.nativeEvent.stopImmediatePropagation) {
-              e.nativeEvent.stopImmediatePropagation();
+            const nativeEvent = e.nativeEvent as any;
+            if (nativeEvent.stopImmediatePropagation) {
+              nativeEvent.stopImmediatePropagation();
             }
           }}
           style={{
             touchAction: 'manipulation', // Permitir interacciones táctiles
+            WebkitTapHighlightColor: 'transparent', // Remover highlight en iOS
             zIndex: 10, // Asegurar que esté por encima del área arrastrable
             position: 'relative', // Asegurar que el z-index funcione
             width: bottomSheet.header.actionButtonSize, // 44px
