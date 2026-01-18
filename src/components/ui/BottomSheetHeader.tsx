@@ -58,6 +58,7 @@ export function BottomSheetHeader({
         userSelect: 'none',
         minHeight: '70px', // Altura total del header aproximadamente 70px
         position: 'relative', // Para posicionar el graber absolutamente
+        paddingBottom: spacing[4], // 16px spacing bottom del header
       }}
     >
       {/* Graber - dentro del header, posicionado absolutamente sin afectar layout */}
@@ -107,18 +108,25 @@ export function BottomSheetHeader({
           // Permitir que el drag funcione desde cualquier parte del header excepto botones
           const target = e.target as HTMLElement;
           if (!target.closest('button')) {
+            // CRÍTICO: Prevenir comportamiento por defecto en iOS
+            e.preventDefault();
+            e.stopPropagation();
             onGraberTouchStart?.(e);
           }
         }}
         onTouchMove={(e) => {
           const target = e.target as HTMLElement;
           if (!target.closest('button')) {
+            e.preventDefault();
+            e.stopPropagation();
             onGraberTouchMove?.(e);
           }
         }}
         onTouchEnd={(e) => {
           const target = e.target as HTMLElement;
           if (!target.closest('button')) {
+            e.preventDefault();
+            e.stopPropagation();
             onGraberTouchEnd?.();
           }
         }}
@@ -138,6 +146,8 @@ export function BottomSheetHeader({
           position: 'relative',
           zIndex: 0, // Debajo del graber visual
           cursor: 'grab', // Cursor de arrastre en toda el área
+          touchAction: 'none', // CRÍTICO: Prevenir scroll en iOS
+          WebkitTouchCallout: 'none', // Prevenir menú contextual en iOS
         }}
       >
       {/* Botón izquierdo */}
@@ -195,7 +205,7 @@ export function BottomSheetHeader({
         <h2
           style={{
             fontFamily: typography.fontFamily.sans.join(', '),
-            fontSize: typography.fontSize.xl,
+            fontSize: '18px',
             fontWeight: typography.fontWeight.semibold,
             color: colors.semantic.text.primary,
             textAlign: 'center',

@@ -81,9 +81,13 @@ export function BottomSheet({
         setIsVisible(false);
         setBaseHeight(null);
         // Restaurar scroll del body cuando se cierra
+        const scrollY = (sheetRef.current as any)?._scrollY || 0;
         document.body.style.overflow = '';
         document.body.style.position = '';
+        document.body.style.top = '';
         document.body.style.width = '';
+        document.body.style.height = '';
+        window.scrollTo(0, scrollY);
       }, 300); // Duración de la transición (0.3s)
       
       return () => clearTimeout(exitTimeout);
@@ -106,10 +110,18 @@ export function BottomSheet({
       e.preventDefault();
       e.stopPropagation();
       
-      // Prevenir scroll del body cuando se arrastra
+      // Prevenir scroll del body cuando se arrastra (especialmente importante en iOS)
+      const scrollY = window.scrollY;
       document.body.style.overflow = 'hidden';
       document.body.style.position = 'fixed';
+      document.body.style.top = `-${scrollY}px`;
       document.body.style.width = '100%';
+      document.body.style.height = '100%';
+      
+      // Guardar posición de scroll para restaurarla después
+      if (sheetRef.current) {
+        (sheetRef.current as any)._scrollY = scrollY;
+      }
       
       setIsDragging(true);
       setStartY(e.touches[0].clientY);
@@ -186,17 +198,23 @@ export function BottomSheet({
     const currentTranslateY = translateYRef.current;
     setIsDragging(false);
 
+    // Restaurar scroll del body (especialmente importante en iOS)
+    const scrollY = (sheetRef.current as any)?._scrollY || 0;
+    document.body.style.overflow = '';
+    document.body.style.position = '';
+    document.body.style.top = '';
+    document.body.style.width = '';
+    document.body.style.height = '';
+    window.scrollTo(0, scrollY);
+
     // Si se arrastra más del 30% hacia abajo, cerrar con animación
     if (currentTranslateY > 30) {
       // Completar la animación de cierre
       setTranslateY(100);
       setStretchHeight(0);
-      // Restaurar scroll del body después de un breve delay
+      // Llamar onClose después de un breve delay
       setTimeout(() => {
-        document.body.style.overflow = '';
-        document.body.style.position = '';
-        document.body.style.width = '';
-        onClose(); // Llamar onClose después de la animación
+        onClose();
       }, 300); // Duración de la transición
     } else {
       // Volver a la altura original (hug content) - usar transición CSS por defecto
@@ -259,13 +277,26 @@ export function BottomSheet({
           zIndex: 1000,
           opacity: isOpen && isVisible ? 1 : 0,
           transition: 'opacity 0.3s ease-out',
-          touchAction: 'none', // Prevenir scroll cuando se arrastra
+          touchAction: 'none', // CRÍTICO: Prevenir scroll cuando se arrastra (especialmente iOS)
           WebkitOverflowScrolling: 'touch',
+          WebkitTouchCallout: 'none', // Prevenir menú contextual en iOS
         }}
         onClick={onClose}
         onTouchStart={(e) => {
           // Prevenir que el drag del overlay afecte al bottom sheet
           // Solo prevenir si NO estamos tocando el bottom sheet
+          const target = e.target as HTMLElement;
+          if (!target.closest('[data-bottom-sheet]')) {
+            e.preventDefault();
+            e.stopPropagation();
+            // Prevenir scroll en iOS
+            if (e.nativeEvent.stopImmediatePropagation) {
+              e.nativeEvent.stopImmediatePropagation();
+            }
+          }
+        }}
+        onTouchMove={(e) => {
+          // Prevenir scroll del overlay en iOS
           const target = e.target as HTMLElement;
           if (!target.closest('[data-bottom-sheet]')) {
             e.preventDefault();
@@ -304,6 +335,7 @@ export function BottomSheet({
           boxShadow: '0 15px 75px rgba(0, 0, 0, 0.18)', // Drop shadow: X: 0, Y: 15, Blur: 75, Spread: 0, Color: #000000, Opacity: 18%
           touchAction: isDragging ? 'none' : 'pan-y', // Prevenir todo cuando se arrastra, permitir scroll vertical cuando no
           WebkitOverflowScrolling: 'touch',
+          WebkitTouchCallout: 'none', // Prevenir menú contextual en iOS
         }}
       >
         {/* Header con botones de iconos y graber */}
