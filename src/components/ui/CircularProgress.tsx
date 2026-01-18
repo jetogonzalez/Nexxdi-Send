@@ -57,40 +57,67 @@ export function CircularProgress({
   // Offset del stroke para mostrar el progreso
   const offset = circumference - (animatedProgress / 100) * circumference;
 
-  // Animar progreso solo cuando el componente es visible y supera el navigation bar
+  // Animar progreso solo cuando el componente entra en pantalla al hacer scroll
   useEffect(() => {
     if (!containerRef.current) return;
+    if (hasAnimatedRef.current) return; // Ya se animó, no hacer nada más
 
-    // Calcular el offset del navigation bar (aproximadamente 100px desde arriba)
-    const navigationBarHeight = 100; // Altura aproximada del navigation bar
+    let observer: IntersectionObserver | null = null;
 
-    const observer = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((entry) => {
-          // Verificar que el elemento esté visible y haya superado el navigation bar
-          if (entry.isIntersecting && entry.boundingClientRect.top > navigationBarHeight) {
-            // Iniciar animación solo si no se ha animado antes
-            if (!hasAnimatedRef.current) {
-              hasAnimatedRef.current = true;
-              // Pequeño delay para una entrada más suave
-              setTimeout(() => {
-                setAnimatedProgress(progressRef.current);
-              }, 100);
+    // Verificar si el elemento está inicialmente visible en el viewport
+    // Si está fuera del viewport inicial, esperar a que entre con scroll
+    const checkInitialVisibility = () => {
+      if (!containerRef.current) return false;
+      const rect = containerRef.current.getBoundingClientRect();
+      // Considerar visible solo si está realmente en el viewport (no solo parcialmente fuera)
+      return rect.top >= 0 && rect.top < window.innerHeight && rect.bottom > 0;
+    };
+
+    // Si está inicialmente visible, esperar un pequeño delay antes de configurar el observer
+    // Esto evita que se anime inmediatamente si el elemento ya está en pantalla al cargar
+    const initialDelay = checkInitialVisibility() ? 300 : 0;
+
+    const timeoutId = setTimeout(() => {
+      if (!containerRef.current || hasAnimatedRef.current) return;
+
+      observer = new IntersectionObserver(
+        (entries) => {
+          entries.forEach((entry) => {
+            // Solo animar cuando el elemento ENTRA en pantalla y está realmente visible
+            if (entry.isIntersecting && entry.intersectionRatio >= 0.1 && !hasAnimatedRef.current) {
+              const rect = entry.boundingClientRect;
+              // Verificar que esté realmente en el viewport visible
+              const isInViewport = rect.top >= 0 && rect.top < window.innerHeight && rect.bottom > 0;
+              
+              if (isInViewport) {
+                hasAnimatedRef.current = true;
+                // Pequeño delay para una entrada más suave
+                setTimeout(() => {
+                  setAnimatedProgress(progressRef.current);
+                }, 200);
+                // Desconectar el observer después de iniciar la animación
+                if (observer) {
+                  observer.disconnect();
+                }
+              }
             }
-          }
-        });
-      },
-      {
-        threshold: 0.1, // Iniciar cuando al menos el 10% del elemento sea visible
-        rootMargin: `-${navigationBarHeight}px 0px 0px 0px`, // Considerar el navigation bar
-      }
-    );
+          });
+        },
+        {
+          threshold: 0.1, // Iniciar cuando al menos el 10% del elemento sea visible
+          rootMargin: '0px', // Sin margen adicional
+        }
+      );
 
-    observer.observe(containerRef.current);
+      if (containerRef.current) {
+        observer.observe(containerRef.current);
+      }
+    }, initialDelay);
 
     return () => {
-      if (containerRef.current) {
-        observer.unobserve(containerRef.current);
+      clearTimeout(timeoutId);
+      if (observer) {
+        observer.disconnect();
       }
     };
   }, []);

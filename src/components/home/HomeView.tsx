@@ -34,7 +34,6 @@ export function HomeView({ titleRef, scrollProgress = 0, isBalanceVisible = true
         display: 'flex',
         flexDirection: 'column',
         paddingTop: spacing[4], // 16px
-        paddingBottom: 0, // Sin padding inferior, se maneja en el contenedor padre
         backgroundColor: colors.semantic.background.main,
         overflowX: 'visible', // Permitir overflow horizontal para que las cards no se corten
         overflowY: 'visible',

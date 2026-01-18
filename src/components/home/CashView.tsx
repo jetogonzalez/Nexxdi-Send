@@ -8,7 +8,6 @@ export function CashView() {
         display: 'flex',
         flexDirection: 'column',
         paddingTop: spacing[4], // 16px
-        paddingBottom: spacing[10], // 40px
         backgroundColor: colors.semantic.background.main,
       }}
     >

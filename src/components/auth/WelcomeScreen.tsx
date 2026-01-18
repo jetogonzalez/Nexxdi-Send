@@ -8,16 +8,53 @@ import {
 export default function WelcomeScreen() {
   const [showLoginSheet, setShowLoginSheet] = useState(false);
   const [isAuthenticating, setIsAuthenticating] = useState(false);
+  const [authProgress, setAuthProgress] = useState(0); // Progreso de autenticación (0-100)
+  
+  // Resetear progreso cuando no está autenticando
+  useEffect(() => {
+    if (!isAuthenticating) {
+      setAuthProgress(0);
+    }
+  }, [isAuthenticating]);
 
-  // Función de autenticación biométrica - Solo simulación
+  // Función de autenticación biométrica con animación progresiva del borde
   const handleBiometricAuth = async () => {
     setIsAuthenticating(true);
+    setAuthProgress(0);
     
-    // Simular autenticación biométrica con un delay
-    await new Promise(resolve => setTimeout(resolve, 1000));
+    // Delay inicial antes de empezar la animación (300ms para que se vea natural)
+    await new Promise(resolve => setTimeout(resolve, 300));
     
-    // Navegar directamente al home
-    window.location.href = '/home';
+    // Duración total de la animación (2 segundos estilo Apple - muy suave y natural)
+    const duration = 2000; // ms
+    const startTime = Date.now();
+    
+    // Función de easing estilo Apple (cubic-bezier muy suave)
+    const easeOutCubic = (t: number): number => {
+      return 1 - Math.pow(1 - t, 3);
+    };
+    
+    const animate = () => {
+      const elapsed = Date.now() - startTime;
+      const normalizedTime = Math.min(elapsed / duration, 1);
+      
+      // Aplicar easing para animación más natural estilo Apple
+      const easedProgress = easeOutCubic(normalizedTime) * 100;
+      
+      setAuthProgress(easedProgress);
+      
+      if (normalizedTime < 1) {
+        requestAnimationFrame(animate);
+      } else {
+        // Cuando llegue al 100%, esperar un momento y navegar al home
+        setTimeout(() => {
+          window.location.href = '/home';
+        }, 200);
+      }
+    };
+    
+    // Iniciar animación
+    requestAnimationFrame(animate);
   };
 
   const handleUsePassword = () => {
@@ -67,7 +104,7 @@ export default function WelcomeScreen() {
       <div
         style={{
           position: 'absolute',
-          top: '30%', // Posición dinámica desde el top
+          top: '34%', // Posición dinámica desde el top
           left: 0,
           right: 0,
           transform: 'translateY(-16%)',
@@ -78,28 +115,72 @@ export default function WelcomeScreen() {
           padding: spacing[5],
         }}
       >
-        {/* Foto de perfil con borde púrpura */}
+        {/* Foto de perfil con borde animado */}
         <div
           style={{
-            width: '216px',
-            height: '216px',
-            borderRadius: borderRadius.full,
-            border: `6px solid ${colors.primary.main}`,
-            boxSizing: 'border-box',
-            overflow: 'hidden',
+            width: '200px',
+            height: '200px',
+            position: 'relative',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
           }}
         >
-          <img
-            src="/img/user/fernando-plaza.jpg"
-            alt="Usuario"
+          {/* Avatar sin borde */}
+          <div
             style={{
-              width: '100%',
-              height: '100%',
+              width: '200px',
+              height: '200px',
               borderRadius: borderRadius.full,
-              objectFit: 'cover',
-              display: 'block',
+              overflow: 'hidden',
+              position: 'relative',
+              zIndex: 1,
             }}
-          />
+          >
+            <img
+              src="/img/user/fernando-plaza.jpg"
+              alt="Usuario"
+              style={{
+                width: '100%',
+                height: '100%',
+                borderRadius: borderRadius.full,
+                objectFit: 'cover',
+                display: 'block',
+              }}
+            />
+          </div>
+          
+          {/* Borde circular animado - solo visible cuando está autenticando */}
+          {isAuthenticating && (
+            <svg
+              width="200"
+              height="200"
+              style={{
+                position: 'absolute',
+                top: 0,
+                left: 0,
+                transform: 'rotate(-90deg)', // Rotar para que empiece desde arriba
+                zIndex: 2,
+              }}
+            >
+              {/* Borde animado que se completa progresivamente - solo este borde */}
+              <circle
+                cx="100"
+                cy="100"
+                r="97"
+                fill="none"
+                stroke={colors.primary.main}
+                strokeWidth="6"
+                strokeDasharray={2 * Math.PI * 97} // Circunferencia completa
+                strokeDashoffset={2 * Math.PI * 97 * (1 - authProgress / 100)} // Offset basado en progreso
+                strokeLinecap="round"
+                style={{
+                  // Sin transición CSS, la animación se maneja con requestAnimationFrame para mayor control
+                  willChange: 'stroke-dashoffset', // Optimización de rendimiento
+                }}
+              />
+            </svg>
+          )}
         </div>
 
         {/* Texto de bienvenida */}

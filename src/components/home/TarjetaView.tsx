@@ -41,7 +41,6 @@ export function TarjetaView({ titleRef, scrollProgress = 0, isBalanceVisible = t
         flex: 1,
         display: 'flex',
         flexDirection: 'column',
-        paddingBottom: spacing[6], // 24px - espacio hasta navigation bar
         backgroundColor: colors.semantic.background.main,
       }}
     >
