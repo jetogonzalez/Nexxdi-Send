@@ -54,12 +54,15 @@ export function BottomSheet({
   const [startY, setStartY] = useState(0);
   const [startTranslateY, setStartTranslateY] = useState(0);
   const [startStretchHeight, setStartStretchHeight] = useState(0);
+  const [isVisible, setIsVisible] = useState(false); // Control de visibilidad para animación de entrada/salida
   const sheetRef = useRef<HTMLDivElement>(null);
   const graberRef = useRef<HTMLDivElement>(null);
 
   // Resetear posición cuando se abre/cierra y obtener altura base
   useEffect(() => {
     if (isOpen) {
+      // Iniciar animación de entrada
+      setIsVisible(true);
       setTranslateY(0); // Tamaño original (hug content)
       setStretchHeight(0); // Sin estiramiento
       // Esperar a que el contenido se renderice para obtener la altura base
@@ -70,13 +73,20 @@ export function BottomSheet({
         }
       }, 100);
     } else {
-      setTranslateY(100); // Ocultar completamente
+      // Iniciar animación de salida
+      setTranslateY(100); // Mover hacia abajo para cerrar
       setStretchHeight(0);
-      setBaseHeight(null);
-      // Restaurar scroll del body cuando se cierra
-      document.body.style.overflow = '';
-      document.body.style.position = '';
-      document.body.style.width = '';
+      // Esperar a que termine la animación antes de ocultar completamente
+      const exitTimeout = setTimeout(() => {
+        setIsVisible(false);
+        setBaseHeight(null);
+        // Restaurar scroll del body cuando se cierra
+        document.body.style.overflow = '';
+        document.body.style.position = '';
+        document.body.style.width = '';
+      }, 300); // Duración de la transición (0.3s)
+      
+      return () => clearTimeout(exitTimeout);
     }
   }, [isOpen]);
 
@@ -155,17 +165,21 @@ export function BottomSheet({
   const handleEnd = useCallback(() => {
     if (!isDragging) return;
     
-    // Restaurar scroll del body
-    document.body.style.overflow = '';
-    document.body.style.position = '';
-    document.body.style.width = '';
-    
     const currentTranslateY = translateYRef.current;
     setIsDragging(false);
 
-    // Si se arrastra más del 30% hacia abajo, cerrar
+    // Si se arrastra más del 30% hacia abajo, cerrar con animación
     if (currentTranslateY > 30) {
-      onClose();
+      // Completar la animación de cierre
+      setTranslateY(100);
+      setStretchHeight(0);
+      // Restaurar scroll del body después de un breve delay
+      setTimeout(() => {
+        document.body.style.overflow = '';
+        document.body.style.position = '';
+        document.body.style.width = '';
+        onClose(); // Llamar onClose después de la animación
+      }, 300); // Duración de la transición
     } else {
       // Volver a la altura original (hug content) - usar transición CSS por defecto
       setTranslateY(0);
@@ -211,7 +225,7 @@ export function BottomSheet({
     };
   }, [isDragging, startY, startTranslateY, startStretchHeight, translateY, stretchHeight, baseHeight, handleMove, handleEnd]);
 
-  if (!isOpen) return null;
+  if (!isOpen && !isVisible) return null;
 
   return (
     <>
@@ -225,8 +239,8 @@ export function BottomSheet({
           bottom: 0,
           backgroundColor: 'rgba(0, 0, 0, 0.4)', // Opacidad ajustada según Apple HIG
           zIndex: 1000,
-          opacity: isOpen ? 1 : 0,
-          transition: 'opacity 0.3s ease',
+          opacity: isOpen && isVisible ? 1 : 0,
+          transition: 'opacity 0.3s ease-out',
           touchAction: 'none', // Prevenir scroll cuando se arrastra
           WebkitOverflowScrolling: 'touch',
         }}
@@ -267,7 +281,8 @@ export function BottomSheet({
           width: `calc(100% - ${bottomSheet.margin} * 2)`,
           overflowY: 'auto',
           transform: `translateY(${translateY}%)`, // Solo para arrastrar hacia abajo (cerrar)
-          transition: isDragging ? 'none' : 'transform 0.3s ease-out, min-height 0.3s ease-out',
+          transition: isDragging ? 'none' : 'transform 0.3s ease-out, min-height 0.3s ease-out, opacity 0.3s ease-out',
+          opacity: isOpen && isVisible ? 1 : 0,
           boxShadow: '0 15px 75px rgba(0, 0, 0, 0.18)', // Drop shadow: X: 0, Y: 15, Blur: 75, Spread: 0, Color: #000000, Opacity: 18%
           touchAction: isDragging ? 'none' : 'pan-y', // Prevenir todo cuando se arrastra, permitir scroll vertical cuando no
           WebkitOverflowScrolling: 'touch',
