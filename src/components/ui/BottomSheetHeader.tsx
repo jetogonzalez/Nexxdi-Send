@@ -54,7 +54,7 @@ export function BottomSheetHeader({
         display: 'flex',
         flexDirection: 'column',
         gap: spacing[2], // 8px entre graber y contenido del header
-        touchAction: 'none', // Prevenir scroll cuando se arrastra el header completo
+        touchAction: 'manipulation', // Permitir interacciones táctiles pero prevenir gestos
         WebkitUserSelect: 'none',
         userSelect: 'none',
       }}
@@ -87,7 +87,7 @@ export function BottomSheetHeader({
             paddingTop: bottomSheet.graber.topDistance,
             paddingBottom: spacing[2],
             cursor: 'grab',
-            touchAction: 'none', // CRÍTICO: Prevenir todo comportamiento táctil por defecto
+            touchAction: 'none', // CRÍTICO: Prevenir todo comportamiento táctil por defecto solo en el graber
             WebkitUserSelect: 'none',
             userSelect: 'none',
             minHeight: bottomSheet.graber.touchArea, // Área táctil mínima de 40px
@@ -120,7 +120,13 @@ export function BottomSheetHeader({
       {leftIcon ? (
         <button
           type="button"
-          onClick={onLeftIconClick}
+          onClick={(e) => {
+            e.stopPropagation();
+            onLeftIconClick?.();
+          }}
+          onTouchStart={(e) => {
+            e.stopPropagation(); // Prevenir que el drag capture este evento
+          }}
           style={{
             width: bottomSheet.header.actionButtonSize, // 44px
             height: bottomSheet.header.actionButtonSize, // 44px
@@ -189,7 +195,13 @@ export function BottomSheetHeader({
       {rightIcon ? (
         <button
           type="button"
-          onClick={onRightIconClick}
+          onClick={(e) => {
+            e.stopPropagation();
+            onRightIconClick?.();
+          }}
+          onTouchStart={(e) => {
+            e.stopPropagation(); // Prevenir que el drag capture este evento
+          }}
           style={{
             width: bottomSheet.header.actionButtonSize, // 44px
             height: bottomSheet.header.actionButtonSize, // 44px

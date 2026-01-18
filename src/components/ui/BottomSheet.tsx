@@ -91,13 +91,26 @@ export function BottomSheet({
   }, [isOpen]);
 
   const handleTouchStart = (e: React.TouchEvent) => {
-    // Solo iniciar drag si se toca el graber o el header
+    // Solo iniciar drag si se toca el graber o el header (pero NO los botones)
     const target = e.target as HTMLElement;
     const isGraber = graberRef.current?.contains(target);
     const isHeader = target.closest('[data-bottom-sheet-header]');
     
-    if (isGraber || isHeader) {
-      e.stopPropagation(); // Prevenir que el evento se propague al overlay
+    // Excluir botones y elementos interactivos del drag
+    const isButton = target.closest('button') !== null;
+    const isClickable = target.closest('a, button, [role="button"]') !== null;
+    
+    // Solo iniciar drag si es el graber o el header, pero NO si es un botón
+    if ((isGraber || isHeader) && !isButton && !isClickable) {
+      // CRÍTICO: Prevenir comportamiento por defecto inmediatamente
+      e.preventDefault();
+      e.stopPropagation();
+      
+      // Prevenir scroll del body cuando se arrastra
+      document.body.style.overflow = 'hidden';
+      document.body.style.position = 'fixed';
+      document.body.style.width = '100%';
+      
       setIsDragging(true);
       setStartY(e.touches[0].clientY);
       setStartTranslateY(translateY);
@@ -106,12 +119,17 @@ export function BottomSheet({
   };
 
   const handleMouseDown = (e: React.MouseEvent) => {
-    // Solo iniciar drag si se hace clic en el graber o el header
+    // Solo iniciar drag si se hace clic en el graber o el header (pero NO los botones)
     const target = e.target as HTMLElement;
     const isGraber = graberRef.current?.contains(target);
     const isHeader = target.closest('[data-bottom-sheet-header]');
     
-    if (isGraber || isHeader) {
+    // Excluir botones y elementos interactivos del drag
+    const isButton = target.closest('button') !== null;
+    const isClickable = target.closest('a, button, [role="button"]') !== null;
+    
+    // Solo iniciar drag si es el graber o el header, pero NO si es un botón
+    if ((isGraber || isHeader) && !isButton && !isClickable) {
       e.stopPropagation(); // Prevenir que el evento se propague al overlay
       setIsDragging(true);
       setStartY(e.clientY);
@@ -296,7 +314,7 @@ export function BottomSheet({
             onTouchEnd={handleEnd}
             onMouseDown={handleMouseDown}
             style={{ 
-              touchAction: 'none', // Prevenir scroll cuando se arrastra el header
+              touchAction: 'manipulation', // Permitir interacciones táctiles pero prevenir gestos
               WebkitUserSelect: 'none',
               userSelect: 'none',
             }}
