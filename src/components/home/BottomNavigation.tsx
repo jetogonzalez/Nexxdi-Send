@@ -150,7 +150,7 @@ export function BottomNavigation({ activeTab, onTabChange }: BottomNavigationPro
                       // Activo: #402FEC (RGB: 64, 47, 236) - bottomNavigation.colors.iconActive
                       // Inactivo: #8d8d8e (RGB: 141, 141, 142) - bottomNavigation.colors.iconInactive
                       filter: isActive 
-                        ? 'brightness(0) saturate(100%) invert(25%) sepia(100%) saturate(5000%) hue-rotate(245deg) brightness(93%) contrast(105%)'
+                        ? 'brightness(0) saturate(100%) invert(35%) sepia(95%) saturate(1800%) hue-rotate(234deg) brightness(90%) contrast(110%)'
                         : 'brightness(0) saturate(100%) invert(55%) sepia(0%) saturate(0%) hue-rotate(0deg) brightness(90%) contrast(90%)',
                     }}
                   />
