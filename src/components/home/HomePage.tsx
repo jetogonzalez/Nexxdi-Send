@@ -30,6 +30,7 @@ export default function HomePage() {
   const titleRefs = useRef<{ [key: string]: HTMLElement | null }>({});
   const contentRef = useRef<HTMLDivElement>(null);
   const [bottomPadding, setBottomPadding] = useState(`calc(100px + ${CONTENT_TO_NAVIGATION_GAP} + env(safe-area-inset-bottom))`);
+  const preservedScrollTopRef = useRef<number | null>(null); // Preservar scrollTop cuando bottom sheet está abierto
   
   // Header siempre visible en todas las pestañas
   const showHeader = true;
@@ -77,6 +78,35 @@ export default function HomePage() {
     };
   }, [activeTab]); // Recalcular cuando cambia el tab activo
 
+  // Hook para detectar cuando se abre/cierra un bottom sheet y preservar scrollTop
+  useEffect(() => {
+    const checkBottomSheet = () => {
+      const isBottomSheetOpen = document.body.style.position === 'fixed';
+      if (isBottomSheetOpen && preservedScrollTopRef.current === null) {
+        // Intentar obtener el scrollTop desde el top del body (formato: -123px)
+        const bodyTop = document.body.style.top;
+        if (bodyTop) {
+          const scrollYFromTop = Math.abs(parseInt(bodyTop, 10)) || 0;
+          if (scrollYFromTop > 0) {
+            preservedScrollTopRef.current = scrollYFromTop;
+            // Actualizar el estado inmediatamente para mantener el header
+            const hasScrolled = scrollYFromTop > 10;
+            setIsScrolled(hasScrolled);
+            setScrollTop(scrollYFromTop);
+          }
+        }
+      } else if (!isBottomSheetOpen && preservedScrollTopRef.current !== null) {
+        // Resetear cuando se cierra
+        preservedScrollTopRef.current = null;
+      }
+    };
+    
+    // Verificar periódicamente si hay un bottom sheet abierto
+    const interval = setInterval(checkBottomSheet, 100);
+    
+    return () => clearInterval(interval);
+  }, []);
+
   // Hook para detectar scroll (solo para blur glassmorphism)
   useEffect(() => {
     let ticking = false;
@@ -84,6 +114,38 @@ export default function HomePage() {
     const handleScroll = () => {
       if (!ticking) {
         window.requestAnimationFrame(() => {
+          // Verificar si hay un bottom sheet abierto (body tiene position: fixed)
+          const isBottomSheetOpen = document.body.style.position === 'fixed';
+          
+          // Si el bottom sheet está abierto, preservar el scrollTop
+          if (isBottomSheetOpen) {
+            // Intentar obtener el scrollTop desde el top del body (formato: -123px)
+            const bodyTop = document.body.style.top;
+            if (bodyTop && preservedScrollTopRef.current === null) {
+              const scrollYFromTop = Math.abs(parseInt(bodyTop, 10)) || 0;
+              if (scrollYFromTop > 0) {
+                preservedScrollTopRef.current = scrollYFromTop;
+              }
+            }
+            // Usar el scrollTop preservado para mantener el estado del header
+            if (preservedScrollTopRef.current !== null) {
+              const preservedScroll = preservedScrollTopRef.current;
+              const hasScrolled = preservedScroll > 10;
+              setIsScrolled(hasScrolled);
+              setScrollTop(preservedScroll);
+              ticking = false;
+              return;
+            }
+            // Si no hay scrollTop preservado, mantener el estado actual
+            ticking = false;
+            return;
+          } else {
+            // Si el bottom sheet se cerró, resetear el valor preservado
+            if (preservedScrollTopRef.current !== null) {
+              preservedScrollTopRef.current = null;
+            }
+          }
+          
           const currentScrollTop = window.scrollY || document.documentElement.scrollTop;
           
           // Asegurar que scrollTop nunca sea negativo (previene problemas con pull-to-refresh)
@@ -186,6 +248,8 @@ export default function HomePage() {
         marginRight: spacing[5], // 20px
         overflowX: 'visible', // Permitir overflow horizontal para que las cards no se corten
         overflowY: 'visible',
+        opacity: 1, // Asegurar que sea visible inmediatamente
+        visibility: 'visible', // Asegurar visibilidad inmediata
       }}
     >
       {/* Header - Siempre fijo y visible */}
@@ -196,10 +260,17 @@ export default function HomePage() {
         scrollTop={scrollTop}
       />
 
-      {/* Contenido con transición */}
-      <SectionTransition activeTab={activeTab} previousTab={previousTabRef.current}>
+      {/* Contenido sin transiciones - renderizado inmediato */}
+      <div
+        style={{
+          width: '100%',
+          minHeight: '100%',
+          opacity: 1,
+          visibility: 'visible',
+        }}
+      >
         {renderContent()}
-      </SectionTransition>
+      </div>
 
       {/* Bottom Navigation */}
       <BottomNavigation activeTab={activeTab} onTabChange={handleTabChange} />

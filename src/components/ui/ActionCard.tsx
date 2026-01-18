@@ -13,6 +13,7 @@ export interface ActionItem {
   icon?: React.ReactNode; // Icono personalizado (opcional)
   onClick?: () => void;
   noBackground?: boolean; // Si es true, el icono no tiene fondo circular (solo para Apple Pay)
+  disabled?: boolean; // Si es true, la acción está deshabilitada
 }
 
 interface ActionCardProps {
@@ -84,6 +85,7 @@ export function ActionCard({
             icon={action.icon}
             onClick={action.onClick}
             noBackground={action.noBackground}
+            disabled={action.disabled}
             isLast={index === actions.length - 1}
           />
         ))}
@@ -103,10 +105,11 @@ interface ActionItemProps {
   icon?: React.ReactNode;
   onClick?: () => void;
   noBackground?: boolean;
+  disabled?: boolean;
   isLast?: boolean;
 }
 
-function ActionItem({ label, icon, onClick, noBackground = false, isLast = false }: ActionItemProps) {
+function ActionItem({ label, icon, onClick, noBackground = false, disabled = false, isLast = false }: ActionItemProps) {
   // Tokens para tamaños de iconos
   const iconContainerSize = 36; // Token: tamaño del contenedor del icono (36px)
   const iconImageSize = 20; // Token: tamaño del icono dentro del contenedor (20px)
@@ -135,7 +138,26 @@ function ActionItem({ label, icon, onClick, noBackground = false, isLast = false
     <>
       <button
         type="button"
-        onClick={onClick}
+        onClick={disabled ? undefined : onClick}
+        disabled={disabled}
+        onTouchStart={(e) => {
+          if (!disabled) {
+            // Feedback visual en touch solo si no está deshabilitado
+            e.currentTarget.style.opacity = '0.7';
+          }
+        }}
+        onTouchEnd={(e) => {
+          if (!disabled) {
+            // Resetear inmediatamente después del touch solo si no está deshabilitado
+            setTimeout(() => {
+              e.currentTarget.style.opacity = disabled ? '0.6' : '1';
+            }, 100);
+          }
+        }}
+        onTouchCancel={(e) => {
+          // Resetear si el touch se cancela
+          e.currentTarget.style.opacity = disabled ? '0.6' : '1';
+        }}
         style={{
           display: 'flex',
           alignItems: 'center',
@@ -146,10 +168,13 @@ function ActionItem({ label, icon, onClick, noBackground = false, isLast = false
           paddingRight: 0,
           border: 'none',
           background: 'transparent',
-          cursor: onClick ? 'pointer' : 'default',
+          cursor: disabled ? 'not-allowed' : (onClick ? 'pointer' : 'default'),
           width: '100%',
           textAlign: 'left',
           position: 'relative',
+          WebkitTapHighlightColor: 'transparent',
+          touchAction: disabled ? 'none' : 'manipulation',
+          opacity: disabled ? 0.6 : 1, // Opacidad 60% cuando está deshabilitado
         }}
       >
         {/* Icono circular o sin fondo */}
@@ -172,7 +197,7 @@ function ActionItem({ label, icon, onClick, noBackground = false, isLast = false
               width: `${ACTION_ICON_CONTAINER_SIZE}px`, // Token: 36px contenedor circular
               height: `${ACTION_ICON_CONTAINER_SIZE}px`, // Token: 36px contenedor circular
               borderRadius: borderRadius.full, // Token semántico: círculo perfecto
-              backgroundColor: colors.gray[100], // Token semántico: fondo gris claro
+              backgroundColor: disabled ? colors.gray[200] : colors.gray[100], // Gris más oscuro cuando está deshabilitado
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
@@ -189,7 +214,7 @@ function ActionItem({ label, icon, onClick, noBackground = false, isLast = false
             fontFamily: typography.fontFamily.sans.join(', '), // Token semántico: Manrope
             fontSize: typography.fontSize.base, // Token semántico: 16px
             fontWeight: typography.fontWeight.normal, // Token semántico: 400 Regular
-            color: colors.semantic.text.primary, // Token semántico: texto primario
+            color: disabled ? colors.semantic.text.tertiary : colors.semantic.text.primary, // Gris cuando está deshabilitado
             lineHeight: '24px', // Token semántico: 24px
           }}
         >

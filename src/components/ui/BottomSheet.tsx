@@ -7,7 +7,7 @@ import { BottomSheetHeader } from './BottomSheetHeader';
 const bottomSheet = {
   margin: spacing[2], // 8px - margin global alrededor del bottom sheet
   padding: spacing[6], // 24px - padding interno global
-  borderRadius: '44px', // Border radius global de 44px
+  borderRadius: '40px', // Border radius global de 40px
   graber: {
     width: '34px',
     height: '4px',
@@ -61,6 +61,19 @@ export function BottomSheet({
   // Resetear posición cuando se abre/cierra y obtener altura base
   useEffect(() => {
     if (isOpen) {
+      // Guardar posición de scroll actual ANTES de abrir el bottom sheet
+      const currentScrollY = window.scrollY || document.documentElement.scrollTop;
+      if (sheetRef.current) {
+        (sheetRef.current as any)._scrollY = currentScrollY;
+      }
+      
+      // Prevenir scroll del body cuando se abre el bottom sheet
+      document.body.style.overflow = 'hidden';
+      document.body.style.position = 'fixed';
+      document.body.style.top = `-${currentScrollY}px`;
+      document.body.style.width = '100%';
+      document.body.style.height = '100%';
+      
       // Iniciar animación de entrada - mostrar inmediatamente SIN delay
       setIsVisible(true);
       // Usar requestAnimationFrame para sincronizar con el render del navegador
@@ -93,7 +106,10 @@ export function BottomSheet({
         document.body.style.top = '';
         document.body.style.width = '';
         document.body.style.height = '';
-        window.scrollTo(0, scrollY);
+        // Restaurar posición de scroll usando requestAnimationFrame para asegurar que el DOM esté listo
+        requestAnimationFrame(() => {
+          window.scrollTo({ top: scrollY, behavior: 'instant' });
+        });
       }, 300); // Duración de la transición (0.3s) - debe coincidir con CSS
       
       return () => clearTimeout(exitTimeout);
@@ -204,15 +220,6 @@ export function BottomSheet({
     const currentTranslateY = translateYRef.current;
     setIsDragging(false);
 
-    // Restaurar scroll del body (especialmente importante en iOS)
-    const scrollY = (sheetRef.current as any)?._scrollY || 0;
-    document.body.style.overflow = '';
-    document.body.style.position = '';
-    document.body.style.top = '';
-    document.body.style.width = '';
-    document.body.style.height = '';
-    window.scrollTo(0, scrollY);
-
     // Si se arrastra más del 30% hacia abajo, cerrar con animación
     if (currentTranslateY > 30) {
       // Completar la animación de cierre
@@ -226,6 +233,13 @@ export function BottomSheet({
       // Volver a la altura original (hug content) - usar transición CSS por defecto
       setTranslateY(0);
       setStretchHeight(0);
+      // Restaurar scroll del body solo si no se está cerrando (especialmente importante en iOS)
+      const scrollY = (sheetRef.current as any)?._scrollY || 0;
+      document.body.style.overflow = 'hidden';
+      document.body.style.position = 'fixed';
+      document.body.style.top = `-${scrollY}px`;
+      document.body.style.width = '100%';
+      document.body.style.height = '100%';
     }
   }, [isDragging, onClose]);
 

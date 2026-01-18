@@ -8,6 +8,10 @@ import { SegmentedButton } from '../ui/SegmentedButton';
 import { ActionCard } from '../ui/ActionCard';
 import { PreferencesCard, PreferenceIcons } from '../ui/PreferencesCard';
 import { MonthlyPurchasesCard } from '../ui/MonthlyPurchasesCard';
+import { BottomSheet } from '../ui/BottomSheet';
+import { SliderToBlock } from '../ui/SliderToBlock';
+import { Toast } from '../ui/Toast';
+import { InfoBanner } from '../ui/InfoBanner';
 
 interface TarjetaViewProps {
   titleRef?: (el: HTMLElement | null) => void;
@@ -20,6 +24,9 @@ export function TarjetaView({ titleRef, scrollProgress = 0, isBalanceVisible = t
   const [selectedFilter, setSelectedFilter] = useState<string>('Actividad');
   const previousFilterRef = useRef<string>('Actividad');
   const [slideDirection, setSlideDirection] = useState<'left' | 'right'>('right');
+  const [isLocked, setIsLocked] = useState<boolean>(false); // Estado inicial: desbloqueada (muestra "Bloqueo temporal")
+  const [isBlockSheetOpen, setIsBlockSheetOpen] = useState<boolean>(false); // Control del bottom sheet de bloqueo
+  const [showToast, setShowToast] = useState<boolean>(false); // Control del toast de confirmación
 
   // Determinar dirección de la animación según el cambio
   useEffect(() => {
@@ -196,6 +203,22 @@ export function TarjetaView({ titleRef, scrollProgress = 0, isBalanceVisible = t
             pointerEvents: 'none',
           }}
         />
+        {/* Overlay negro con opacidad 40% cuando la tarjeta está bloqueada */}
+        {isLocked && (
+          <div
+            style={{
+              position: 'absolute',
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              borderRadius: borderRadius['3xl'], // 24px
+              backgroundColor: 'rgba(0, 0, 0, 0.4)', // Negro con 40% de opacidad
+              pointerEvents: 'none',
+              zIndex: 5,
+            }}
+          />
+        )}
         {/* Badge con últimos dígitos de la tarjeta - arriba a la izquierda */}
         <div
           style={{
@@ -252,6 +275,39 @@ export function TarjetaView({ titleRef, scrollProgress = 0, isBalanceVisible = t
             filter: 'brightness(0) saturate(100%) invert(95%) sepia(5%) saturate(200%) hue-rotate(200deg) brightness(98%) contrast(92%)',
           }}
         />
+        
+        {/* Overlay de bloqueo cuando la tarjeta está bloqueada */}
+        {isLocked && (
+          <div
+            style={{
+              position: 'absolute',
+              top: '50%',
+              left: '50%',
+              transform: 'translate(-50%, -50%)',
+              width: '80px', // Más pequeño: 80px en lugar de 120px
+              height: '80px', // Más pequeño: 80px en lugar de 120px
+              borderRadius: borderRadius.full, // Full rounded (círculo)
+              backgroundColor: 'rgba(255, 255, 255, 0.7)', // Fondo con menos opacidad (70%)
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              zIndex: 10,
+              boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
+            }}
+          >
+            {/* Icono de candado cerrado */}
+            <img
+              src="/img/icons/global/lock.svg"
+              alt="Tarjeta bloqueada"
+              style={{
+                width: '32px', // Más pequeño: 32px en lugar de 48px
+                height: '32px', // Más pequeño: 32px en lugar de 48px
+                display: 'block',
+                filter: 'none', // Color negro (sin filtro)
+              }}
+            />
+          </div>
+        )}
       </div>
       </div>
       {/* Fin del contenedor con gradiente */}
@@ -291,12 +347,23 @@ export function TarjetaView({ titleRef, scrollProgress = 0, isBalanceVisible = t
               cursor: 'pointer',
               padding: 0,
               transition: 'background-color 0.2s ease',
+              WebkitTapHighlightColor: 'transparent',
+              touchAction: 'manipulation',
             }}
             onMouseEnter={(e) => {
               e.currentTarget.style.backgroundColor = colors.gray[100];
             }}
             onMouseLeave={(e) => {
               e.currentTarget.style.backgroundColor = colors.semantic.background.white;
+            }}
+            onTouchStart={(e) => {
+              e.currentTarget.style.backgroundColor = colors.gray[100];
+            }}
+            onTouchEnd={(e) => {
+              // Resetear inmediatamente después del touch
+              setTimeout(() => {
+                e.currentTarget.style.backgroundColor = colors.semantic.background.white;
+              }, 100);
             }}
             aria-label="Agregar saldo"
           >
@@ -347,12 +414,23 @@ export function TarjetaView({ titleRef, scrollProgress = 0, isBalanceVisible = t
               cursor: 'pointer',
               padding: 0,
               transition: 'background-color 0.2s ease',
+              WebkitTapHighlightColor: 'transparent',
+              touchAction: 'manipulation',
             }}
             onMouseEnter={(e) => {
               e.currentTarget.style.backgroundColor = colors.gray[100];
             }}
             onMouseLeave={(e) => {
               e.currentTarget.style.backgroundColor = colors.semantic.background.white;
+            }}
+            onTouchStart={(e) => {
+              e.currentTarget.style.backgroundColor = colors.gray[100];
+            }}
+            onTouchEnd={(e) => {
+              // Resetear inmediatamente después del touch
+              setTimeout(() => {
+                e.currentTarget.style.backgroundColor = colors.semantic.background.white;
+              }, 100);
             }}
             aria-label="Ver datos"
           >
@@ -379,7 +457,7 @@ export function TarjetaView({ titleRef, scrollProgress = 0, isBalanceVisible = t
           </span>
         </div>
 
-        {/* Botón Congelar */}
+        {/* Botón Bloqueo temporal / Desbloquear */}
         <div
           style={{
             display: 'flex',
@@ -390,12 +468,21 @@ export function TarjetaView({ titleRef, scrollProgress = 0, isBalanceVisible = t
         >
           <button
             type="button"
-            onClick={() => console.log('Congelar')}
+            onClick={() => {
+              if (!isLocked) {
+                // Si está desbloqueada, abrir el bottom sheet
+                setIsBlockSheetOpen(true);
+              } else {
+                // Si está bloqueada, desbloquear directamente
+                setIsLocked(false);
+                console.log('Desbloquear');
+              }
+            }}
             style={{
               width: '64px',
               height: '64px',
               borderRadius: borderRadius.full,
-              backgroundColor: colors.semantic.background.white,
+              backgroundColor: colors.semantic.background.white, // Siempre blanco tokenizado, independiente del estado
               border: 'none',
               display: 'flex',
               alignItems: 'center',
@@ -403,18 +490,30 @@ export function TarjetaView({ titleRef, scrollProgress = 0, isBalanceVisible = t
               cursor: 'pointer',
               padding: 0,
               transition: 'background-color 0.2s ease',
+              WebkitTapHighlightColor: 'transparent',
+              touchAction: 'manipulation',
             }}
             onMouseEnter={(e) => {
               e.currentTarget.style.backgroundColor = colors.gray[100];
             }}
             onMouseLeave={(e) => {
-              e.currentTarget.style.backgroundColor = colors.semantic.background.white;
+              e.currentTarget.style.backgroundColor = colors.semantic.background.white; // Siempre volver a blanco tokenizado
             }}
-            aria-label="Congelar"
+            onTouchStart={(e) => {
+              e.currentTarget.style.backgroundColor = colors.gray[100];
+            }}
+            onTouchEnd={(e) => {
+              // Resetear inmediatamente después del touch
+              const target = e.currentTarget;
+              setTimeout(() => {
+                target.style.backgroundColor = colors.semantic.background.white;
+              }, 100);
+            }}
+            aria-label={isLocked ? 'Desbloquear' : 'Bloqueo temporal'}
           >
             <img
-              src="/img/icons/global/snowflake.svg"
-              alt="Congelar"
+              src={isLocked ? '/img/icons/global/lock-open.svg' : '/img/icons/global/lock.svg'}
+              alt={isLocked ? 'Desbloquear' : 'Bloqueo temporal'}
               style={{
                 width: '24px',
                 height: '24px',
@@ -431,7 +530,7 @@ export function TarjetaView({ titleRef, scrollProgress = 0, isBalanceVisible = t
               textAlign: 'center',
             }}
           >
-            Congelar
+            {isLocked ? 'Desbloquear' : 'Bloqueo temporal'}
           </span>
         </div>
       </div>
@@ -448,6 +547,16 @@ export function TarjetaView({ titleRef, scrollProgress = 0, isBalanceVisible = t
           onChange={setSelectedFilter}
         />
       </div>
+
+      {/* Banner informativo cuando la tarjeta está bloqueada - Siempre visible y fijo */}
+      {isLocked && (
+        <div style={{ marginBottom: spacing[4] }}>
+          <InfoBanner
+            title="Esta tarjeta está bloqueada"
+            description="Desbloquéala para hacer cambios o usarla."
+          />
+        </div>
+      )}
 
       {/* Contenedor de contenido con animación de slide horizontal */}
       <div
@@ -522,23 +631,37 @@ export function TarjetaView({ titleRef, scrollProgress = 0, isBalanceVisible = t
             actions={[
               {
                 id: 'add-apple-pay',
-                label: 'Agregar a Apple Pay',
+                label: 'Agregar a Apple Wallet',
                 icon: (
-                  <img
-                    src="/img/icons/payment/apple-pay.svg"
-                    alt="Apple Pay"
+                  <div
                     style={{
-                      width: '36px', // Token: ACTION_ICON_NO_BACKGROUND_SIZE (36px)
-                      height: 'auto', // Mantener proporción del logo
-                      display: 'block',
+                      width: '36px',
+                      height: '36px',
+                      borderRadius: borderRadius.full,
+                      backgroundColor: isLocked ? colors.gray[200] : colors.semantic.text.primary, // Gris cuando está bloqueada
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
                     }}
-                  />
+                  >
+                    <img
+                      src="/img/icons/payment/apple-wallet.svg"
+                      alt="Apple Wallet"
+                      style={{
+                        width: '20px',
+                        height: '20px',
+                        display: 'block',
+                        filter: isLocked ? 'grayscale(100%) opacity(0.5)' : 'none', // Escala de grises cuando está bloqueada
+                      }}
+                    />
+                  </div>
                 ),
                 onClick: () => {
-                  // TODO: Implementar acción de agregar a Apple Pay
-                  console.log('Agregar a Apple Pay');
+                  // TODO: Implementar acción de agregar a Apple Wallet
+                  console.log('Agregar a Apple Wallet');
                 },
-                noBackground: true, // Sin fondo solo para Apple Pay
+                noBackground: true, // Sin fondo adicional del ActionCard, ya tiene su propio contenedor
+                disabled: isLocked, // Deshabilitado cuando la tarjeta está bloqueada
               },
               {
                 id: 'send-balance-usd',
@@ -553,7 +676,9 @@ export function TarjetaView({ titleRef, scrollProgress = 0, isBalanceVisible = t
                       display: 'block',
                       // Aplicar filtro para estandarizar el color del icono (#101828)
                       // Convierte cualquier color a negro/gris oscuro para que coincida con los demás iconos (shield, limit, atm, color-card)
-                      filter: 'brightness(0) saturate(100%)',
+                      filter: isLocked 
+                        ? 'brightness(0) saturate(100%) grayscale(100%) opacity(0.5)' 
+                        : 'brightness(0) saturate(100%)',
                     }}
                   />
                 ),
@@ -562,10 +687,11 @@ export function TarjetaView({ titleRef, scrollProgress = 0, isBalanceVisible = t
                   console.log('Enviar saldo a tu cuenta en USD');
                 },
                 // Sin noBackground: usa fondo circular como los demás iconos de acciones
+                disabled: isLocked, // Deshabilitado cuando la tarjeta está bloqueada
               },
               {
                 id: 'withdraw-atm',
-                label: 'Retirar en ATM',
+                label: 'Retiro en cajeros automáticos',
                 icon: (
                   <img
                     src="/img/icons/global/atm.svg"
@@ -574,6 +700,7 @@ export function TarjetaView({ titleRef, scrollProgress = 0, isBalanceVisible = t
                       width: '20px', // Token: ACTION_ICON_IMAGE_SIZE (20px)
                       height: '20px', // Token: ACTION_ICON_IMAGE_SIZE (20px)
                       display: 'block',
+                      filter: isLocked ? 'grayscale(100%) opacity(0.5)' : 'none', // Escala de grises cuando está bloqueada
                     }}
                   />
                 ),
@@ -581,6 +708,7 @@ export function TarjetaView({ titleRef, scrollProgress = 0, isBalanceVisible = t
                   // TODO: Implementar acción de retirar en ATM
                   console.log('Retirar en ATM');
                 },
+                disabled: isLocked, // Deshabilitado cuando la tarjeta está bloqueada
               },
             ]}
           />
@@ -650,6 +778,89 @@ export function TarjetaView({ titleRef, scrollProgress = 0, isBalanceVisible = t
           />
         </div>
       </div>
+
+      {/* Bottom Sheet para bloquear tarjeta */}
+      <BottomSheet
+        isOpen={isBlockSheetOpen}
+        onClose={() => {
+          setIsBlockSheetOpen(false);
+          // Resetear el estado del slider cuando se cierra sin completar
+          if (!isLocked) {
+            // El slider se reseteará automáticamente cuando se vuelva a abrir
+          }
+        }}
+        title="Bloque temporal"
+        showGraber={true}
+      >
+        <div
+          style={{
+            display: 'flex',
+            flexDirection: 'column',
+            gap: spacing[6], // 24px entre elementos
+          }}
+        >
+          {/* Descripción */}
+          <div
+            style={{
+              display: 'flex',
+              flexDirection: 'column',
+              gap: spacing[4], // 16px entre párrafos
+            }}
+          >
+            <p
+              style={{
+                fontFamily: typography.fontFamily.sans.join(', '),
+                fontSize: typography.fontSize.base, // 16px
+                fontWeight: typography.fontWeight.normal, // 400 Regular
+                color: colors.semantic.text.secondary,
+                lineHeight: '24px',
+                margin: 0,
+              }}
+            >
+              Esto bloqueará el uso de tu tarjeta virtual (incluido Apple Pay), las compras por internet y las suscripciones recurrentes.
+            </p>
+            <p
+              style={{
+                fontFamily: typography.fontFamily.sans.join(', '),
+                fontSize: typography.fontSize.base, // 16px
+                fontWeight: typography.fontWeight.normal, // 400 Regular
+                color: colors.semantic.text.secondary,
+                lineHeight: '24px',
+                margin: 0,
+              }}
+            >
+              Podrás desbloquearla en cualquier momento.
+            </p>
+          </div>
+
+          {/* Slider para bloquear */}
+          <div style={{ marginTop: spacing[2] }}> {/* Espacio adicional antes del slider */}
+            <SliderToBlock
+              key={isBlockSheetOpen ? 'open' : 'closed'} // Resetear cuando se abre/cierra
+              onComplete={() => {
+                // 1. Ejecutar acción inmediatamente
+                setIsLocked(true);
+                // 2. Cerrar bottom sheet
+                setIsBlockSheetOpen(false);
+                // 3. Mostrar toast de confirmación después de un pequeño delay para que se vea el cierre del bottom sheet
+                setTimeout(() => {
+                  setShowToast(true);
+                }, 300);
+                console.log('Bloqueo temporal');
+              }}
+              disabled={isLocked}
+            />
+          </div>
+        </div>
+      </BottomSheet>
+
+      {/* Toast de confirmación */}
+      <Toast
+        message="Bloqueo temporal activado"
+        isVisible={showToast}
+        onClose={() => setShowToast(false)}
+        duration={3000}
+      />
     </div>
   );
 }

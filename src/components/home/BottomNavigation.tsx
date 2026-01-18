@@ -99,6 +99,7 @@ export function BottomNavigation({ activeTab, onTabChange }: BottomNavigationPro
             <button
               key={tab.id}
               type="button"
+
               onClick={() => {
                 // Deshabilitar la página "Más" - no hace nada al hacer clic
                 if (tab.id === 'mas') return;

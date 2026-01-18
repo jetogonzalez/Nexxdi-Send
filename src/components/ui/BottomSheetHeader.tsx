@@ -58,7 +58,7 @@ export function BottomSheetHeader({
         userSelect: 'none',
         minHeight: '70px', // Altura total del header aproximadamente 70px
         position: 'relative', // Para posicionar el graber absolutamente
-        paddingBottom: spacing[4], // 16px spacing bottom del header
+        paddingBottom: 0, // Sin padding bottom
       }}
     >
       {/* Graber - dentro del header, posicionado absolutamente sin afectar layout */}

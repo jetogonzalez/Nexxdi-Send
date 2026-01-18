@@ -176,34 +176,44 @@ export function WalletView({ isBalanceVisible = true, titleRef, scrollProgress =
           </div>
           
           {/* Botón de icono dots a la derecha */}
-          <button
-            type="button"
-            onClick={() => console.log('Más opciones')}
-            style={{
-              position: 'absolute',
-              right: 0,
-              top: '50%',
-              transform: 'translateY(-50%)',
-              width: '32px',
-              height: '32px',
-              borderRadius: borderRadius.full,
-              backgroundColor: 'rgba(0, 0, 0, 0.05)', // Negro con 5% opacidad para fondo claro
-              border: 'none',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              cursor: 'pointer',
-              padding: 0,
-              transition: 'background-color 0.2s ease',
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.backgroundColor = 'rgba(0, 0, 0, 0.15)'; // Negro con 15% opacidad en hover
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.backgroundColor = 'rgba(0, 0, 0, 0.05)'; // Negro con 5% opacidad
-            }}
-            aria-label="Más opciones"
-          >
+            <button
+              type="button"
+              onClick={() => console.log('Más opciones')}
+              style={{
+                position: 'absolute',
+                right: 0,
+                top: '50%',
+                transform: 'translateY(-50%)',
+                width: '32px',
+                height: '32px',
+                borderRadius: borderRadius.full,
+                backgroundColor: 'rgba(0, 0, 0, 0.05)', // Negro con 5% opacidad para fondo claro
+                border: 'none',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                cursor: 'pointer',
+                padding: 0,
+                transition: 'background-color 0.2s ease',
+                WebkitTapHighlightColor: 'transparent',
+                touchAction: 'manipulation',
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.backgroundColor = 'rgba(0, 0, 0, 0.15)'; // Negro con 15% opacidad en hover
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.backgroundColor = 'rgba(0, 0, 0, 0.05)'; // Negro con 5% opacidad
+              }}
+              onTouchStart={(e) => {
+                e.currentTarget.style.backgroundColor = 'rgba(0, 0, 0, 0.15)';
+              }}
+              onTouchEnd={(e) => {
+                setTimeout(() => {
+                  e.currentTarget.style.backgroundColor = 'rgba(0, 0, 0, 0.05)';
+                }, 100);
+              }}
+              aria-label="Más opciones"
+            >
             <img
               src="/img/icons/global/icon-dots.svg"
               alt="Más opciones"
@@ -328,12 +338,22 @@ export function WalletView({ isBalanceVisible = true, titleRef, scrollProgress =
                 cursor: 'pointer',
                 padding: 0,
                 transition: 'background-color 0.2s ease',
+                WebkitTapHighlightColor: 'transparent',
+                touchAction: 'manipulation',
               }}
               onMouseEnter={(e) => {
                 e.currentTarget.style.backgroundColor = colors.gray[200];
               }}
               onMouseLeave={(e) => {
                 e.currentTarget.style.backgroundColor = colors.gray[100];
+              }}
+              onTouchStart={(e) => {
+                e.currentTarget.style.backgroundColor = colors.gray[200];
+              }}
+              onTouchEnd={(e) => {
+                setTimeout(() => {
+                  e.currentTarget.style.backgroundColor = colors.gray[100];
+                }, 100);
               }}
               aria-label="Agregar saldo"
             >
@@ -384,12 +404,22 @@ export function WalletView({ isBalanceVisible = true, titleRef, scrollProgress =
                 cursor: 'pointer',
                 padding: 0,
                 transition: 'background-color 0.2s ease',
+                WebkitTapHighlightColor: 'transparent',
+                touchAction: 'manipulation',
               }}
               onMouseEnter={(e) => {
                 e.currentTarget.style.backgroundColor = colors.gray[200];
               }}
               onMouseLeave={(e) => {
                 e.currentTarget.style.backgroundColor = colors.gray[100];
+              }}
+              onTouchStart={(e) => {
+                e.currentTarget.style.backgroundColor = colors.gray[200];
+              }}
+              onTouchEnd={(e) => {
+                setTimeout(() => {
+                  e.currentTarget.style.backgroundColor = colors.gray[100];
+                }, 100);
               }}
               aria-label="Cambiar"
             >

@@ -48,7 +48,7 @@ const { title, description = "Aplicación móvil Nexxdi Cash" } = Astro.props;
 
   html {
     height: 100%;
-    background-color: #F0EFF8;
+    background-color: #F0EFF8 !important;
     /* Extender el fondo a las safe areas */
     padding-top: env(safe-area-inset-top);
     padding-bottom: env(safe-area-inset-bottom);
@@ -59,10 +59,12 @@ const { title, description = "Aplicación móvil Nexxdi Cash" } = Astro.props;
     font-family: 'Manrope', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
-    background-color: #F0EFF8;
+    background-color: #F0EFF8 !important;
     /* Ocultar scrollbar pero mantener funcionalidad de scroll */
     scrollbar-width: none; /* Firefox */
     -ms-overflow-style: none; /* IE/Edge */
+    opacity: 1 !important;
+    visibility: visible !important;
   }
 
   /* Ocultar scrollbar en Chrome/Safari */
@@ -75,12 +77,14 @@ const { title, description = "Aplicación móvil Nexxdi Cash" } = Astro.props;
 
   /* Prevent pull-to-refresh on mobile */
   body {
-    background-color: #F0EFF8;
+    background-color: #F0EFF8 !important;
     overscroll-behavior-y: contain;
     -webkit-overflow-scrolling: touch;
     /* Asegurar que el fondo se extienda a las safe areas */
     min-height: 100vh;
     min-height: 100dvh; /* Dynamic viewport height for mobile */
+    opacity: 1 !important;
+    visibility: visible !important;
   }
 
 
