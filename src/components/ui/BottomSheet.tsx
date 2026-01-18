@@ -73,6 +73,10 @@ export function BottomSheet({
       setTranslateY(100); // Ocultar completamente
       setStretchHeight(0);
       setBaseHeight(null);
+      // Restaurar scroll del body cuando se cierra
+      document.body.style.overflow = '';
+      document.body.style.position = '';
+      document.body.style.width = '';
     }
   }, [isOpen]);
 
@@ -151,6 +155,11 @@ export function BottomSheet({
   const handleEnd = useCallback(() => {
     if (!isDragging) return;
     
+    // Restaurar scroll del body
+    document.body.style.overflow = '';
+    document.body.style.position = '';
+    document.body.style.width = '';
+    
     const currentTranslateY = translateYRef.current;
     setIsDragging(false);
 
@@ -219,11 +228,17 @@ export function BottomSheet({
           opacity: isOpen ? 1 : 0,
           transition: 'opacity 0.3s ease',
           touchAction: 'none', // Prevenir scroll cuando se arrastra
+          WebkitOverflowScrolling: 'touch',
         }}
         onClick={onClose}
         onTouchStart={(e) => {
           // Prevenir que el drag del overlay afecte al bottom sheet
-          e.stopPropagation();
+          // Solo prevenir si NO estamos tocando el bottom sheet
+          const target = e.target as HTMLElement;
+          if (!target.closest('[data-bottom-sheet]')) {
+            e.preventDefault();
+            e.stopPropagation();
+          }
         }}
         onMouseDown={(e) => {
           // Prevenir que el drag del overlay afecte al bottom sheet
@@ -234,6 +249,7 @@ export function BottomSheet({
       {/* Sheet */}
       <div
         ref={sheetRef}
+        data-bottom-sheet
         style={{
           position: 'fixed',
           bottom: bottomSheet.margin,
@@ -253,7 +269,8 @@ export function BottomSheet({
           transform: `translateY(${translateY}%)`, // Solo para arrastrar hacia abajo (cerrar)
           transition: isDragging ? 'none' : 'transform 0.3s ease-out, min-height 0.3s ease-out',
           boxShadow: '0 15px 75px rgba(0, 0, 0, 0.18)', // Drop shadow: X: 0, Y: 15, Blur: 75, Spread: 0, Color: #000000, Opacity: 18%
-          touchAction: 'pan-y', // Permitir scroll vertical pero prevenir drag accidental
+          touchAction: isDragging ? 'none' : 'pan-y', // Prevenir todo cuando se arrastra, permitir scroll vertical cuando no
+          WebkitOverflowScrolling: 'touch',
         }}
       >
         {/* Header con botones de iconos y graber */}
@@ -263,7 +280,11 @@ export function BottomSheet({
             onTouchMove={handleTouchMove}
             onTouchEnd={handleEnd}
             onMouseDown={handleMouseDown}
-            style={{ touchAction: 'none' }} // Prevenir scroll cuando se arrastra el header
+            style={{ 
+              touchAction: 'none', // Prevenir scroll cuando se arrastra el header
+              WebkitUserSelect: 'none',
+              userSelect: 'none',
+            }}
           >
             <BottomSheetHeader
               title={title}

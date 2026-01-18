@@ -54,15 +54,30 @@ export function BottomSheetHeader({
         display: 'flex',
         flexDirection: 'column',
         gap: spacing[2], // 8px entre graber y contenido del header
+        touchAction: 'none', // Prevenir scroll cuando se arrastra el header completo
+        WebkitUserSelect: 'none',
+        userSelect: 'none',
       }}
     >
       {/* Graber - en el header si está habilitado */}
       {showGraber && (
         <div
           ref={graberRef}
-          onTouchStart={onGraberTouchStart}
-          onTouchMove={onGraberTouchMove}
-          onTouchEnd={onGraberTouchEnd}
+          onTouchStart={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            onGraberTouchStart?.(e);
+          }}
+          onTouchMove={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            onGraberTouchMove?.(e);
+          }}
+          onTouchEnd={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            onGraberTouchEnd?.();
+          }}
           onMouseDown={onGraberMouseDown}
           style={{
             width: '100%',
@@ -72,6 +87,10 @@ export function BottomSheetHeader({
             paddingTop: bottomSheet.graber.topDistance,
             paddingBottom: spacing[2],
             cursor: 'grab',
+            touchAction: 'none', // CRÍTICO: Prevenir todo comportamiento táctil por defecto
+            WebkitUserSelect: 'none',
+            userSelect: 'none',
+            minHeight: bottomSheet.graber.touchArea, // Área táctil mínima de 40px
           }}
         >
           {/* Barra del graber */}
