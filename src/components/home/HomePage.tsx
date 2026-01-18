@@ -1,5 +1,3 @@
-"use client";
-
 import { useState, useRef, useEffect } from 'react';
 import { BottomNavigation } from './BottomNavigation';
 import { Header } from './Header';
