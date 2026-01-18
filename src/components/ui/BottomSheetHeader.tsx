@@ -53,10 +53,10 @@ export function BottomSheetHeader({
       style={{
         display: 'flex',
         flexDirection: 'column',
-        gap: spacing[2], // 8px entre graber y contenido del header
         touchAction: 'manipulation', // Permitir interacciones táctiles pero prevenir gestos
         WebkitUserSelect: 'none',
         userSelect: 'none',
+        paddingTop: showGraber ? bottomSheet.graber.topDistance : 0, // Padding top solo si hay graber
       }}
     >
       {/* Graber - en el header si está habilitado */}
@@ -84,8 +84,7 @@ export function BottomSheetHeader({
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            paddingTop: bottomSheet.graber.topDistance,
-            paddingBottom: spacing[2],
+            paddingBottom: spacing[2], // 8px de espacio debajo del graber
             cursor: 'grab',
             touchAction: 'none', // CRÍTICO: Prevenir todo comportamiento táctil por defecto solo en el graber
             WebkitUserSelect: 'none',
@@ -112,6 +111,7 @@ export function BottomSheetHeader({
           alignItems: 'center',
           justifyContent: 'space-between',
           gap: bottomSheet.header.horizontalSpacing, // 8px distancia visual horizontal
+          paddingTop: showGraber ? spacing[2] : 0, // 8px de espacio arriba solo si hay graber
           marginBottom: spacing[4], // 16px de espacio después del header
           position: 'relative',
         }}
