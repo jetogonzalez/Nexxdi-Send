@@ -219,7 +219,7 @@ export function SliderToBlock({ onComplete, disabled = false }: SliderToBlockPro
               ? `clamp(${typography.fontSize.sm}, ${(sliderWidth / 100) * 0.8}px, ${typography.fontSize.base})` 
               : typography.fontSize.base, // Responsive basado en ancho del slider
             fontWeight: typography.fontWeight.bold, // Mismo peso que los botones
-            color: colors.semantic.text.secondary, // Gris oscuro
+            color: colors.semantic.text.primary, // Negro más fuerte
             pointerEvents: 'none',
             zIndex: 1,
             whiteSpace: 'nowrap',
