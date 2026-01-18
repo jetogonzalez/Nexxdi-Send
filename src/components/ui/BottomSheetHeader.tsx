@@ -5,7 +5,7 @@ import type { RefObject } from 'react';
 const bottomSheet = {
   margin: spacing[2], // 8px - margin global alrededor del bottom sheet
   padding: spacing[6], // 24px - padding interno global
-  borderRadius: '34px', // Border radius global de 34px
+  borderRadius: '44px', // Border radius global de 44px
   graber: {
     width: '34px',
     height: '4px',

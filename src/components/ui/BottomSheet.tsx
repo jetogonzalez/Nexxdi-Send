@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useCallback } from 'react';
 import type { ReactNode } from 'react';
 import { colors, spacing, borderRadius } from '../../config/design-tokens';
 import { BottomSheetHeader } from './BottomSheetHeader';
@@ -7,7 +7,7 @@ import { BottomSheetHeader } from './BottomSheetHeader';
 const bottomSheet = {
   margin: spacing[2], // 8px - margin global alrededor del bottom sheet
   padding: spacing[6], // 24px - padding interno global
-  borderRadius: '34px', // Border radius global de 34px
+  borderRadius: '44px', // Border radius global de 44px
   graber: {
     width: '34px',
     height: '4px',
@@ -106,7 +106,7 @@ export function BottomSheet({
     }
   };
 
-  const handleMove = (clientY: number) => {
+  const handleMove = useCallback((clientY: number) => {
     if (!isDragging) return;
 
     const deltaY = startY - clientY; // Positivo cuando arrastra hacia arriba, negativo hacia abajo
@@ -132,44 +132,75 @@ export function BottomSheet({
       setTranslateY(clampedTranslateY);
       setStretchHeight(0); // Sin estiramiento cuando se arrastra hacia abajo
     }
-  };
+  }, [isDragging, startY, startTranslateY, startStretchHeight, baseHeight]);
 
   const handleTouchMove = (e: React.TouchEvent) => {
     if (!isDragging) return;
     e.preventDefault();
-    handleMove(e.touches[0].clientY);
+    e.stopPropagation();
+    if (e.touches.length > 0) {
+      handleMove(e.touches[0].clientY);
+    }
   };
 
-  const handleEnd = () => {
+  const translateYRef = useRef(translateY);
+  useEffect(() => {
+    translateYRef.current = translateY;
+  }, [translateY]);
+
+  const handleEnd = useCallback(() => {
     if (!isDragging) return;
+    
+    const currentTranslateY = translateYRef.current;
     setIsDragging(false);
 
     // Si se arrastra más del 30% hacia abajo, cerrar
-    if (translateY > 30) {
+    if (currentTranslateY > 30) {
       onClose();
     } else {
       // Volver a la altura original (hug content) - usar transición CSS por defecto
       setTranslateY(0);
       setStretchHeight(0);
     }
-  };
+  }, [isDragging, onClose]);
 
-  // Event listeners globales para mouse
+  // Event listeners globales para mouse y touch
   useEffect(() => {
     if (!isDragging) return;
 
     const handleMouseMove = (e: MouseEvent) => {
+      e.preventDefault();
       handleMove(e.clientY);
     };
 
-    document.addEventListener('mousemove', handleMouseMove);
+    const handleTouchMoveGlobal = (e: TouchEvent) => {
+      e.preventDefault();
+      if (e.touches.length > 0) {
+        handleMove(e.touches[0].clientY);
+      }
+    };
+
+    const handleTouchEndGlobal = () => {
+      handleEnd();
+    };
+
+    // Mouse events
+    document.addEventListener('mousemove', handleMouseMove, { passive: false });
     document.addEventListener('mouseup', handleEnd);
+    
+    // Touch events - CRÍTICO: usar { passive: false } para poder prevenir el scroll
+    document.addEventListener('touchmove', handleTouchMoveGlobal, { passive: false });
+    document.addEventListener('touchend', handleTouchEndGlobal);
+    document.addEventListener('touchcancel', handleTouchEndGlobal);
     
     return () => {
       document.removeEventListener('mousemove', handleMouseMove);
       document.removeEventListener('mouseup', handleEnd);
+      document.removeEventListener('touchmove', handleTouchMoveGlobal);
+      document.removeEventListener('touchend', handleTouchEndGlobal);
+      document.removeEventListener('touchcancel', handleTouchEndGlobal);
     };
-  }, [isDragging, startY, startTranslateY, startStretchHeight, translateY, stretchHeight]);
+  }, [isDragging, startY, startTranslateY, startStretchHeight, translateY, stretchHeight, baseHeight, handleMove, handleEnd]);
 
   if (!isOpen) return null;
 
@@ -209,7 +240,7 @@ export function BottomSheet({
           left: bottomSheet.margin,
           right: bottomSheet.margin,
           backgroundColor: colors.semantic.background.white,
-          borderRadius: bottomSheet.borderRadius, // 34px en todos los lados
+          borderRadius: bottomSheet.borderRadius, // 44px en todos los lados
           paddingLeft: bottomSheet.padding,
           paddingRight: bottomSheet.padding,
           paddingTop: 0, // Sin padding top - el header lo maneja
@@ -229,6 +260,8 @@ export function BottomSheet({
         {(title || leftIcon || rightIcon || showGraber) && (
           <div
             onTouchStart={handleTouchStart}
+            onTouchMove={handleTouchMove}
+            onTouchEnd={handleEnd}
             onMouseDown={handleMouseDown}
             style={{ touchAction: 'none' }} // Prevenir scroll cuando se arrastra el header
           >
