@@ -217,7 +217,7 @@ export default function WelcomeScreen() {
             style={{
               fontFamily: typography.fontFamily.sans.join(', '),
               fontSize: typography.fontSize.base, // 16px - texto secundario
-              fontWeight: typography.fontWeight.normal,
+              fontWeight: typography.fontWeight.medium, // Un poco más de peso (500)
               color: colors.semantic.text.secondary, // Color secundario
               textAlign: 'center',
               margin: 0,
@@ -230,7 +230,7 @@ export default function WelcomeScreen() {
           <h1
             style={{
               fontFamily: typography.fontFamily.sans.join(', '),
-              fontSize: typography.fontSize['3xl'], // 26px - más grande para ser el foco
+              fontSize: typography.fontSize['2xl'], // 24px - tamaño óptimo
               fontWeight: typography.fontWeight.extrabold, // Mayor peso visual
               color: colors.semantic.text.primary,
               textAlign: 'center',
