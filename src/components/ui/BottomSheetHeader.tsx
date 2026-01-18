@@ -1,4 +1,4 @@
-import { colors, bottomSheet, typography } from '../../config/design-tokens';
+import { colors, bottomSheet, typography, borderRadius } from '../../config/design-tokens';
 
 interface BottomSheetHeaderProps {
   title?: string;
