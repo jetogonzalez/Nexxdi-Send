@@ -108,37 +108,42 @@ export function BottomSheetHeader({
           // Permitir que el drag funcione desde cualquier parte del header excepto botones
           const target = e.target as HTMLElement;
           const isButton = target.closest('button') !== null;
-          if (!isButton) {
-            // CRÍTICO: Prevenir comportamiento por defecto en iOS solo si NO es un botón
-            e.preventDefault();
-            e.stopPropagation();
-            onGraberTouchStart?.(e);
+          // Si es un botón, NO hacer nada - dejar que el botón maneje el evento
+          if (isButton) {
+            return; // Salir inmediatamente sin prevenir nada
           }
+          // CRÍTICO: Prevenir comportamiento por defecto en iOS solo si NO es un botón
+          e.preventDefault();
+          e.stopPropagation();
+          onGraberTouchStart?.(e);
         }}
         onTouchMove={(e) => {
           const target = e.target as HTMLElement;
           const isButton = target.closest('button') !== null;
-          if (!isButton) {
-            e.preventDefault();
-            e.stopPropagation();
-            onGraberTouchMove?.(e);
+          if (isButton) {
+            return; // Salir inmediatamente sin prevenir nada
           }
+          e.preventDefault();
+          e.stopPropagation();
+          onGraberTouchMove?.(e);
         }}
         onTouchEnd={(e) => {
           const target = e.target as HTMLElement;
           const isButton = target.closest('button') !== null;
-          if (!isButton) {
-            e.preventDefault();
-            e.stopPropagation();
-            onGraberTouchEnd?.();
+          if (isButton) {
+            return; // Salir inmediatamente sin prevenir nada
           }
+          e.preventDefault();
+          e.stopPropagation();
+          onGraberTouchEnd?.();
         }}
         onMouseDown={(e) => {
           const target = e.target as HTMLElement;
           const isButton = target.closest('button') !== null;
-          if (!isButton) {
-            onGraberMouseDown?.(e);
+          if (isButton) {
+            return; // Salir inmediatamente sin prevenir nada
           }
+          onGraberMouseDown?.(e);
         }}
         style={{
           display: 'flex',
@@ -160,20 +165,33 @@ export function BottomSheetHeader({
           type="button"
           onClick={(e) => {
             e.stopPropagation();
-            e.preventDefault();
             onLeftIconClick?.();
           }}
           onTouchStart={(e) => {
-            // NO prevenir el evento aquí para que el botón funcione
+            // Detener propagación para que el contenedor no capture el evento
             e.stopPropagation();
+            if (e.nativeEvent.stopImmediatePropagation) {
+              e.nativeEvent.stopImmediatePropagation();
+            }
           }}
           onTouchEnd={(e) => {
             // Asegurar que el click funcione en touch
             e.stopPropagation();
+            if (e.nativeEvent.stopImmediatePropagation) {
+              e.nativeEvent.stopImmediatePropagation();
+            }
+          }}
+          onMouseDown={(e) => {
+            // Detener propagación para que el drag no se active
+            e.stopPropagation();
+            if (e.nativeEvent.stopImmediatePropagation) {
+              e.nativeEvent.stopImmediatePropagation();
+            }
           }}
           style={{
             touchAction: 'manipulation', // Permitir interacciones táctiles
             zIndex: 10, // Asegurar que esté por encima del área arrastrable
+            position: 'relative', // Asegurar que el z-index funcione
             width: bottomSheet.header.actionButtonSize, // 44px
             height: bottomSheet.header.actionButtonSize, // 44px
             minWidth: bottomSheet.header.actionButtonSize,
@@ -243,20 +261,33 @@ export function BottomSheetHeader({
           type="button"
           onClick={(e) => {
             e.stopPropagation();
-            e.preventDefault();
             onRightIconClick?.();
           }}
           onTouchStart={(e) => {
-            // NO prevenir el evento aquí para que el botón funcione
+            // Detener propagación para que el contenedor no capture el evento
             e.stopPropagation();
+            if (e.nativeEvent.stopImmediatePropagation) {
+              e.nativeEvent.stopImmediatePropagation();
+            }
           }}
           onTouchEnd={(e) => {
             // Asegurar que el click funcione en touch
             e.stopPropagation();
+            if (e.nativeEvent.stopImmediatePropagation) {
+              e.nativeEvent.stopImmediatePropagation();
+            }
+          }}
+          onMouseDown={(e) => {
+            // Detener propagación para que el drag no se active
+            e.stopPropagation();
+            if (e.nativeEvent.stopImmediatePropagation) {
+              e.nativeEvent.stopImmediatePropagation();
+            }
           }}
           style={{
             touchAction: 'manipulation', // Permitir interacciones táctiles
             zIndex: 10, // Asegurar que esté por encima del área arrastrable
+            position: 'relative', // Asegurar que el z-index funcione
             width: bottomSheet.header.actionButtonSize, // 44px
             height: bottomSheet.header.actionButtonSize, // 44px
             minWidth: bottomSheet.header.actionButtonSize,

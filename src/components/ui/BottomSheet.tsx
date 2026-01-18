@@ -351,10 +351,24 @@ export function BottomSheet({
         {/* Header con botones de iconos y graber */}
         {(title || leftIcon || rightIcon || showGraber) && (
           <div
-            onTouchStart={handleTouchStart}
+            onTouchStart={(e) => {
+              // Verificar si es un botón antes de procesar
+              const target = e.target as HTMLElement;
+              if (target.closest('button')) {
+                return; // Dejar que el botón maneje el evento
+              }
+              handleTouchStart(e);
+            }}
             onTouchMove={handleTouchMove}
             onTouchEnd={handleEnd}
-            onMouseDown={handleMouseDown}
+            onMouseDown={(e) => {
+              // Verificar si es un botón antes de procesar
+              const target = e.target as HTMLElement;
+              if (target.closest('button')) {
+                return; // Dejar que el botón maneje el evento
+              }
+              handleMouseDown(e);
+            }}
             style={{ 
               touchAction: 'manipulation', // Permitir interacciones táctiles pero prevenir gestos
               WebkitUserSelect: 'none',
