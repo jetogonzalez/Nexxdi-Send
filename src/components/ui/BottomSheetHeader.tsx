@@ -8,7 +8,7 @@ const bottomSheet = {
   borderRadius: '44px', // Border radius global de 44px
   graber: {
     width: '34px',
-    height: '4px',
+    height: '5px',
     topDistance: '5px',
     touchArea: '40px',
   },
@@ -56,12 +56,11 @@ export function BottomSheetHeader({
         touchAction: 'manipulation', // Permitir interacciones táctiles pero prevenir gestos
         WebkitUserSelect: 'none',
         userSelect: 'none',
-        paddingTop: spacing[4], // 16px padding top del header
-        paddingBottom: spacing[4], // 16px padding bottom del header
         minHeight: '70px', // Altura total del header aproximadamente 70px
+        position: 'relative', // Para posicionar el graber absolutamente
       }}
     >
-      {/* Graber - en el header si está habilitado */}
+      {/* Graber - dentro del header, posicionado absolutamente sin afectar layout */}
       {showGraber && (
         <div
           ref={graberRef}
@@ -82,40 +81,63 @@ export function BottomSheetHeader({
           }}
           onMouseDown={onGraberMouseDown}
           style={{
-            width: '100%',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            marginTop: bottomSheet.graber.topDistance, // 5px de distancia desde el top dentro del header
-            marginBottom: spacing[2], // 8px de espacio debajo del graber
+            position: 'absolute',
+            top: bottomSheet.graber.topDistance, // 5px desde el top
+            left: '50%',
+            transform: 'translateX(-50%)',
+            width: bottomSheet.graber.width,
+            height: bottomSheet.graber.height,
+            backgroundColor: colors.gray[300],
+            borderRadius: '9999px',
+            padding: 0,
+            margin: 0,
             cursor: 'grab',
-            touchAction: 'none', // CRÍTICO: Prevenir todo comportamiento táctil por defecto solo en el graber
+            touchAction: 'none',
             WebkitUserSelect: 'none',
             userSelect: 'none',
-            minHeight: bottomSheet.graber.touchArea, // Área táctil mínima de 40px
+            zIndex: 1, // Encima del contenido pero debajo de botones
+            pointerEvents: 'auto', // Asegurar que sea clickeable
           }}
-        >
-          {/* Barra del graber */}
-          <div
-            style={{
-              width: bottomSheet.graber.width,
-              height: bottomSheet.graber.height,
-              backgroundColor: colors.gray[300],
-              borderRadius: '9999px',
-            }}
-          />
-        </div>
+        />
       )}
 
-      {/* Contenido del header */}
+      {/* Contenido del header - área arrastrable completa */}
       <div
+        onTouchStart={(e) => {
+          // Permitir que el drag funcione desde cualquier parte del header excepto botones
+          const target = e.target as HTMLElement;
+          if (!target.closest('button')) {
+            onGraberTouchStart?.(e);
+          }
+        }}
+        onTouchMove={(e) => {
+          const target = e.target as HTMLElement;
+          if (!target.closest('button')) {
+            onGraberTouchMove?.(e);
+          }
+        }}
+        onTouchEnd={(e) => {
+          const target = e.target as HTMLElement;
+          if (!target.closest('button')) {
+            onGraberTouchEnd?.();
+          }
+        }}
+        onMouseDown={(e) => {
+          const target = e.target as HTMLElement;
+          if (!target.closest('button')) {
+            onGraberMouseDown?.(e);
+          }
+        }}
         style={{
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'space-between',
           gap: bottomSheet.header.horizontalSpacing, // 8px distancia visual horizontal
-          paddingTop: showGraber ? spacing[2] : 0, // 8px de espacio arriba solo si hay graber
+          width: '100%',
+          minHeight: '70px', // Altura mínima para área táctil grande
           position: 'relative',
+          zIndex: 0, // Debajo del graber visual
+          cursor: 'grab', // Cursor de arrastre en toda el área
         }}
       >
       {/* Botón izquierdo */}

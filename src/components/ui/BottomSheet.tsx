@@ -317,6 +317,7 @@ export function BottomSheet({
               touchAction: 'manipulation', // Permitir interacciones táctiles pero prevenir gestos
               WebkitUserSelect: 'none',
               userSelect: 'none',
+              width: '100%', // Área completa arrastrable
             }}
           >
             <BottomSheetHeader
