@@ -203,19 +203,44 @@ export default function WelcomeScreen() {
           )}
         </div>
 
-        {/* Texto de bienvenida */}
-        <h1
+        {/* Bloque de bienvenida - dos líneas con jerarquía visual */}
+        <div
           style={{
-            fontFamily: typography.fontFamily.sans.join(', '),
-            fontSize: typography.fontSize.xl,
-            fontWeight: typography.fontWeight.normal,
-            color: colors.semantic.text.primary,
-            textAlign: 'center',
-            margin: 0,
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            gap: spacing[1], // Espacio corto entre líneas (4px)
           }}
         >
-          Bienvenido de vuelta, <span style={{ fontWeight: typography.fontWeight.bold }}>Luis</span>
-        </h1>
+          {/* Texto secundario - "Bienvenido de vuelta" */}
+          <p
+            style={{
+              fontFamily: typography.fontFamily.sans.join(', '),
+              fontSize: typography.fontSize.base, // 16px - texto secundario
+              fontWeight: typography.fontWeight.normal,
+              color: colors.semantic.text.secondary, // Color secundario
+              textAlign: 'center',
+              margin: 0,
+            }}
+          >
+            Bienvenido de vuelta
+          </p>
+          
+          {/* Nombre - foco visual principal */}
+          <h1
+            style={{
+              fontFamily: typography.fontFamily.sans.join(', '),
+              fontSize: typography.fontSize['3xl'], // 26px - más grande para ser el foco
+              fontWeight: typography.fontWeight.extrabold, // Mayor peso visual
+              color: colors.semantic.text.primary,
+              textAlign: 'center',
+              margin: 0,
+              lineHeight: typography.lineHeight.tight, // Altura de línea ajustada
+            }}
+          >
+            Luis
+          </h1>
+        </div>
       </div>
 
       {/* Botones fijos en la parte inferior */}
