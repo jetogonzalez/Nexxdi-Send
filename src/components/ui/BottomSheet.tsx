@@ -1,7 +1,26 @@
 import { useState, useRef, useEffect } from 'react';
 import type { ReactNode } from 'react';
-import { colors, bottomSheet, spacing } from '../../config/design-tokens';
+import { colors, spacing, borderRadius } from '../../config/design-tokens';
 import { BottomSheetHeader } from './BottomSheetHeader';
+
+// Importar bottomSheet directamente desde el módulo
+const bottomSheet = {
+  margin: spacing[2], // 8px - margin global alrededor del bottom sheet
+  padding: spacing[6], // 24px - padding interno global
+  borderRadius: '34px', // Border radius global de 34px
+  graber: {
+    width: '34px',
+    height: '4px',
+    topDistance: '5px',
+    touchArea: '40px',
+  },
+  header: {
+    actionButtonSize: '44px', // Tamaño de botones de acción según Apple HIG
+    iconSize: '24px', // Tamaño de iconos según Apple HIG
+    horizontalSpacing: spacing[2], // 8px - distancia visual horizontal
+    buttonBackground: 'rgba(0, 0, 0, 0.05)', // Negro con 5% opacidad
+  },
+};
 
 interface BottomSheetProps {
   isOpen: boolean;
@@ -12,8 +31,8 @@ interface BottomSheetProps {
   rightIcon?: React.ReactNode;
   onLeftIconClick?: () => void;
   onRightIconClick?: () => void;
-  initialHeight?: number; // Porcentaje de altura inicial (ej: 50 para 50%)
   maxHeight?: number; // Porcentaje de altura máxima (ej: 90 para 90%)
+  showGraber?: boolean; // Mostrar graber en el header
 }
 
 export function BottomSheet({
@@ -25,70 +44,94 @@ export function BottomSheet({
   rightIcon,
   onLeftIconClick,
   onRightIconClick,
-  initialHeight = 50,
   maxHeight = 90,
+  showGraber = true,
 }: BottomSheetProps) {
-  const [translateY, setTranslateY] = useState(0);
+  const [translateY, setTranslateY] = useState(0); // Para arrastrar hacia abajo (cerrar)
+  const [stretchHeight, setStretchHeight] = useState(0); // Altura adicional cuando se estira hacia arriba
+  const [baseHeight, setBaseHeight] = useState<number | null>(null); // Altura base del contenido
   const [isDragging, setIsDragging] = useState(false);
   const [startY, setStartY] = useState(0);
   const [startTranslateY, setStartTranslateY] = useState(0);
+  const [startStretchHeight, setStartStretchHeight] = useState(0);
   const sheetRef = useRef<HTMLDivElement>(null);
   const graberRef = useRef<HTMLDivElement>(null);
 
-  // Resetear posición cuando se abre/cierra
+  // Resetear posición cuando se abre/cierra y obtener altura base
   useEffect(() => {
     if (isOpen) {
-      setTranslateY(0);
+      setTranslateY(0); // Tamaño original (hug content)
+      setStretchHeight(0); // Sin estiramiento
+      // Esperar a que el contenido se renderice para obtener la altura base
+      setTimeout(() => {
+        if (sheetRef.current) {
+          const contentHeight = sheetRef.current.scrollHeight;
+          setBaseHeight(contentHeight);
+        }
+      }, 100);
     } else {
       setTranslateY(100); // Ocultar completamente
+      setStretchHeight(0);
+      setBaseHeight(null);
     }
   }, [isOpen]);
 
-  // Calcular altura inicial basada en contenido
-  const getInitialHeight = () => {
-    if (sheetRef.current) {
-      const contentHeight = sheetRef.current.scrollHeight;
-      const viewportHeight = window.innerHeight;
-      const initialHeightPx = (viewportHeight * initialHeight) / 100;
-      
-      // Si el contenido es más grande, ajustar altura
-      if (contentHeight > initialHeightPx) {
-        const contentPercentage = (contentHeight / viewportHeight) * 100;
-        if (contentPercentage > initialHeight && contentPercentage < maxHeight) {
-          return contentPercentage;
-        }
-        if (contentPercentage >= maxHeight) {
-          return maxHeight;
-        }
-      }
-    }
-    return initialHeight;
-  };
-
   const handleTouchStart = (e: React.TouchEvent) => {
-    setIsDragging(true);
-    setStartY(e.touches[0].clientY);
-    setStartTranslateY(translateY);
+    // Solo iniciar drag si se toca el graber o el header
+    const target = e.target as HTMLElement;
+    const isGraber = graberRef.current?.contains(target);
+    const isHeader = target.closest('[data-bottom-sheet-header]');
+    
+    if (isGraber || isHeader) {
+      e.stopPropagation(); // Prevenir que el evento se propague al overlay
+      setIsDragging(true);
+      setStartY(e.touches[0].clientY);
+      setStartTranslateY(translateY);
+      setStartStretchHeight(stretchHeight);
+    }
   };
 
   const handleMouseDown = (e: React.MouseEvent) => {
-    setIsDragging(true);
-    setStartY(e.clientY);
-    setStartTranslateY(translateY);
+    // Solo iniciar drag si se hace clic en el graber o el header
+    const target = e.target as HTMLElement;
+    const isGraber = graberRef.current?.contains(target);
+    const isHeader = target.closest('[data-bottom-sheet-header]');
+    
+    if (isGraber || isHeader) {
+      e.stopPropagation(); // Prevenir que el evento se propague al overlay
+      setIsDragging(true);
+      setStartY(e.clientY);
+      setStartTranslateY(translateY);
+      setStartStretchHeight(stretchHeight);
+    }
   };
 
   const handleMove = (clientY: number) => {
     if (!isDragging) return;
 
-    const deltaY = clientY - startY;
+    const deltaY = startY - clientY; // Positivo cuando arrastra hacia arriba, negativo hacia abajo
     const viewportHeight = window.innerHeight;
-    const deltaPercentage = (deltaY / viewportHeight) * 100;
-    const newTranslateY = startTranslateY + deltaPercentage;
-
-    // Limitar el movimiento hacia arriba (no más allá del 0%)
-    // Y hacia abajo (hasta 100% para ocultar)
-    const clampedTranslateY = Math.max(0, Math.min(100, newTranslateY));
-    setTranslateY(clampedTranslateY);
+    const deltaPixels = deltaY;
+    
+    if (deltaY > 0) {
+      // Arrastrar hacia arriba: estirar el bottom sheet (aumentar altura)
+      const currentBaseHeight = baseHeight || sheetRef.current?.scrollHeight || 0;
+      const newStretchHeight = Math.max(0, startStretchHeight + deltaPixels);
+      // Calcular altura máxima permitida: viewport menos 24px del top menos el margin bottom
+      const marginBottomPx = 8; // margin bottom
+      const topOffset = 24; // 24px desde el top
+      const maxAllowedHeight = viewportHeight - topOffset - marginBottomPx;
+      const maxStretch = Math.max(0, maxAllowedHeight - currentBaseHeight);
+      setStretchHeight(Math.min(newStretchHeight, maxStretch));
+      setTranslateY(0); // Mantener en posición base (no mover hacia arriba)
+    } else {
+      // Arrastrar hacia abajo: mover hacia abajo para cerrar
+      const deltaPercentage = (Math.abs(deltaY) / viewportHeight) * 100;
+      const newTranslateY = startTranslateY + deltaPercentage;
+      const clampedTranslateY = Math.max(0, Math.min(100, newTranslateY));
+      setTranslateY(clampedTranslateY);
+      setStretchHeight(0); // Sin estiramiento cuando se arrastra hacia abajo
+    }
   };
 
   const handleTouchMove = (e: React.TouchEvent) => {
@@ -105,8 +148,9 @@ export function BottomSheet({
     if (translateY > 30) {
       onClose();
     } else {
-      // Volver a la altura normal
+      // Volver a la altura original (hug content) - usar transición CSS por defecto
       setTranslateY(0);
+      setStretchHeight(0);
     }
   };
 
@@ -125,16 +169,13 @@ export function BottomSheet({
       document.removeEventListener('mousemove', handleMouseMove);
       document.removeEventListener('mouseup', handleEnd);
     };
-  }, [isDragging, startY, startTranslateY, translateY]);
+  }, [isDragging, startY, startTranslateY, startStretchHeight, translateY, stretchHeight]);
 
   if (!isOpen) return null;
 
-  const currentHeight = getInitialHeight();
-  const heightPercentage = Math.max(currentHeight, initialHeight);
-
   return (
     <>
-      {/* Overlay */}
+      {/* Overlay - según Apple HIG para Medium detent */}
       <div
         style={{
           position: 'fixed',
@@ -142,12 +183,21 @@ export function BottomSheet({
           left: 0,
           right: 0,
           bottom: 0,
-          backgroundColor: 'rgba(0, 0, 0, 0.5)',
+          backgroundColor: 'rgba(0, 0, 0, 0.4)', // Opacidad ajustada según Apple HIG
           zIndex: 1000,
           opacity: isOpen ? 1 : 0,
           transition: 'opacity 0.3s ease',
+          touchAction: 'none', // Prevenir scroll cuando se arrastra
         }}
         onClick={onClose}
+        onTouchStart={(e) => {
+          // Prevenir que el drag del overlay afecte al bottom sheet
+          e.stopPropagation();
+        }}
+        onMouseDown={(e) => {
+          // Prevenir que el drag del overlay afecte al bottom sheet
+          e.stopPropagation();
+        }}
       />
 
       {/* Sheet */}
@@ -155,69 +205,64 @@ export function BottomSheet({
         ref={sheetRef}
         style={{
           position: 'fixed',
-          bottom: 0,
-          left: 0,
-          right: 0,
+          bottom: bottomSheet.margin,
+          left: bottomSheet.margin,
+          right: bottomSheet.margin,
           backgroundColor: colors.semantic.background.white,
-          borderTopLeftRadius: bottomSheet.borderRadius,
-          borderTopRightRadius: bottomSheet.borderRadius,
-          padding: bottomSheet.padding,
-          paddingTop: `calc(${bottomSheet.graber.topDistance} + ${bottomSheet.graber.touchArea})`,
+          borderRadius: bottomSheet.borderRadius, // 34px en todos los lados
+          paddingLeft: bottomSheet.padding,
+          paddingRight: bottomSheet.padding,
+          paddingTop: 0, // Sin padding top - el header lo maneja
           paddingBottom: `calc(${bottomSheet.padding} + env(safe-area-inset-bottom))`,
           zIndex: 1001,
-          maxHeight: `${maxHeight}vh`,
-          height: `${heightPercentage}vh`,
+          maxHeight: `calc(100vh - 24px - ${bottomSheet.margin})`, // Máximo hasta 24px del top
+          minHeight: stretchHeight > 0 && baseHeight ? `${baseHeight + stretchHeight}px` : 'auto', // Altura base + estiramiento
+          width: `calc(100% - ${bottomSheet.margin} * 2)`,
           overflowY: 'auto',
-          transform: `translateY(${translateY}%)`,
-          transition: isDragging ? 'none' : 'transform 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-          boxShadow: '0 -4px 20px rgba(0, 0, 0, 0.15)',
+          transform: `translateY(${translateY}%)`, // Solo para arrastrar hacia abajo (cerrar)
+          transition: isDragging ? 'none' : 'transform 0.3s ease-out, min-height 0.3s ease-out',
+          boxShadow: '0 15px 75px rgba(0, 0, 0, 0.18)', // Drop shadow: X: 0, Y: 15, Blur: 75, Spread: 0, Color: #000000, Opacity: 18%
+          touchAction: 'pan-y', // Permitir scroll vertical pero prevenir drag accidental
         }}
       >
-        {/* Graber - Área de arrastre */}
-        <div
-          ref={graberRef}
-          onTouchStart={handleTouchStart}
-          onTouchMove={handleTouchMove}
-          onTouchEnd={handleEnd}
-          onMouseDown={handleMouseDown}
-          style={{
-            position: 'absolute',
-            top: bottomSheet.graber.topDistance,
-            left: '50%',
-            transform: 'translateX(-50%)',
-            width: bottomSheet.graber.touchArea,
-            height: bottomSheet.graber.touchArea,
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            cursor: 'grab',
-            zIndex: 10,
-          }}
-        >
-          {/* Barra del graber */}
+        {/* Header con botones de iconos y graber */}
+        {(title || leftIcon || rightIcon || showGraber) && (
           <div
-            style={{
-              width: bottomSheet.graber.width,
-              height: bottomSheet.graber.height,
-              backgroundColor: colors.gray[300],
-              borderRadius: '9999px',
-            }}
-          />
-        </div>
-
-        {/* Header con botones de iconos */}
-        {(title || leftIcon || rightIcon) && (
-          <BottomSheetHeader
-            title={title}
-            leftIcon={leftIcon}
-            rightIcon={rightIcon}
-            onLeftIconClick={onLeftIconClick || onClose}
-            onRightIconClick={onRightIconClick}
-          />
+            onTouchStart={handleTouchStart}
+            onMouseDown={handleMouseDown}
+            style={{ touchAction: 'none' }} // Prevenir scroll cuando se arrastra el header
+          >
+            <BottomSheetHeader
+              title={title}
+              leftIcon={leftIcon}
+              rightIcon={rightIcon}
+              onLeftIconClick={onLeftIconClick || onClose}
+              onRightIconClick={onRightIconClick}
+              showGraber={showGraber}
+              graberRef={graberRef}
+              onGraberTouchStart={handleTouchStart}
+              onGraberTouchMove={handleTouchMove}
+              onGraberTouchEnd={handleEnd}
+              onGraberMouseDown={handleMouseDown}
+            />
+          </div>
         )}
 
         {/* Contenido */}
-        <div style={{ paddingTop: spacing[2] }}>
+        <div 
+          style={{ 
+            paddingTop: (title || leftIcon || rightIcon || showGraber) ? 0 : bottomSheet.padding,
+            touchAction: 'pan-y', // Permitir scroll vertical en el contenido
+          }}
+          onTouchStart={(e) => {
+            // Prevenir que el drag del contenido afecte al bottom sheet
+            e.stopPropagation();
+          }}
+          onMouseDown={(e) => {
+            // Prevenir que el drag del contenido afecte al bottom sheet
+            e.stopPropagation();
+          }}
+        >
           {children}
         </div>
       </div>

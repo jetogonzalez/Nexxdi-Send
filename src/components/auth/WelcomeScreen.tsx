@@ -324,14 +324,14 @@ export default function WelcomeScreen() {
         title="Iniciar sesión"
         rightIcon={
           <svg
-            width="20"
-            height="20"
-            viewBox="0 0 20 20"
+            width="24"
+            height="24"
+            viewBox="0 0 24 24"
             fill="none"
             xmlns="http://www.w3.org/2000/svg"
           >
             <path
-              d="M15 5L5 15M5 5L15 15"
+              d="M18 6L6 18M6 6L18 18"
               stroke={colors.semantic.text.primary}
               strokeWidth="2"
               strokeLinecap="round"
@@ -340,7 +340,6 @@ export default function WelcomeScreen() {
           </svg>
         }
         onRightIconClick={() => setShowLoginSheet(false)}
-        initialHeight={50}
         maxHeight={90}
       >
         <LoginForm

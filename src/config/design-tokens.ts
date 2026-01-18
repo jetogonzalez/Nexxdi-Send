@@ -637,7 +637,7 @@ export const header = {
 // Re-exportar tokens importados para mantener compatibilidad
 // ============================================
 
-export { segmentedButton, transitions, bottomSheet };
+export { segmentedButton, transitions };
 
 // ============================================
 // Exportación por defecto
