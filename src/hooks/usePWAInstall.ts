@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useCallback, useRef, useState } from 'react';
+import { useEffect, useCallback, useRef } from 'react';
 import { useMovements } from './useMovements';
 import { useBalances } from './useBalances';
 
@@ -16,7 +16,7 @@ const NOTIFICATION_DELAY = 60000;
  * Hook para gestionar notificaciones push y el flujo de bienvenida
  * 
  * Flujo:
- * 1. Primera visita → Pedir permiso de notificaciones
+ * 1. Primera visita → Pedir permiso nativo de notificaciones
  * 2. Usuario cierra la app
  * 3. Después de 1 minuto → Enviar notificación push
  * 4. Usuario abre la app → Ver el dinero recibido
@@ -25,7 +25,6 @@ export function usePWAInstall() {
   const { addMovement } = useMovements();
   const { updateUsdBalance } = useBalances();
   const hasProcessedRef = useRef(false);
-  const [showPermissionModal, setShowPermissionModal] = useState(false);
 
   // Función para agregar el movimiento de dinero recibido
   const addMoneyReceivedMovement = useCallback(() => {
@@ -56,64 +55,6 @@ export function usePWAInstall() {
     console.log('Movimiento de dinero recibido agregado: +3000 USD de Sandra');
   }, [addMovement, updateUsdBalance]);
 
-  // Función para enviar la notificación
-  const sendNotification = useCallback(async () => {
-    if (typeof window === 'undefined') return;
-    
-    try {
-      if ('Notification' in window && Notification.permission === 'granted') {
-        // Intentar usar Service Worker para la notificación
-        if ('serviceWorker' in navigator) {
-          const registration = await navigator.serviceWorker.ready;
-          await registration.showNotification('💸 Dinero recibido', {
-            body: 'Sandra te envió 3.000 USD\nYa está disponible en tu saldo.',
-            icon: '/favicon.png',
-            badge: '/favicon.png',
-            tag: 'money-received',
-            renotify: true,
-            requireInteraction: true,
-            data: {
-              type: 'money-received',
-              amount: 3000,
-              sender: 'Sandra',
-            }
-          } as NotificationOptions);
-          console.log('Notificación enviada via Service Worker');
-        }
-      }
-    } catch (error) {
-      console.error('Error al enviar notificación:', error);
-    }
-  }, []);
-
-  // Función para pedir permiso de notificaciones
-  const requestNotificationPermission = useCallback(async () => {
-    if (typeof window === 'undefined') return false;
-    
-    if (!('Notification' in window)) {
-      console.log('Este navegador no soporta notificaciones');
-      return false;
-    }
-
-    try {
-      const permission = await Notification.requestPermission();
-      localStorage.setItem(NOTIFICATION_PERMISSION_ASKED_KEY, 'true');
-      
-      if (permission === 'granted') {
-        console.log('Permiso de notificaciones concedido');
-        // Programar la notificación para cuando cierre la app
-        scheduleNotification();
-        return true;
-      } else {
-        console.log('Permiso de notificaciones denegado');
-        return false;
-      }
-    } catch (error) {
-      console.error('Error al pedir permiso:', error);
-      return false;
-    }
-  }, []);
-
   // Función para programar la notificación via Service Worker
   const scheduleNotification = useCallback(async () => {
     if (typeof window === 'undefined') return;
@@ -127,16 +68,20 @@ export function usePWAInstall() {
     
     // Enviar mensaje al Service Worker para programar la notificación
     if ('serviceWorker' in navigator) {
-      const registration = await navigator.serviceWorker.ready;
-      if (registration.active) {
-        registration.active.postMessage({
-          type: 'SCHEDULE_NOTIFICATION',
-          title: '💸 Dinero recibido',
-          body: 'Sandra te envió 3.000 USD\nYa está disponible en tu saldo.',
-          icon: '/favicon.png',
-          delay: NOTIFICATION_DELAY,
-        });
-        console.log('Notificación programada via Service Worker para:', new Date(scheduledTime).toLocaleTimeString());
+      try {
+        const registration = await navigator.serviceWorker.ready;
+        if (registration.active) {
+          registration.active.postMessage({
+            type: 'SCHEDULE_NOTIFICATION',
+            title: '💸 Dinero recibido',
+            body: 'Sandra te envió 3.000 USD\nYa está disponible en tu saldo.',
+            icon: '/favicon.png',
+            delay: NOTIFICATION_DELAY,
+          });
+          console.log('Notificación programada via Service Worker para:', new Date(scheduledTime).toLocaleTimeString());
+        }
+      } catch (error) {
+        console.error('Error al programar notificación:', error);
       }
     }
   }, []);
@@ -165,7 +110,7 @@ export function usePWAInstall() {
     checkPendingNotification();
   }, [addMoneyReceivedMovement]);
 
-  // Primera visita - Pedir permiso de notificaciones
+  // Primera visita - Pedir permiso nativo de notificaciones
   useEffect(() => {
     if (typeof window === 'undefined') return;
 
@@ -175,47 +120,50 @@ export function usePWAInstall() {
     if (!firstVisit) {
       // Primera visita - guardar timestamp
       localStorage.setItem(FIRST_VISIT_KEY, Date.now().toString());
+    }
+    
+    // Si no se ha pedido permiso y el navegador soporta notificaciones
+    if (!permissionAsked && 'Notification' in window) {
+      // Pequeño delay para que la app cargue primero
+      const timer = setTimeout(async () => {
+        if (Notification.permission === 'default') {
+          try {
+            // Usar solo el permiso nativo del sistema operativo
+            const permission = await Notification.requestPermission();
+            localStorage.setItem(NOTIFICATION_PERMISSION_ASKED_KEY, 'true');
+            
+            if (permission === 'granted') {
+              console.log('Permiso de notificaciones concedido');
+              scheduleNotification();
+            } else {
+              console.log('Permiso de notificaciones:', permission);
+            }
+          } catch (error) {
+            console.error('Error al pedir permiso:', error);
+            localStorage.setItem(NOTIFICATION_PERMISSION_ASKED_KEY, 'true');
+          }
+        } else if (Notification.permission === 'granted') {
+          // Ya tiene permiso, programar notificación si no está programada
+          scheduleNotification();
+        }
+      }, 1500);
       
-      // Mostrar solicitud de permiso después de un pequeño delay
-      if (!permissionAsked && 'Notification' in window && Notification.permission === 'default') {
-        const timer = setTimeout(() => {
-          setShowPermissionModal(true);
-        }, 2000);
-        return () => clearTimeout(timer);
+      return () => clearTimeout(timer);
+    } else if (permissionAsked && Notification.permission === 'granted') {
+      // Ya tiene permiso, verificar si necesita programar
+      const alreadyScheduled = localStorage.getItem(NOTIFICATION_SCHEDULED_KEY);
+      if (!alreadyScheduled) {
+        scheduleNotification();
       }
     }
-  }, []);
+  }, [scheduleNotification]);
 
   // Detectar cuando la app pierde el foco (usuario sale)
   useEffect(() => {
     if (typeof window === 'undefined') return;
 
     const handleVisibilityChange = () => {
-      if (document.visibilityState === 'hidden') {
-        // Usuario salió de la app
-        const scheduledTimeStr = localStorage.getItem(NOTIFICATION_SCHEDULED_KEY);
-        const alreadyReceived = localStorage.getItem(MONEY_RECEIVED_KEY);
-        
-        if (scheduledTimeStr && !alreadyReceived && Notification.permission === 'granted') {
-          const scheduledTime = parseInt(scheduledTimeStr, 10);
-          const now = Date.now();
-          const timeRemaining = scheduledTime - now;
-          
-          if (timeRemaining > 0) {
-            // Programar notificación para cuando pase el tiempo
-            console.log(`Notificación se enviará en ${Math.round(timeRemaining / 1000)} segundos`);
-            
-            // Usar setTimeout para enviar cuando pase el tiempo
-            // Nota: Esto solo funciona si el service worker sigue activo
-            setTimeout(() => {
-              sendNotification();
-            }, timeRemaining);
-          } else if (timeRemaining <= 0) {
-            // Ya pasó el tiempo, enviar ahora
-            sendNotification();
-          }
-        }
-      } else if (document.visibilityState === 'visible') {
+      if (document.visibilityState === 'visible') {
         // Usuario volvió a la app
         const scheduledTimeStr = localStorage.getItem(NOTIFICATION_SCHEDULED_KEY);
         const alreadyReceived = localStorage.getItem(MONEY_RECEIVED_KEY);
@@ -237,18 +185,7 @@ export function usePWAInstall() {
     return () => {
       document.removeEventListener('visibilitychange', handleVisibilityChange);
     };
-  }, [sendNotification, addMoneyReceivedMovement]);
-
-  // Función para manejar la respuesta del usuario al modal de permisos
-  const handlePermissionResponse = useCallback(async (accepted: boolean) => {
-    setShowPermissionModal(false);
-    
-    if (accepted) {
-      await requestNotificationPermission();
-    } else {
-      localStorage.setItem(NOTIFICATION_PERMISSION_ASKED_KEY, 'true');
-    }
-  }, [requestNotificationPermission]);
+  }, [addMoneyReceivedMovement]);
 
   // Función para resetear (útil para testing)
   const resetAll = useCallback(() => {
@@ -263,9 +200,6 @@ export function usePWAInstall() {
   }, []);
 
   return {
-    showPermissionModal,
-    handlePermissionResponse,
-    requestNotificationPermission,
     resetAll,
   };
 }
