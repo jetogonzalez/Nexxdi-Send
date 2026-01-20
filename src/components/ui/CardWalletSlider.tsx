@@ -335,6 +335,7 @@ export function CardWalletSlider({ onCardSelect, onCardDoubleTap, isBalanceVisib
             {isBalanceVisible ? (
               <AnimatedBalance
                 value={cardBalance}
+                balanceKey="visa"
                 duration={600}
                 formatValue={(val) => formatCurrency(val, 'USD', false)}
                 style={{ 
@@ -405,6 +406,7 @@ export function CardWalletSlider({ onCardSelect, onCardDoubleTap, isBalanceVisib
         {isBalanceVisible ? (
           <AnimatedBalance
             value={balance}
+            balanceKey={card.type}
             duration={600}
             formatValue={(val) => formatCurrency(val, currencySymbol, false)}
             style={{ 
