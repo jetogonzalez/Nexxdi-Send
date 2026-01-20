@@ -725,12 +725,16 @@ export function CashView({ isBalanceVisible = true, usdBalance: initialUsdBalanc
   };
 
   // Validar y formatear monto según la moneda
-  // Límite: 9 dígitos enteros (11 caracteres con decimales: 9 + coma + 2)
-  const MAX_INTEGER_DIGITS = 9;
+  // Límites de dígitos: COP = 10 dígitos, USD = 7 dígitos
+  const getMaxDigits = (currency: string): number => {
+    return currency === 'COP' ? 10 : 7;
+  };
   
   const validateAmount = (value: string, currency: CurrencyOption): string => {
     // Permitir vacío
     if (value === '') return '';
+    
+    const maxDigits = getMaxDigits(currency.symbol);
     
     // Remover puntos (separadores de miles) para procesar
     let cleanValue = value.replace(/\./g, '');
@@ -747,10 +751,10 @@ export function CashView({ isBalanceVisible = true, usdBalance: initialUsdBalanc
       cleanValue = parts[0] + '.' + parts.slice(1).join('');
     }
     
-    // Limitar a 9 dígitos enteros
+    // Limitar dígitos según la moneda
     let integerPart = parts[0];
-    if (integerPart.length > MAX_INTEGER_DIGITS) {
-      integerPart = integerPart.substring(0, MAX_INTEGER_DIGITS);
+    if (integerPart.length > maxDigits) {
+      integerPart = integerPart.substring(0, maxDigits);
     }
     
     // Para COP: no permitir decimales

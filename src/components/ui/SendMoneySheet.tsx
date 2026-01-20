@@ -144,7 +144,11 @@ export function SendMoneySheet({ isOpen, onClose, usdBalance, copBalance }: Send
   
   const MIN_FONT_SIZE = 18;
   const MAX_FONT_SIZE = 36;
-  const MAX_INTEGER_DIGITS = 9;
+  
+  // Límites de dígitos por moneda: COP = 10, USD = 7
+  const getMaxDigits = (currency: string): number => {
+    return currency === 'COP' ? 10 : 7;
+  };
   
   // Actualizar currencies cuando cambien los balances
   useEffect(() => {
@@ -257,12 +261,13 @@ export function SendMoneySheet({ isOpen, onClose, usdBalance, copBalance }: Send
   
   // Formatear con separadores de miles
   const formatWithThousands = (value: string, currency: { symbol: string }): string => {
+    const maxDigits = getMaxDigits(currency.symbol);
     const cleanValue = value.replace(/[^\d,]/g, '');
     const parts = cleanValue.split(',');
     let integerPart = parts[0].replace(/\./g, '');
     
-    if (integerPart.length > MAX_INTEGER_DIGITS) {
-      integerPart = integerPart.slice(0, MAX_INTEGER_DIGITS);
+    if (integerPart.length > maxDigits) {
+      integerPart = integerPart.slice(0, maxDigits);
     }
     
     const decimalPart = parts[1];
@@ -284,6 +289,7 @@ export function SendMoneySheet({ isOpen, onClose, usdBalance, copBalance }: Send
   const validateAmount = (value: string, currency: { symbol: string }): string => {
     if (!value) return '';
     
+    const maxDigits = getMaxDigits(currency.symbol);
     let cleanValue = value.replace(/[^\d.,]/g, '');
     cleanValue = cleanValue.replace('.', ',');
     
@@ -296,8 +302,8 @@ export function SendMoneySheet({ isOpen, onClose, usdBalance, copBalance }: Send
     const parts = cleanValue.split(',');
     let integerPart = parts[0].replace(/\./g, '');
     
-    if (integerPart.length > MAX_INTEGER_DIGITS) {
-      integerPart = integerPart.slice(0, MAX_INTEGER_DIGITS);
+    if (integerPart.length > maxDigits) {
+      integerPart = integerPart.slice(0, maxDigits);
     }
     
     if (parts.length > 1) {
