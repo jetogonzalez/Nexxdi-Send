@@ -80,6 +80,15 @@ export function HomeView({ titleRef, scrollProgress = 0, isBalanceVisible = true
             <CardWalletSlider
               isBalanceVisible={isBalanceVisible}
               cardBalance={cardBalance}
+              onCardSelect={(card) => {
+                // Solo navegar si es la card principal (front card)
+                // El componente ya maneja esto internamente
+                if (card.type === 'usd' || card.type === 'cop') {
+                  onNavigate?.('wallet');
+                } else if (card.type === 'visa') {
+                  onNavigate?.('tarjeta');
+                }
+              }}
               onCardDoubleTap={(card) => {
                 if (card.type === 'usd' || card.type === 'cop') {
                   onNavigate?.('wallet');
