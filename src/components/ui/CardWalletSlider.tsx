@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect, useCallback } from 'react';
 import { colors, spacing, typography, borderRadius } from '../../config/design-tokens';
 import { useBalances } from '../../hooks/useBalances';
 import { formatCurrency } from '../../lib/formatBalance';
@@ -67,6 +67,13 @@ export function CardWalletSlider({ onCardSelect, isBalanceVisible = true, cardBa
   
   const startYRef = useRef(0);
   const draggingCardRef = useRef<string | null>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
+  const cardsStateRef = useRef(cards);
+
+  // Keep ref in sync with state
+  useEffect(() => {
+    cardsStateRef.current = cards;
+  }, [cards]);
 
   // Use balances hook for real-time updates
   const { usdBalance, copBalance } = useBalances();
@@ -94,50 +101,77 @@ export function CardWalletSlider({ onCardSelect, isBalanceVisible = true, cardBa
   };
 
   // Drag start
-  const handleDragStart = (cardId: string, clientY: number) => {
-    if (cardId !== cards[cards.length - 1].id) return;
+  const handleDragStart = useCallback((cardId: string, clientY: number) => {
+    const currentCards = cardsStateRef.current;
+    if (cardId !== currentCards[currentCards.length - 1].id) return;
     
     setIsDragging(true);
     startYRef.current = clientY;
     draggingCardRef.current = cardId;
-  };
+  }, []);
 
   // Drag move
-  const handleDragMove = (clientY: number) => {
-    if (!isDragging || !draggingCardRef.current) return;
+  const handleDragMove = useCallback((clientY: number) => {
+    if (!draggingCardRef.current) return;
     
     const offset = clientY - startYRef.current;
     const dampedOffset = Math.sign(offset) * Math.min(MAX_DRAG, Math.abs(offset) * 0.5);
     setDragOffset(dampedOffset);
-  };
+  }, []);
 
   // Drag end
-  const handleDragEnd = () => {
-    if (!isDragging) return;
-
-    if (dragOffset > DRAG_THRESHOLD) {
-      const frontCard = cards[cards.length - 1];
-      const newCards = [frontCard, ...cards.slice(0, -1)];
-      setCards(newCards);
-    }
-    else if (dragOffset < -DRAG_THRESHOLD) {
-      const backCard = cards[0];
-      const newCards = [...cards.slice(1), backCard];
-      setCards(newCards);
-    }
-
+  const handleDragEnd = useCallback(() => {
     setIsDragging(false);
+    
+    setCards(prevCards => {
+      const currentOffset = dragOffset;
+      if (currentOffset > DRAG_THRESHOLD) {
+        const frontCard = prevCards[prevCards.length - 1];
+        return [frontCard, ...prevCards.slice(0, -1)];
+      }
+      else if (currentOffset < -DRAG_THRESHOLD) {
+        const backCard = prevCards[0];
+        return [...prevCards.slice(1), backCard];
+      }
+      return prevCards;
+    });
+
     setDragOffset(0);
     draggingCardRef.current = null;
-  };
+  }, [dragOffset]);
 
-  // Touch handlers
+  // Touch event handlers with preventDefault for mobile
+  useEffect(() => {
+    const container = containerRef.current;
+    if (!container) return;
+
+    const onTouchMove = (e: TouchEvent) => {
+      if (draggingCardRef.current) {
+        e.preventDefault();
+        handleDragMove(e.touches[0].clientY);
+      }
+    };
+
+    const onTouchEnd = () => {
+      if (draggingCardRef.current) {
+        handleDragEnd();
+      }
+    };
+
+    container.addEventListener('touchmove', onTouchMove, { passive: false });
+    container.addEventListener('touchend', onTouchEnd);
+    container.addEventListener('touchcancel', onTouchEnd);
+
+    return () => {
+      container.removeEventListener('touchmove', onTouchMove);
+      container.removeEventListener('touchend', onTouchEnd);
+      container.removeEventListener('touchcancel', onTouchEnd);
+    };
+  }, [handleDragMove, handleDragEnd]);
+
+  // Touch start handler
   const handleTouchStart = (cardId: string, e: React.TouchEvent) => {
     handleDragStart(cardId, e.touches[0].clientY);
-  };
-
-  const handleTouchMove = (e: React.TouchEvent) => {
-    handleDragMove(e.touches[0].clientY);
   };
 
   // Mouse handlers
@@ -146,7 +180,15 @@ export function CardWalletSlider({ onCardSelect, isBalanceVisible = true, cardBa
   };
 
   const handleMouseMove = (e: React.MouseEvent) => {
-    handleDragMove(e.clientY);
+    if (draggingCardRef.current) {
+      handleDragMove(e.clientY);
+    }
+  };
+
+  const handleMouseUp = () => {
+    if (draggingCardRef.current) {
+      handleDragEnd();
+    }
   };
 
   // Options button component
@@ -268,18 +310,16 @@ export function CardWalletSlider({ onCardSelect, isBalanceVisible = true, cardBa
 
   return (
     <div
+      ref={containerRef}
       style={{
         width: '100%',
         height: `${containerHeight}px`,
         position: 'relative',
-        touchAction: 'none',
+        touchAction: 'pan-x',
       }}
       onMouseMove={handleMouseMove}
-      onMouseUp={handleDragEnd}
-      onMouseLeave={handleDragEnd}
-      onTouchMove={handleTouchMove}
-      onTouchEnd={handleDragEnd}
-      onTouchCancel={handleDragEnd}
+      onMouseUp={handleMouseUp}
+      onMouseLeave={handleMouseUp}
     >
       {cards.map((card, index) => {
         const styles = getCardStyles(card.type, cardBackground);
@@ -325,6 +365,7 @@ export function CardWalletSlider({ onCardSelect, isBalanceVisible = true, cardBa
               transformOrigin: 'center center',
               WebkitTapHighlightColor: 'transparent',
               userSelect: 'none',
+              touchAction: 'pan-x',
             }}
           >
             {renderCardContent(card)}
