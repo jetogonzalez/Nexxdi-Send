@@ -9,6 +9,7 @@ import { MasView } from './MasView';
 import { SectionTransition } from './SectionTransition';
 import { colors, spacing } from '../../config/design-tokens';
 import { usePWAInstall } from '../../hooks/usePWAInstall';
+import { NotificationPermissionModal } from '../ui/NotificationPermissionModal';
 
 const CONTENT_TO_NAVIGATION_GAP = spacing[6]; // 24px entre el último elemento y la navegación
 
@@ -19,8 +20,8 @@ export default function HomePage() {
   // Inicializar siempre como true para evitar diferencias entre servidor y cliente
   const [isBalanceVisible, setIsBalanceVisible] = useState(true);
   
-  // Hook para detectar instalación de PWA y enviar notificación de bienvenida
-  usePWAInstall();
+  // Hook para notificaciones push y movimiento de bienvenida
+  const { showPermissionModal, handlePermissionResponse } = usePWAInstall();
   
   // Cargar el estado desde localStorage solo en el cliente después del mount
   useEffect(() => {
@@ -284,6 +285,13 @@ export default function HomePage() {
 
       {/* Bottom Navigation */}
       <BottomNavigation activeTab={activeTab} onTabChange={handleTabChange} />
+
+      {/* Modal de permiso de notificaciones */}
+      <NotificationPermissionModal
+        isOpen={showPermissionModal}
+        onAccept={() => handlePermissionResponse(true)}
+        onDecline={() => handlePermissionResponse(false)}
+      />
     </div>
   );
 }
