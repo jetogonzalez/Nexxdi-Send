@@ -8,6 +8,7 @@ import { TarjetaView } from './TarjetaView';
 import { MasView } from './MasView';
 import { SectionTransition } from './SectionTransition';
 import { colors, spacing } from '../../config/design-tokens';
+import { usePWAInstall } from '../../hooks/usePWAInstall';
 
 const CONTENT_TO_NAVIGATION_GAP = spacing[6]; // 24px entre el último elemento y la navegación
 
@@ -17,6 +18,9 @@ export default function HomePage() {
   const [activeTab, setActiveTab] = useState('home');
   // Inicializar siempre como true para evitar diferencias entre servidor y cliente
   const [isBalanceVisible, setIsBalanceVisible] = useState(true);
+  
+  // Hook para detectar instalación de PWA y enviar notificación de bienvenida
+  usePWAInstall();
   
   // Cargar el estado desde localStorage solo en el cliente después del mount
   useEffect(() => {

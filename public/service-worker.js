@@ -1,4 +1,4 @@
-const CACHE_NAME = 'cash-app-v4';
+const CACHE_NAME = 'cash-app-v5';
 const urlsToCache = [
   '/manifest.json',
 ];
@@ -46,4 +46,60 @@ self.addEventListener('fetch', (event) => {
         return caches.match(event.request);
       })
   );
+});
+
+// Push notification event
+self.addEventListener('push', (event) => {
+  const options = {
+    body: event.data ? event.data.text() : 'Tienes una nueva notificación',
+    icon: '/favicon.png',
+    badge: '/favicon.png',
+    vibrate: [100, 50, 100],
+    data: {
+      dateOfArrival: Date.now(),
+      primaryKey: 1
+    },
+    actions: [
+      { action: 'explore', title: 'Ver' },
+    ]
+  };
+
+  event.waitUntil(
+    self.registration.showNotification('Nexxdi Cash', options)
+  );
+});
+
+// Notification click event - open app
+self.addEventListener('notificationclick', (event) => {
+  event.notification.close();
+
+  event.waitUntil(
+    clients.matchAll({ type: 'window', includeUncontrolled: true }).then((clientList) => {
+      // If there's already a window open, focus it
+      for (const client of clientList) {
+        if (client.url.includes(self.location.origin) && 'focus' in client) {
+          return client.focus();
+        }
+      }
+      // Otherwise open a new window
+      if (clients.openWindow) {
+        return clients.openWindow('/');
+      }
+    })
+  );
+});
+
+// Message event - handle messages from the main thread
+self.addEventListener('message', (event) => {
+  if (event.data && event.data.type === 'SHOW_NOTIFICATION') {
+    const { title, body, icon } = event.data;
+    self.registration.showNotification(title, {
+      body,
+      icon: icon || '/favicon.png',
+      badge: '/favicon.png',
+      vibrate: [100, 50, 100],
+      tag: 'money-received',
+      renotify: true,
+    });
+  }
 });
