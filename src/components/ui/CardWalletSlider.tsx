@@ -73,6 +73,8 @@ export function CardWalletSlider({ onCardSelect, onCardDoubleTap, isBalanceVisib
   const containerRef = useRef<HTMLDivElement>(null);
   const cardsStateRef = useRef(cards);
   const lastTapRef = useRef<{ cardId: string; time: number } | null>(null);
+  const touchStartYRef = useRef(0);
+  const touchCardIdRef = useRef<string | null>(null);
 
   // Keep ref in sync with state
   useEffect(() => {
@@ -161,6 +163,41 @@ export function CardWalletSlider({ onCardSelect, onCardDoubleTap, isBalanceVisib
     draggingCardRef.current = null;
   }, [dragOffset]);
 
+  // Handle tap/double tap on touch end
+  const handleTouchTap = useCallback((cardId: string) => {
+    const currentCards = cardsStateRef.current;
+    const index = currentCards.findIndex(c => c.id === cardId);
+    const isTopCard = index === currentCards.length - 1;
+    const now = Date.now();
+    
+    // Check for double tap on front card
+    if (isTopCard && lastTapRef.current && 
+        lastTapRef.current.cardId === cardId && 
+        now - lastTapRef.current.time < DOUBLE_TAP_DELAY) {
+      // Double tap detected on front card
+      lastTapRef.current = null;
+      onCardDoubleTap?.(currentCards[index]);
+      return;
+    }
+    
+    // Record this tap
+    lastTapRef.current = { cardId, time: now };
+    
+    if (isTopCard) {
+      onCardSelect?.(currentCards[index]);
+      return;
+    }
+
+    // Bring card to front
+    const newCards = [
+      ...currentCards.slice(0, index),
+      ...currentCards.slice(index + 1),
+      currentCards[index]
+    ];
+    setCards(newCards);
+    onCardSelect?.(currentCards[index]);
+  }, [onCardDoubleTap, onCardSelect]);
+
   // Touch event handlers with preventDefault for mobile
   useEffect(() => {
     const container = containerRef.current;
@@ -173,25 +210,46 @@ export function CardWalletSlider({ onCardSelect, onCardDoubleTap, isBalanceVisib
       }
     };
 
-    const onTouchEnd = () => {
+    const onTouchEnd = (e: TouchEvent) => {
+      const cardId = touchCardIdRef.current;
+      const startY = touchStartYRef.current;
+      const endY = e.changedTouches[0]?.clientY || startY;
+      const moveDistance = Math.abs(endY - startY);
+      
+      // If minimal movement, treat as tap
+      if (cardId && moveDistance < 10) {
+        handleTouchTap(cardId);
+      }
+      
       if (draggingCardRef.current) {
         handleDragEnd();
       }
+      
+      touchCardIdRef.current = null;
+    };
+
+    const onTouchCancel = () => {
+      if (draggingCardRef.current) {
+        handleDragEnd();
+      }
+      touchCardIdRef.current = null;
     };
 
     container.addEventListener('touchmove', onTouchMove, { passive: false });
     container.addEventListener('touchend', onTouchEnd);
-    container.addEventListener('touchcancel', onTouchEnd);
+    container.addEventListener('touchcancel', onTouchCancel);
 
     return () => {
       container.removeEventListener('touchmove', onTouchMove);
       container.removeEventListener('touchend', onTouchEnd);
-      container.removeEventListener('touchcancel', onTouchEnd);
+      container.removeEventListener('touchcancel', onTouchCancel);
     };
-  }, [handleDragMove, handleDragEnd]);
+  }, [handleDragMove, handleDragEnd, handleTouchTap]);
 
   // Touch start handler
   const handleTouchStart = (cardId: string, e: React.TouchEvent) => {
+    touchCardIdRef.current = cardId;
+    touchStartYRef.current = e.touches[0].clientY;
     handleDragStart(cardId, e.touches[0].clientY);
   };
 
