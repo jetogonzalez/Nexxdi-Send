@@ -14,6 +14,7 @@ interface CardData {
 interface CardWalletSliderProps {
   onCardSelect?: (card: CardData) => void;
   onCardDoubleTap?: (card: CardData) => void;
+  onFrontCardChange?: (card: CardData) => void;
   isBalanceVisible?: boolean;
   cardBalance?: number;
   cardBackground?: string;
@@ -65,7 +66,7 @@ const defaultCardOrder: CardData[] = [
 const DOUBLE_TAP_DELAY = 300; // ms para detectar doble tap
 const TAP_THRESHOLD = 20; // px máximo de movimiento para considerar tap
 
-export function CardWalletSlider({ onCardSelect, onCardDoubleTap, isBalanceVisible = true, cardBalance = 379.21, cardBackground }: CardWalletSliderProps) {
+export function CardWalletSlider({ onCardSelect, onCardDoubleTap, onFrontCardChange, isBalanceVisible = true, cardBalance = 379.21, cardBackground }: CardWalletSliderProps) {
   const [cards, setCards] = useState<CardData[]>(defaultCardOrder);
   const [dragOffset, setDragOffset] = useState(0);
   const [isDragging, setIsDragging] = useState(false);
@@ -79,6 +80,12 @@ export function CardWalletSlider({ onCardSelect, onCardDoubleTap, isBalanceVisib
   const touchCardIdRef = useRef<string | null>(null);
   const hasDraggedRef = useRef(false);
 
+  // Notify parent when front card changes
+  useEffect(() => {
+    const frontCard = cards[cards.length - 1];
+    onFrontCardChange?.(frontCard);
+  }, [cards, onFrontCardChange]);
+
   // Keep ref in sync with state
   useEffect(() => {
     cardsStateRef.current = cards;
@@ -90,8 +97,9 @@ export function CardWalletSlider({ onCardSelect, onCardDoubleTap, isBalanceVisib
   // Container height based on number of cards
   const containerHeight = CARD_HEIGHT + (cards.length - 1) * CARD_OFFSET;
 
-  // Click on a card brings it to front (moves it to end of array)
-  // Double tap on front card triggers navigation
+  // Click on a card:
+  // - Front card: single tap navigates, double tap also navigates
+  // - Middle/back cards: bring to front only (no navigation)
   const handleCardClick = (cardId: string) => {
     if (Math.abs(dragOffset) > 5) return;
     
@@ -99,31 +107,35 @@ export function CardWalletSlider({ onCardSelect, onCardDoubleTap, isBalanceVisib
     const isTopCard = index === cards.length - 1;
     const now = Date.now();
     
-    // Check for double tap on front card
-    if (isTopCard && lastTapRef.current && 
-        lastTapRef.current.cardId === cardId && 
-        now - lastTapRef.current.time < DOUBLE_TAP_DELAY) {
-      // Double tap detected on front card
-      lastTapRef.current = null;
-      onCardDoubleTap?.(cards[index]);
-      return;
-    }
-    
-    // Record this tap
-    lastTapRef.current = { cardId, time: now };
-    
+    // If it's the front card
     if (isTopCard) {
+      // Check for double tap
+      if (lastTapRef.current && 
+          lastTapRef.current.cardId === cardId && 
+          now - lastTapRef.current.time < DOUBLE_TAP_DELAY) {
+        // Double tap detected on front card
+        lastTapRef.current = null;
+        onCardDoubleTap?.(cards[index]);
+        return;
+      }
+      
+      // Record this tap
+      lastTapRef.current = { cardId, time: now };
+      
+      // Single tap on front card - navigate
       onCardSelect?.(cards[index]);
       return;
     }
 
+    // Middle or back card - just bring to front (no navigation)
     const newCards = [
       ...cards.slice(0, index),
       ...cards.slice(index + 1),
       cards[index]
     ];
     setCards(newCards);
-    onCardSelect?.(cards[index]);
+    // Reset tap ref when changing cards
+    lastTapRef.current = null;
   };
 
   // Drag start
@@ -173,38 +185,43 @@ export function CardWalletSlider({ onCardSelect, onCardDoubleTap, isBalanceVisib
   }, [dragOffset]);
 
   // Handle tap/double tap on touch end
+  // - Front card: single tap navigates, double tap also navigates
+  // - Middle/back cards: bring to front only (no navigation)
   const handleTouchTap = useCallback((cardId: string) => {
     const currentCards = cardsStateRef.current;
     const index = currentCards.findIndex(c => c.id === cardId);
     const isTopCard = index === currentCards.length - 1;
     const now = Date.now();
     
-    // Check for double tap on front card
-    if (isTopCard && lastTapRef.current && 
-        lastTapRef.current.cardId === cardId && 
-        now - lastTapRef.current.time < DOUBLE_TAP_DELAY) {
-      // Double tap detected on front card
-      lastTapRef.current = null;
-      onCardDoubleTap?.(currentCards[index]);
-      return;
-    }
-    
-    // Record this tap
-    lastTapRef.current = { cardId, time: now };
-    
+    // If it's the front card
     if (isTopCard) {
+      // Check for double tap
+      if (lastTapRef.current && 
+          lastTapRef.current.cardId === cardId && 
+          now - lastTapRef.current.time < DOUBLE_TAP_DELAY) {
+        // Double tap detected on front card
+        lastTapRef.current = null;
+        onCardDoubleTap?.(currentCards[index]);
+        return;
+      }
+      
+      // Record this tap
+      lastTapRef.current = { cardId, time: now };
+      
+      // Single tap on front card - navigate
       onCardSelect?.(currentCards[index]);
       return;
     }
 
-    // Bring card to front
+    // Middle or back card - just bring to front (no navigation)
     const newCards = [
       ...currentCards.slice(0, index),
       ...currentCards.slice(index + 1),
       currentCards[index]
     ];
     setCards(newCards);
-    onCardSelect?.(currentCards[index]);
+    // Reset tap ref when changing cards
+    lastTapRef.current = null;
   }, [onCardDoubleTap, onCardSelect]);
 
   // Touch event handlers with preventDefault for mobile
