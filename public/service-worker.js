@@ -93,13 +93,37 @@ self.addEventListener('notificationclick', (event) => {
 self.addEventListener('message', (event) => {
   if (event.data && event.data.type === 'SHOW_NOTIFICATION') {
     const { title, body, icon } = event.data;
+    // Mostrar notificación del sistema operativo
     self.registration.showNotification(title, {
       body,
       icon: icon || '/favicon.png',
       badge: '/favicon.png',
-      vibrate: [100, 50, 100],
+      vibrate: [200, 100, 200],
       tag: 'money-received',
       renotify: true,
+      requireInteraction: true, // Mantener visible hasta que el usuario interactúe
+      silent: false, // Reproducir sonido del sistema
     });
+  }
+});
+
+// Programar notificación con delay
+self.addEventListener('message', (event) => {
+  if (event.data && event.data.type === 'SCHEDULE_NOTIFICATION') {
+    const { title, body, icon, delay } = event.data;
+    
+    // Esperar el delay y luego mostrar la notificación
+    setTimeout(() => {
+      self.registration.showNotification(title, {
+        body,
+        icon: icon || '/favicon.png',
+        badge: '/favicon.png',
+        vibrate: [200, 100, 200],
+        tag: 'money-received-scheduled',
+        renotify: true,
+        requireInteraction: true,
+        silent: false,
+      });
+    }, delay);
   }
 });

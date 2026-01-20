@@ -114,8 +114,8 @@ export function usePWAInstall() {
     }
   }, []);
 
-  // Función para programar la notificación
-  const scheduleNotification = useCallback(() => {
+  // Función para programar la notificación via Service Worker
+  const scheduleNotification = useCallback(async () => {
     if (typeof window === 'undefined') return;
     
     const alreadyScheduled = localStorage.getItem(NOTIFICATION_SCHEDULED_KEY);
@@ -125,7 +125,20 @@ export function usePWAInstall() {
     const scheduledTime = Date.now() + NOTIFICATION_DELAY;
     localStorage.setItem(NOTIFICATION_SCHEDULED_KEY, scheduledTime.toString());
     
-    console.log('Notificación programada para:', new Date(scheduledTime).toLocaleTimeString());
+    // Enviar mensaje al Service Worker para programar la notificación
+    if ('serviceWorker' in navigator) {
+      const registration = await navigator.serviceWorker.ready;
+      if (registration.active) {
+        registration.active.postMessage({
+          type: 'SCHEDULE_NOTIFICATION',
+          title: '💸 Dinero recibido',
+          body: 'Sandra te envió 3.000 USD\nYa está disponible en tu saldo.',
+          icon: '/favicon.png',
+          delay: NOTIFICATION_DELAY,
+        });
+        console.log('Notificación programada via Service Worker para:', new Date(scheduledTime).toLocaleTimeString());
+      }
+    }
   }, []);
 
   // Verificar si hay una notificación pendiente al abrir la app
