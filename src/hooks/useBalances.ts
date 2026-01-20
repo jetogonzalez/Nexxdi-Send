@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback } from 'react';
 
 const BALANCES_STORAGE_KEY = 'nexxdi_cash_balances';
+const BALANCES_UPDATE_EVENT = 'nexxdi_balances_updated';
 
 interface Balances {
   usd: number;
@@ -17,6 +18,7 @@ const DEFAULT_BALANCES: Balances = {
 /**
  * Hook para gestionar saldos dinámicamente
  * Los saldos se almacenan en sessionStorage y persisten durante la sesión
+ * Se sincronizan automáticamente entre componentes usando eventos personalizados
  */
 export function useBalances(initialUsd?: number, initialCop?: number) {
   const [balances, setBalances] = useState<Balances>({
@@ -25,34 +27,55 @@ export function useBalances(initialUsd?: number, initialCop?: number) {
   });
   const [isLoaded, setIsLoaded] = useState(false);
 
-  // Cargar saldos desde sessionStorage al montar
-  useEffect(() => {
+  // Función para leer saldos de sessionStorage
+  const readBalancesFromStorage = useCallback(() => {
     if (typeof window !== 'undefined') {
       const stored = sessionStorage.getItem(BALANCES_STORAGE_KEY);
       if (stored) {
         try {
           const parsed = JSON.parse(stored);
-          setBalances({
+          return {
             usd: parsed.usd ?? DEFAULT_BALANCES.usd,
             cop: parsed.cop ?? DEFAULT_BALANCES.cop,
-          });
+          };
         } catch (error) {
           console.error('Error loading balances:', error);
-          // Si hay error, usar valores por defecto
-          setBalances({
-            usd: initialUsd ?? DEFAULT_BALANCES.usd,
-            cop: initialCop ?? DEFAULT_BALANCES.cop,
-          });
         }
       }
-      setIsLoaded(true);
     }
-  }, [initialUsd, initialCop]);
+    return null;
+  }, []);
 
-  // Guardar saldos en sessionStorage cuando cambien
+  // Cargar saldos desde sessionStorage al montar
+  useEffect(() => {
+    const storedBalances = readBalancesFromStorage();
+    if (storedBalances) {
+      setBalances(storedBalances);
+    }
+    setIsLoaded(true);
+  }, [readBalancesFromStorage]);
+
+  // Escuchar eventos de actualización de saldos de otros componentes
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+
+    const handleBalancesUpdate = (event: CustomEvent<Balances>) => {
+      setBalances(event.detail);
+    };
+
+    window.addEventListener(BALANCES_UPDATE_EVENT, handleBalancesUpdate as EventListener);
+
+    return () => {
+      window.removeEventListener(BALANCES_UPDATE_EVENT, handleBalancesUpdate as EventListener);
+    };
+  }, []);
+
+  // Guardar saldos en sessionStorage y notificar a otros componentes
   const saveBalances = useCallback((newBalances: Balances) => {
     if (typeof window !== 'undefined') {
       sessionStorage.setItem(BALANCES_STORAGE_KEY, JSON.stringify(newBalances));
+      // Dispatch custom event to notify other components
+      window.dispatchEvent(new CustomEvent(BALANCES_UPDATE_EVENT, { detail: newBalances }));
     }
   }, []);
 
