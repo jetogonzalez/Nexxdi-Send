@@ -94,6 +94,7 @@ export function BottomNavigation({ activeTab, onTabChange }: BottomNavigationPro
         )}
         {tabs.map((tab) => {
           const isActive = activeTab === tab.id;
+          const isDisabled = tab.id === 'mas'; // Deshabilitar "Más" temporalmente
           
           return (
             <button
@@ -101,6 +102,7 @@ export function BottomNavigation({ activeTab, onTabChange }: BottomNavigationPro
               type="button"
 
               onClick={() => {
+                if (isDisabled) return;
                 onTabChange(tab.id);
               }}
               style={{
@@ -115,12 +117,12 @@ export function BottomNavigation({ activeTab, onTabChange }: BottomNavigationPro
                 backgroundColor: 'transparent',
                 borderRadius: borderRadius.full,
                 border: 'none',
-                cursor: 'pointer',
+                cursor: isDisabled ? 'default' : 'pointer',
                 flex: 1,
                 minHeight: spacing[12],
                 margin: '0',
                 transition: bottomNavigation.effects.backgroundColorTransition,
-                opacity: 1,
+                opacity: isDisabled ? 0.4 : 1,
               }}
               aria-label={tab.label}
             >
