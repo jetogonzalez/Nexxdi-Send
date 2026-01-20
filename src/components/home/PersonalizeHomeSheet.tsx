@@ -34,6 +34,19 @@ export function PersonalizeHomeSheet({ isOpen, onClose, sections: initialSection
   
   // Referencia para guardar initialSections y comparar cambios
   const initialSectionsRef = useRef<Section[]>(initialSections);
+  
+  // Refs para touch drag
+  const draggedIndexRef = useRef<number | null>(null);
+  const sectionsRef = useRef<Section[]>(sections);
+
+  // Keep refs in sync
+  useEffect(() => {
+    sectionsRef.current = sections;
+  }, [sections]);
+
+  useEffect(() => {
+    draggedIndexRef.current = draggedIndex;
+  }, [draggedIndex]);
 
   // Función para asignar ref por ID de sección
   const setItemRef = useCallback((id: string, el: HTMLDivElement | null) => {
@@ -74,9 +87,9 @@ export function PersonalizeHomeSheet({ isOpen, onClose, sections: initialSection
     });
   };
 
-  // Reordenar secciones
+  // Reordenar secciones (usando setState funcional para evitar stale closures)
   const reorderSections = useCallback((fromIndex: number, toIndex: number) => {
-    if (fromIndex === toIndex) return;
+    if (fromIndex === toIndex) return toIndex;
     
     setSections((prev) => {
       const newSections = [...prev];
@@ -94,56 +107,67 @@ export function PersonalizeHomeSheet({ isOpen, onClose, sections: initialSection
     return toIndex;
   }, []);
 
-  // ============ TOUCH HANDLERS (Mobile) ============
-  const handleTouchStart = useCallback((e: React.TouchEvent, index: number) => {
-    // Solo permitir drag desde el icono de arrastrar
-    const target = e.target as HTMLElement;
-    if (!target.closest('[data-drag-handle]')) {
-      return;
-    }
-    
-    e.stopPropagation();
+  // ============ TOUCH HANDLERS (Mobile) - Native event listeners ============
+  const handleTouchStart = useCallback((index: number) => {
     setDraggedIndex(index);
+    draggedIndexRef.current = index;
   }, []);
 
-  const handleTouchMove = useCallback((e: React.TouchEvent, currentSections: Section[]) => {
-    if (draggedIndex === null) return;
-    
-    e.preventDefault();
-    e.stopPropagation();
-    
-    const touchY = e.touches[0].clientY;
-    
-    // Encontrar sobre qué elemento estamos usando el Map de refs
-    for (let i = 0; i < currentSections.length; i++) {
-      if (i === draggedIndex) continue;
+  // Native touch event handlers
+  useEffect(() => {
+    const list = listRef.current;
+    if (!list || !isOpen) return;
+
+    const onTouchMove = (e: TouchEvent) => {
+      const currentDraggedIndex = draggedIndexRef.current;
+      if (currentDraggedIndex === null) return;
       
-      const item = itemRefs.current.get(currentSections[i].id);
-      if (item) {
-        const rect = item.getBoundingClientRect();
-        const itemCenterY = rect.top + rect.height / 2;
+      e.preventDefault();
+      
+      const touchY = e.touches[0].clientY;
+      const currentSections = sectionsRef.current;
+      
+      // Encontrar sobre qué elemento estamos
+      for (let i = 0; i < currentSections.length; i++) {
+        if (i === currentDraggedIndex) continue;
         
-        if (touchY < itemCenterY && draggedIndex > i) {
-          // Mover hacia arriba
-          reorderSections(draggedIndex, i);
-          setDraggedIndex(i);
-          break;
-        } else if (touchY > itemCenterY && draggedIndex < i) {
-          // Mover hacia abajo
-          reorderSections(draggedIndex, i);
-          setDraggedIndex(i);
-          break;
+        const item = itemRefs.current.get(currentSections[i].id);
+        if (item) {
+          const rect = item.getBoundingClientRect();
+          const itemCenterY = rect.top + rect.height / 2;
+          
+          if (touchY < itemCenterY && currentDraggedIndex > i) {
+            // Mover hacia arriba
+            const newIndex = reorderSections(currentDraggedIndex, i);
+            setDraggedIndex(newIndex);
+            draggedIndexRef.current = newIndex;
+            break;
+          } else if (touchY > itemCenterY && currentDraggedIndex < i) {
+            // Mover hacia abajo
+            const newIndex = reorderSections(currentDraggedIndex, i);
+            setDraggedIndex(newIndex);
+            draggedIndexRef.current = newIndex;
+            break;
+          }
         }
       }
-    }
-  }, [draggedIndex, reorderSections]);
+    };
 
-  const handleTouchEnd = useCallback((e: React.TouchEvent) => {
-    if (draggedIndex !== null) {
-      e.stopPropagation();
-    }
-    setDraggedIndex(null);
-  }, [draggedIndex]);
+    const onTouchEnd = () => {
+      setDraggedIndex(null);
+      draggedIndexRef.current = null;
+    };
+
+    list.addEventListener('touchmove', onTouchMove, { passive: false });
+    list.addEventListener('touchend', onTouchEnd);
+    list.addEventListener('touchcancel', onTouchEnd);
+
+    return () => {
+      list.removeEventListener('touchmove', onTouchMove);
+      list.removeEventListener('touchend', onTouchEnd);
+      list.removeEventListener('touchcancel', onTouchEnd);
+    };
+  }, [isOpen, reorderSections]);
 
   // ============ MOUSE/POINTER HANDLERS (Desktop) ============
   const handleDragStart = useCallback((e: React.DragEvent, index: number) => {
@@ -289,9 +313,6 @@ export function PersonalizeHomeSheet({ isOpen, onClose, sections: initialSection
             key={section.id}
             ref={(el) => setItemRef(section.id, el)}
             draggable={false}
-            onTouchStart={(e) => handleTouchStart(e, index)}
-            onTouchMove={(e) => handleTouchMove(e, sections)}
-            onTouchEnd={handleTouchEnd}
             onDragOver={(e) => handleDragOver(e, index)}
             style={{
               display: 'flex',
@@ -301,6 +322,7 @@ export function PersonalizeHomeSheet({ isOpen, onClose, sections: initialSection
               transition: 'opacity 0.15s ease, background-color 0.15s ease',
               userSelect: 'none',
               WebkitUserSelect: 'none',
+              touchAction: 'none',
             }}
           >
             {/* Checkbox - sin divider debajo */}
@@ -405,6 +427,10 @@ export function PersonalizeHomeSheet({ isOpen, onClose, sections: initialSection
                 draggable={true}
                 onDragStart={(e) => handleDragStart(e, index)}
                 onDragEnd={handleDragEnd}
+                onTouchStart={(e) => {
+                  e.stopPropagation();
+                  handleTouchStart(index);
+                }}
                 style={{
                   display: 'flex',
                   flexDirection: 'column',
@@ -412,9 +438,10 @@ export function PersonalizeHomeSheet({ isOpen, onClose, sections: initialSection
                   marginLeft: spacing[4],
                   cursor: draggedIndex === index ? 'grabbing' : 'grab',
                   flexShrink: 0,
-                  padding: spacing[2],
-                  marginRight: `-${spacing[2]}`,
+                  padding: spacing[3],
+                  marginRight: `-${spacing[3]}`,
                   touchAction: 'none',
+                  WebkitTapHighlightColor: 'transparent',
                 }}
               >
                 <div style={{ width: '20px', height: '2px', backgroundColor: colors.semantic.text.tertiary, borderRadius: '1px', pointerEvents: 'none' }} />
