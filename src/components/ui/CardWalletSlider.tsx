@@ -62,6 +62,7 @@ const defaultCardOrder: CardData[] = [
 ];
 
 const DOUBLE_TAP_DELAY = 300; // ms para detectar doble tap
+const TAP_THRESHOLD = 20; // px máximo de movimiento para considerar tap
 
 export function CardWalletSlider({ onCardSelect, onCardDoubleTap, isBalanceVisible = true, cardBalance = 379.21, cardBackground }: CardWalletSliderProps) {
   const [cards, setCards] = useState<CardData[]>(defaultCardOrder);
@@ -75,6 +76,7 @@ export function CardWalletSlider({ onCardSelect, onCardDoubleTap, isBalanceVisib
   const lastTapRef = useRef<{ cardId: string; time: number } | null>(null);
   const touchStartYRef = useRef(0);
   const touchCardIdRef = useRef<string | null>(null);
+  const hasDraggedRef = useRef(false);
 
   // Keep ref in sync with state
   useEffect(() => {
@@ -138,6 +140,12 @@ export function CardWalletSlider({ onCardSelect, onCardDoubleTap, isBalanceVisib
     if (!draggingCardRef.current) return;
     
     const offset = clientY - startYRef.current;
+    
+    // Mark as dragged if movement exceeds tap threshold
+    if (Math.abs(offset) > TAP_THRESHOLD) {
+      hasDraggedRef.current = true;
+    }
+    
     const dampedOffset = Math.sign(offset) * Math.min(MAX_DRAG, Math.abs(offset) * 0.5);
     setDragOffset(dampedOffset);
   }, []);
@@ -215,9 +223,10 @@ export function CardWalletSlider({ onCardSelect, onCardDoubleTap, isBalanceVisib
       const startY = touchStartYRef.current;
       const endY = e.changedTouches[0]?.clientY || startY;
       const moveDistance = Math.abs(endY - startY);
+      const wasDragged = hasDraggedRef.current;
       
-      // If minimal movement, treat as tap
-      if (cardId && moveDistance < 10) {
+      // Only treat as tap if no significant drag happened
+      if (cardId && moveDistance < TAP_THRESHOLD && !wasDragged) {
         handleTouchTap(cardId);
       }
       
@@ -225,7 +234,9 @@ export function CardWalletSlider({ onCardSelect, onCardDoubleTap, isBalanceVisib
         handleDragEnd();
       }
       
+      // Reset refs
       touchCardIdRef.current = null;
+      hasDraggedRef.current = false;
     };
 
     const onTouchCancel = () => {
@@ -250,6 +261,7 @@ export function CardWalletSlider({ onCardSelect, onCardDoubleTap, isBalanceVisib
   const handleTouchStart = (cardId: string, e: React.TouchEvent) => {
     touchCardIdRef.current = cardId;
     touchStartYRef.current = e.touches[0].clientY;
+    hasDraggedRef.current = false; // Reset drag flag
     handleDragStart(cardId, e.touches[0].clientY);
   };
 
