@@ -4,6 +4,7 @@ import { useState, useRef, useEffect, useCallback } from 'react';
 import { colors, spacing, typography, borderRadius } from '../../config/design-tokens';
 import { useBalances } from '../../hooks/useBalances';
 import { formatCurrency } from '../../lib/formatBalance';
+import { AnimatedBalance } from './AnimatedBalance';
 
 interface CardData {
   id: string;
@@ -331,15 +332,30 @@ export function CardWalletSlider({ onCardSelect, onCardDoubleTap, isBalanceVisib
           </div>
           {/* Bottom row - Balance + USD */}
           <div style={{ display: 'flex', alignItems: 'baseline', gap: spacing[2] }}>
-            <span style={{ 
-              fontSize: 32,
-              fontWeight: typography.fontWeight.bold,
-              color: textColor,
-              fontFamily: typography.fontFamily.sans.join(', '),
-              letterSpacing: '-0.04em',
-            }}>
-              {isBalanceVisible ? formatCurrency(cardBalance, 'USD', false) : '•••'}
-            </span>
+            {isBalanceVisible ? (
+              <AnimatedBalance
+                value={cardBalance}
+                duration={600}
+                formatValue={(val) => formatCurrency(val, 'USD', false)}
+                style={{ 
+                  fontSize: 32,
+                  fontWeight: typography.fontWeight.bold,
+                  color: textColor,
+                  fontFamily: typography.fontFamily.sans.join(', '),
+                  letterSpacing: '-0.04em',
+                }}
+              />
+            ) : (
+              <span style={{ 
+                fontSize: 32,
+                fontWeight: typography.fontWeight.bold,
+                color: textColor,
+                fontFamily: typography.fontFamily.sans.join(', '),
+                letterSpacing: '-0.04em',
+              }}>
+                •••
+              </span>
+            )}
             {isBalanceVisible && (
               <span style={{ 
                 fontSize: typography.fontSize.base,
@@ -386,15 +402,30 @@ export function CardWalletSlider({ onCardSelect, onCardDoubleTap, isBalanceVisib
           <OptionsButton />
         </div>
         {/* Bottom row - Balance (sin signo de moneda) */}
-        <span style={{ 
-          fontSize: 32,
-          fontWeight: typography.fontWeight.bold,
-          color: textColor,
-          fontFamily: typography.fontFamily.sans.join(', '),
-          letterSpacing: '-0.04em',
-        }}>
-          {isBalanceVisible ? formatCurrency(balance, currencySymbol, false) : '•••'}
-        </span>
+        {isBalanceVisible ? (
+          <AnimatedBalance
+            value={balance}
+            duration={600}
+            formatValue={(val) => formatCurrency(val, currencySymbol, false)}
+            style={{ 
+              fontSize: 32,
+              fontWeight: typography.fontWeight.bold,
+              color: textColor,
+              fontFamily: typography.fontFamily.sans.join(', '),
+              letterSpacing: '-0.04em',
+            }}
+          />
+        ) : (
+          <span style={{ 
+            fontSize: 32,
+            fontWeight: typography.fontWeight.bold,
+            color: textColor,
+            fontFamily: typography.fontFamily.sans.join(', '),
+            letterSpacing: '-0.04em',
+          }}>
+            •••
+          </span>
+        )}
       </>
     );
   };
