@@ -13,9 +13,15 @@ export default defineConfig({
   output: 'static',
   server: {
     port: 3001,
+    // Ajustes de caché para desarrollo local
+    headers: {
+      'Cache-Control': 'no-cache, no-store, must-revalidate',
+    },
   },
   build: {
     assets: 'assets',
+    // Optimizar caché en producción
+    inlineStylesheets: 'auto',
   },
   vite: {
     build: {
@@ -23,6 +29,14 @@ export default defineConfig({
         output: {
           manualChunks: undefined,
         },
+      },
+      // Ajustar caché de Vite para desarrollo
+      cacheDir: '.vite',
+    },
+    // Configuración de caché para desarrollo local
+    server: {
+      headers: {
+        'Cache-Control': 'no-cache, no-store, must-revalidate',
       },
     },
   },

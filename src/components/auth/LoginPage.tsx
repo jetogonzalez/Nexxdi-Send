@@ -26,8 +26,8 @@ export default function LoginPage() {
     };
   }, []);
 
-  const handleLogin = async (email: string, password: string) => {
-    console.log('Login attempt:', { email, password });
+  const handleLogin = async (email: string, password: string, activateBiometric?: boolean) => {
+    console.log('Login attempt:', { email, passwordLength: password?.length, activateBiometric }); // DEBUG
     // Aquí iría la lógica de autenticación real
     // Por ahora simulamos un login exitoso
     try {
@@ -40,21 +40,24 @@ export default function LoginPage() {
       const passwordValid = password && password.length >= 8;
       
       if (emailValid && passwordValid) {
-        console.log('Login exitoso');
+        console.log('Login exitoso - redirigiendo...'); // DEBUG
         
         // Si no hay credenciales guardadas, preguntar si quiere guardarlas
         if (!hasSavedCredentials()) {
+          console.log('No hay credenciales guardadas - mostrando modal'); // DEBUG
           setSavedEmail(email);
           setSavedPassword(password);
           setShowSavePasswordModal(true);
         } else {
           // Si ya hay credenciales guardadas, redirigir directamente
+          console.log('Credenciales guardadas encontradas - redirigiendo directamente'); // DEBUG
           setIsClosing(true);
           setTimeout(() => {
             window.location.href = '/home';
           }, parseInt(motion.duration.slow.replace('ms', '')));
         }
       } else {
+        console.error('Credenciales inválidas:', { emailValid, passwordValid }); // DEBUG
         throw new Error('Credenciales inválidas');
       }
     } catch (error) {
@@ -73,17 +76,21 @@ export default function LoginPage() {
   };
 
   const handleFaceID = async (): Promise<boolean> => {
+    console.log('handleFaceID called'); // DEBUG
     try {
       // Obtener credenciales guardadas
       const credentials = getSavedCredentials();
+      console.log('Saved credentials:', credentials ? 'found' : 'not found'); // DEBUG
+      
       if (!credentials) {
         console.warn('No hay credenciales guardadas');
+        alert('No hay credenciales guardadas. Por favor inicia sesión primero.');
         return false;
       }
 
       // Usar Web Authentication API para autenticación biométrica nativa (Face ID/Touch ID)
       if (!window.PublicKeyCredential) {
-        console.warn('Web Authentication API no está disponible');
+        console.warn('Web Authentication API no está disponible - usando fallback');
         // Fallback: usar credenciales guardadas directamente
         await handleLogin(credentials.email, credentials.password);
         return true;
@@ -91,9 +98,10 @@ export default function LoginPage() {
 
       // Verificar si hay credenciales disponibles
       const isAvailable = await PublicKeyCredential.isUserVerifyingPlatformAuthenticatorAvailable();
+      console.log('Biometric available:', isAvailable); // DEBUG
       
       if (!isAvailable) {
-        console.warn('Autenticación biométrica no disponible');
+        console.warn('Autenticación biométrica no disponible - usando fallback');
         // Fallback: usar credenciales guardadas directamente
         await handleLogin(credentials.email, credentials.password);
         return true;
@@ -107,6 +115,7 @@ export default function LoginPage() {
         timeout: 60000,
       };
 
+      console.log('Requesting biometric authentication...'); // DEBUG
       // Solicitar autenticación biométrica nativa
       const credential = await navigator.credentials.get({
         publicKey: publicKeyCredentialRequestOptions,
@@ -119,6 +128,7 @@ export default function LoginPage() {
         return true;
       }
 
+      console.log('No credential returned'); // DEBUG
       return false;
     } catch (error: any) {
       // Si el usuario cancela, no mostrar error
@@ -127,6 +137,7 @@ export default function LoginPage() {
         return false;
       }
       console.error('Error en Face ID:', error);
+      alert(`Error en Face ID: ${error.message || 'Error desconocido'}`);
       return false;
     }
   };

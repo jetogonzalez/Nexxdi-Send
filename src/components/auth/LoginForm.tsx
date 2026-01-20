@@ -33,6 +33,8 @@ export function LoginForm({ onLogin, onForgotPassword, onSignUp, onFaceID, showB
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    e.stopPropagation();
+    console.log('Login form submitted'); // DEBUG
     
     const newErrors: { email?: string; password?: string } = {};
     
@@ -57,9 +59,12 @@ export function LoginForm({ onLogin, onForgotPassword, onSignUp, onFaceID, showB
     setIsLoading(true);
     
     try {
+      console.log('Calling onLogin with:', { email, hasPassword: !!password, activateBiometric }); // DEBUG
       await onLogin?.(email, password, activateBiometric);
+      console.log('Login completed successfully'); // DEBUG
     } catch (error) {
       console.error('Login error:', error);
+      setErrors({ password: 'Error al iniciar sesión. Por favor intenta de nuevo.' });
     } finally {
       setIsLoading(false);
     }
@@ -139,6 +144,24 @@ export function LoginForm({ onLogin, onForgotPassword, onSignUp, onFaceID, showB
       <button
         type="submit"
         disabled={isLoading || !isFormValid}
+        onClick={(e) => {
+          console.log('Login button clicked', { isLoading, isFormValid, email, hasPassword: !!password }); // DEBUG
+          e.preventDefault();
+          e.stopPropagation();
+          // Disparar submit manualmente si el form es válido
+          if (isFormValid && !isLoading) {
+            handleSubmit(e as any);
+          }
+        }}
+        onPointerDown={(e) => {
+          e.preventDefault();
+          e.stopPropagation();
+        }}
+        onTouchStart={(e) => {
+          // Prevenir que el touch se propague y cause scroll
+          e.preventDefault();
+          e.stopPropagation();
+        }}
         style={{
           width: '100%',
           paddingTop: button.paddingY, // 12px (regla de 4px)
@@ -159,6 +182,13 @@ export function LoginForm({ onLogin, onForgotPassword, onSignUp, onFaceID, showB
           transition: `background-color ${motion.duration.fast} ${motion.easing.smoothOut}, opacity ${motion.duration.fast} ${motion.easing.smoothOut}`,
           marginBottom: spacing[4],
           opacity: isLoading || !isFormValid ? 0.6 : 1,
+          touchAction: 'manipulation', // Prevenir gestos táctiles que interfieran
+          WebkitTapHighlightColor: 'transparent',
+          userSelect: 'none',
+          WebkitUserSelect: 'none',
+          MozUserSelect: 'none',
+          msUserSelect: 'none',
+          WebkitTouchCallout: 'none',
         }}
         onMouseEnter={(e) => {
           if (!isLoading && isFormValid) {
@@ -178,7 +208,15 @@ export function LoginForm({ onLogin, onForgotPassword, onSignUp, onFaceID, showB
         <div style={{ marginTop: spacing[4], textAlign: 'center' }}>
           <button
             type="button"
-            onClick={onForgotPassword}
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              onForgotPassword();
+            }}
+            onPointerDown={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+            }}
             style={{
               background: 'none',
               border: 'none',
@@ -191,6 +229,12 @@ export function LoginForm({ onLogin, onForgotPassword, onSignUp, onFaceID, showB
               fontFamily: typography.fontFamily.sans.join(', '),
               textDecoration: 'underline',
               transition: `opacity ${motion.duration.base} ${motion.easing.easeInOut}`,
+              touchAction: 'manipulation',
+              userSelect: 'none',
+              WebkitUserSelect: 'none',
+              MozUserSelect: 'none',
+              msUserSelect: 'none',
+              WebkitTouchCallout: 'none',
             }}
             onMouseEnter={(e) => {
               e.currentTarget.style.opacity = '0.7';

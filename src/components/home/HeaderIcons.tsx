@@ -46,11 +46,12 @@ export function EyeIcon({ activeTab, isVisible = true, isScrolled = false }: Eye
 export function GiftIcon({ activeTab, isScrolled = false }: IconProps) {
   const isHome = activeTab === 'home';
   const isWallet = activeTab === 'wallet';
+  const isCash = activeTab === 'cash';
   const isTarjeta = activeTab === 'tarjeta';
-  const useHomeGradient = isHome || isWallet; // Home y Wallet usan el mismo gradiente
-  // Para cash y mas: usar color default sin gradiente
+  const useHomeGradient = isHome || isWallet || isCash; // Home, Wallet y Cash usan el mismo gradiente
+  // Para mas: usar color default sin gradiente
   // En tarjeta: usar gradiente rosa (#F16DE6 → #79114C) siempre
-  const useDefaultColor = activeTab === 'cash' || activeTab === 'mas';
+  const useDefaultColor = activeTab === 'mas';
   const gradientId = useHomeGradient ? 'gift-gradient-home' : isTarjeta ? 'gift-gradient-tarjeta' : 'gift-gradient-default';
   
   return (

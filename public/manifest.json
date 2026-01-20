@@ -1,6 +1,6 @@
 {
   "name": "Nexxdi Cash",
-  "short_name": "Cash",
+  "short_name": "Nexxdi Cash",
   "description": "Aplicación móvil Nexxdi Cash - Tarjetas virtuales, envío internacional y transferencias",
   "start_url": "/",
   "display": "standalone",

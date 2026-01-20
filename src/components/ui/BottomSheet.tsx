@@ -7,7 +7,7 @@ import { BottomSheetHeader } from './BottomSheetHeader';
 const bottomSheet = {
   margin: spacing[2], // 8px - margin global alrededor del bottom sheet
   padding: spacing[6], // 24px - padding interno global
-  borderRadius: '40px', // Border radius global de 40px
+  borderRadius: '44px', // Border radius global de 44px
   graber: {
     width: '34px',
     height: '4px',
@@ -33,6 +33,8 @@ interface BottomSheetProps {
   onRightIconClick?: () => void;
   maxHeight?: number; // Porcentaje de altura máxima (ej: 90 para 90%)
   showGraber?: boolean; // Mostrar graber en el header
+  zIndex?: number; // Z-index base para stacked sheets (default: 1000)
+  fullScreen?: boolean; // Full screen mode: no horizontal margin, 24px from top, 0 bottom border radius
 }
 
 export function BottomSheet({
@@ -46,6 +48,8 @@ export function BottomSheet({
   onRightIconClick,
   maxHeight = 90,
   showGraber = true,
+  zIndex = 1000,
+  fullScreen = false,
 }: BottomSheetProps) {
   const [translateY, setTranslateY] = useState(0); // Para arrastrar hacia abajo (cerrar)
   const [stretchHeight, setStretchHeight] = useState(0); // Altura adicional cuando se estira hacia arriba
@@ -67,12 +71,35 @@ export function BottomSheet({
         (sheetRef.current as any)._scrollY = currentScrollY;
       }
       
+      // Calcular el ancho del scrollbar para compensar y evitar salto de contenido
+      const scrollbarWidth = window.innerWidth - document.documentElement.clientWidth;
+      
+      // Guardar estilos originales del body
+      const originalStyles = {
+        overflow: document.body.style.overflow,
+        paddingRight: document.body.style.paddingRight,
+        position: document.body.style.position,
+        top: document.body.style.top,
+        left: document.body.style.left,
+        right: document.body.style.right,
+        width: document.body.style.width,
+      };
+      if (sheetRef.current) {
+        (sheetRef.current as any)._originalStyles = originalStyles;
+      }
+      
       // Prevenir scroll del body cuando se abre el bottom sheet
+      // Usar técnica que NO mueve el contenido
       document.body.style.overflow = 'hidden';
       document.body.style.position = 'fixed';
       document.body.style.top = `-${currentScrollY}px`;
+      document.body.style.left = '0';
+      document.body.style.right = '0';
       document.body.style.width = '100%';
-      document.body.style.height = '100%';
+      // Compensar el scrollbar para evitar salto de contenido
+      if (scrollbarWidth > 0) {
+        document.body.style.paddingRight = `${scrollbarWidth}px`;
+      }
       
       // Iniciar animación de entrada - mostrar inmediatamente SIN delay
       setIsVisible(true);
@@ -101,11 +128,17 @@ export function BottomSheet({
         setBaseHeight(null);
         // Restaurar scroll del body cuando se cierra
         const scrollY = (sheetRef.current as any)?._scrollY || 0;
-        document.body.style.overflow = '';
-        document.body.style.position = '';
-        document.body.style.top = '';
-        document.body.style.width = '';
-        document.body.style.height = '';
+        const originalStyles = (sheetRef.current as any)?._originalStyles || {};
+        
+        // Restaurar todos los estilos originales
+        document.body.style.overflow = originalStyles.overflow || '';
+        document.body.style.paddingRight = originalStyles.paddingRight || '';
+        document.body.style.position = originalStyles.position || '';
+        document.body.style.top = originalStyles.top || '';
+        document.body.style.left = originalStyles.left || '';
+        document.body.style.right = originalStyles.right || '';
+        document.body.style.width = originalStyles.width || '';
+        
         // Restaurar posición de scroll usando requestAnimationFrame para asegurar que el DOM esté listo
         requestAnimationFrame(() => {
           window.scrollTo({ top: scrollY, behavior: 'instant' });
@@ -132,18 +165,8 @@ export function BottomSheet({
       e.preventDefault();
       e.stopPropagation();
       
-      // Prevenir scroll del body cuando se arrastra (especialmente importante en iOS)
-      const scrollY = window.scrollY;
-      document.body.style.overflow = 'hidden';
-      document.body.style.position = 'fixed';
-      document.body.style.top = `-${scrollY}px`;
-      document.body.style.width = '100%';
-      document.body.style.height = '100%';
-      
-      // Guardar posición de scroll para restaurarla después
-      if (sheetRef.current) {
-        (sheetRef.current as any)._scrollY = scrollY;
-      }
+      // El scroll lock ya está aplicado cuando se abrió el modal
+      // No necesitamos volver a aplicarlo aquí
       
       setIsDragging(true);
       setStartY(e.touches[0].clientY);
@@ -233,13 +256,7 @@ export function BottomSheet({
       // Volver a la altura original (hug content) - usar transición CSS por defecto
       setTranslateY(0);
       setStretchHeight(0);
-      // Restaurar scroll del body solo si no se está cerrando (especialmente importante en iOS)
-      const scrollY = (sheetRef.current as any)?._scrollY || 0;
-      document.body.style.overflow = 'hidden';
-      document.body.style.position = 'fixed';
-      document.body.style.top = `-${scrollY}px`;
-      document.body.style.width = '100%';
-      document.body.style.height = '100%';
+      // El scroll lock ya está aplicado, no necesitamos modificarlo
     }
   }, [isDragging, onClose]);
 
@@ -294,7 +311,7 @@ export function BottomSheet({
           right: 0,
           bottom: 0,
           backgroundColor: 'rgba(0, 0, 0, 0.4)', // Opacidad ajustada según Apple HIG
-          zIndex: 1000,
+          zIndex: zIndex,
           opacity: isOpen && isVisible ? 1 : 0,
           pointerEvents: isOpen && isVisible ? 'auto' : 'none', // Prevenir interacciones cuando está oculto
           transition: 'opacity 0.3s ease-out', // Transición sincronizada - siempre activa
@@ -337,20 +354,24 @@ export function BottomSheet({
         data-bottom-sheet
         style={{
           position: 'fixed',
-          bottom: bottomSheet.margin,
-          left: bottomSheet.margin,
-          right: bottomSheet.margin,
+          bottom: fullScreen ? 0 : bottomSheet.margin,
+          left: fullScreen ? 0 : bottomSheet.margin,
+          right: fullScreen ? 0 : bottomSheet.margin,
+          top: fullScreen ? '24px' : 'auto',
           backgroundColor: colors.semantic.background.white,
-          borderRadius: bottomSheet.borderRadius, // 44px en todos los lados
+          borderRadius: fullScreen ? '44px 44px 0 0' : bottomSheet.borderRadius, // Full screen: solo esquinas superiores redondeadas
           paddingLeft: bottomSheet.padding,
           paddingRight: bottomSheet.padding,
           paddingTop: 0, // Sin padding top - el header lo maneja
-          paddingBottom: `calc(${bottomSheet.padding} + env(safe-area-inset-bottom))`,
-          zIndex: 1001,
-          maxHeight: `calc(100vh - 24px - ${bottomSheet.margin})`, // Máximo hasta 24px del top
-          minHeight: stretchHeight > 0 && baseHeight ? `${baseHeight + stretchHeight}px` : 'auto', // Altura base + estiramiento
-          width: `calc(100% - ${bottomSheet.margin} * 2)`,
-          overflowY: 'auto',
+          paddingBottom: fullScreen ? '0' : `calc(${spacing[10]} + env(safe-area-inset-bottom))`, // Full screen: sin padding bottom (el contenido lo maneja)
+          zIndex: zIndex + 1,
+          maxHeight: fullScreen ? 'none' : `calc(100vh - 24px - ${bottomSheet.margin})`, // Máximo hasta 24px del top
+          height: fullScreen ? 'calc(100vh - 24px)' : 'auto', // Full screen: altura fija
+          minHeight: fullScreen ? 'auto' : (stretchHeight > 0 && baseHeight ? `${baseHeight + stretchHeight}px` : 'auto'),
+          width: fullScreen ? '100%' : `calc(100% - ${bottomSheet.margin} * 2)`,
+          overflowY: fullScreen ? 'hidden' : 'auto', // Full screen: el contenido interno maneja el scroll
+          display: fullScreen ? 'flex' : 'block',
+          flexDirection: fullScreen ? 'column' : undefined,
           transform: `translateY(${translateY}%)`, // Solo para arrastrar hacia abajo (cerrar)
           transition: isDragging ? 'none' : 'transform 0.3s ease-out, min-height 0.3s ease-out, opacity 0.3s ease-out',
           opacity: isOpen && isVisible ? 1 : 0,
@@ -410,15 +431,30 @@ export function BottomSheet({
         <div 
           style={{ 
             paddingTop: (title || leftIcon || rightIcon || showGraber) ? 0 : bottomSheet.padding,
+            paddingBottom: 0, // El contenido hijo maneja su propio padding bottom
             touchAction: 'pan-y', // Permitir scroll vertical en el contenido
+            flex: fullScreen ? 1 : undefined, // Full screen: tomar el espacio restante
+            overflow: fullScreen ? 'hidden' : undefined, // Full screen: el hijo interno maneja el scroll
+            display: fullScreen ? 'flex' : undefined,
+            flexDirection: fullScreen ? 'column' : undefined,
           }}
           onTouchStart={(e) => {
             // Prevenir que el drag del contenido afecte al bottom sheet
-            e.stopPropagation();
+            // PERO permitir que los elementos interactivos funcionen
+            const target = e.target as HTMLElement;
+            const isInteractive = target.closest('button, [role="button"], input, [style*="touch-action: none"], [style*="touch-action: manipulation"]') !== null;
+            if (!isInteractive) {
+              e.stopPropagation();
+            }
           }}
           onMouseDown={(e) => {
             // Prevenir que el drag del contenido afecte al bottom sheet
-            e.stopPropagation();
+            // PERO permitir que los elementos interactivos funcionen
+            const target = e.target as HTMLElement;
+            const isInteractive = target.closest('button, [role="button"], input, [style*="touch-action: none"], [style*="touch-action: manipulation"]') !== null;
+            if (!isInteractive) {
+              e.stopPropagation();
+            }
           }}
         >
           {children}

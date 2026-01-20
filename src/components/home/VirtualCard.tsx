@@ -1,3 +1,4 @@
+import { useState, useEffect } from 'react';
 import { borderRadius, colors, spacing, typography } from '../../config/design-tokens';
 import { formatBalance } from '../../lib/formatBalance';
 
@@ -26,6 +27,43 @@ export function VirtualCard({
   isMiddle = false,
   isBack = false
 }: VirtualCardProps) {
+  // Inicializar siempre como false para evitar diferencias entre servidor y cliente
+  const [isLocked, setIsLocked] = useState<boolean>(false);
+  
+  // Cargar el estado desde localStorage solo en el cliente después del mount
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const savedLockState = localStorage.getItem('cardLocked');
+      if (savedLockState === 'true') {
+        setIsLocked(true);
+      }
+    }
+  }, []);
+
+  // Escuchar cambios en localStorage para sincronizar entre componentes
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    
+    const handleStorageChange = (e: StorageEvent) => {
+      if (e.key === 'cardLocked') {
+        setIsLocked(e.newValue === 'true');
+      }
+    };
+
+    window.addEventListener('storage', handleStorageChange);
+    
+    // También verificar periódicamente por si el cambio viene del mismo tab
+    const interval = setInterval(() => {
+      const savedLockState = localStorage.getItem('cardLocked');
+      setIsLocked(savedLockState === 'true');
+    }, 100);
+
+    return () => {
+      window.removeEventListener('storage', handleStorageChange);
+      clearInterval(interval);
+    };
+  }, []);
+
   // Determinar si el fondo es oscuro o claro para el color del texto
   // El color principal #3A29E9 es oscuro, así que el texto debe ser claro (blanco)
   const isDarkBackground = true; // El morado es oscuro
@@ -74,17 +112,16 @@ export function VirtualCard({
           }}
         />
         
-        {/* Header de la card - Logo de Visa y botón de icono */}
+        {/* Header de la card - Logo de Visa */}
         <div
           style={{
             height: '28px',
             display: 'flex',
             alignItems: 'center',
-            justifyContent: 'space-between',
+            justifyContent: 'flex-start',
             position: 'absolute',
             top: isFront ? spacing[6] : `calc(${spacing[1]} + ${spacing[3]})`, // 24px al frente, 16px detrás (4px + 12px)
             left: spacing[6], // 24px desde el borde izquierdo
-            right: spacing[6], // 24px desde el borde derecho
             zIndex: 2,
           }}
         >
@@ -105,46 +142,122 @@ export function VirtualCard({
               }}
             />
           </div>
-          
-          {/* Botón de icono dots a la derecha */}
-          <button
-            type="button"
-            style={{
-              width: '28px',
-              height: '28px',
-              borderRadius: borderRadius.full,
-              backgroundColor: colors.semantic.background.cardButtonIcon, // Tokenizado: blanco con 15% de opacidad
-              border: 'none',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              cursor: 'pointer',
-              padding: 0,
-              transition: 'background-color 0.2s ease',
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.backgroundColor = colors.semantic.background.cardButtonIconHover;
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.backgroundColor = colors.semantic.background.cardButtonIcon;
-            }}
-            aria-label="Más opciones"
-          >
-            <img
-              src="/img/icons/global/icon-dots.svg"
-              alt="Más opciones"
-              style={{
-                width: '16px',
-                height: '16px',
-                filter: 'brightness(0) invert(1)', // Convertir el icono a blanco
-                display: 'block',
-              }}
-            />
-          </button>
         </div>
         
-        {/* Balance dentro de la card - alineado a la izquierda */}
-        {balance !== undefined && (
+        {/* Botón de icono dots - Siempre visible en posición superior derecha */}
+        <button
+          type="button"
+          style={{
+            position: 'absolute',
+            top: isFront ? spacing[6] : `calc(${spacing[1]} + ${spacing[3]})`, // 24px al frente, 16px detrás
+            right: spacing[6], // 24px desde el borde derecho
+            width: '28px',
+            height: '28px',
+            borderRadius: borderRadius.full,
+            backgroundColor: colors.semantic.background.cardButtonIcon, // Tokenizado: blanco con 15% de opacidad
+            border: 'none',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            cursor: 'pointer',
+            padding: 0,
+            transition: 'background-color 0.2s ease',
+            zIndex: 15, // Encima del overlay cuando está bloqueada
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.backgroundColor = colors.semantic.background.cardButtonIconHover;
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.backgroundColor = colors.semantic.background.cardButtonIcon;
+          }}
+          aria-label="Más opciones"
+        >
+          <img
+            src="/img/icons/global/icon-dots.svg"
+            alt="Más opciones"
+            style={{
+              width: '16px',
+              height: '16px',
+              filter: 'brightness(0) invert(1)', // Convertir el icono a blanco
+              display: 'block',
+            }}
+          />
+        </button>
+        
+        {/* Overlay negro con opacidad 40% cuando la tarjeta está bloqueada */}
+        {isLocked && (
+          <div
+            style={{
+              position: 'absolute',
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              borderRadius: borderRadius['3xl'], // 24px
+              backgroundColor: 'rgba(0, 0, 0, 0.4)', // Negro con 40% de opacidad
+              pointerEvents: 'none',
+              zIndex: 5,
+            }}
+          />
+        )}
+
+        {/* Contenedor central cuando está bloqueada */}
+        {isLocked && (
+          <div
+            style={{
+              position: 'absolute',
+              top: '50%',
+              left: '50%',
+              transform: 'translate(-50%, -50%)',
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: spacing[2], // 8px entre icono y texto (reducido de 12px)
+              zIndex: 10,
+            }}
+          >
+            {/* Icono de lock */}
+            <div
+              style={{
+                width: '48px',
+                height: '48px',
+                borderRadius: borderRadius.full,
+                backgroundColor: 'rgba(255, 255, 255, 0.7)', // Fondo blanco con 70% opacidad
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                boxShadow: 'none', // Sin sombra
+              }}
+            >
+              <img
+                src="/img/icons/global/lock.svg"
+                alt="Tarjeta bloqueada"
+                style={{
+                  width: '24px',
+                  height: '24px',
+                  display: 'block',
+                  filter: 'none', // Color negro (sin filtro)
+                }}
+              />
+            </div>
+            {/* Texto "Tarjeta bloqueada" - Primera letra en mayúscula */}
+            <span
+              style={{
+                fontFamily: typography.fontFamily.sans.join(', '),
+                fontSize: typography.fontSize.sm, // 14px
+                fontWeight: typography.fontWeight.bold, // 700 Bold (aumentado de medium a bold)
+                color: colors.semantic.background.white,
+                textAlign: 'center',
+              }}
+            >
+              Tarjeta bloqueada
+            </span>
+          </div>
+        )}
+
+        {/* Balance dentro de la card - alineado a la izquierda - Solo se muestra si NO está bloqueada */}
+        {balance !== undefined && !isLocked && (
           <div
             style={{
               position: 'absolute',

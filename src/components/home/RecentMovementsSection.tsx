@@ -6,7 +6,7 @@ import { RecentMovementsWrapper } from './RecentMovementsWrapper';
 interface RecentMovementsSectionProps {
   isBalanceVisible?: boolean;
   maxItems?: number;
-  filterBySource?: 'wallet' | 'card' | 'general' | 'wallet-and-card';
+  filterBySource?: 'wallet' | 'card' | 'general' | 'wallet-and-card' | 'cash' | 'wallet-and-cash';
   titleColor?: string; // Color del título (opcional, por defecto usa semantic.text.primary)
   buttonTextColor?: string; // Color del texto del botón (opcional, por defecto usa semantic.text.primary)
 }
@@ -34,6 +34,7 @@ export function RecentMovementsSection({
     <div
       style={{
         width: '100%',
+        maxWidth: '100%', // Prevenir overflow
         borderRadius: borderRadius['3xl'], // Token semántico: 24px border radius
         backgroundColor: colors.semantic.background.white, // Token semántico: fondo blanco
         paddingTop: spacing[6], // Token semántico: 24px arriba
@@ -43,6 +44,7 @@ export function RecentMovementsSection({
         marginBottom: spacing[6], // Token semántico: 1.5rem después del contenido
         marginTop: 0,
         boxSizing: 'border-box',
+        overflowX: 'hidden', // Prevenir overflow horizontal
       }}
     >
       {/* Header interno */}

@@ -8,7 +8,10 @@ import { SegmentedButton } from '../ui/SegmentedButton';
 import { GroupCard } from '../ui/GroupCard';
 import { ActionCard } from '../ui/ActionCard';
 import { PreferencesCard, PreferenceIcons } from '../ui/PreferencesCard';
+import { SendMoneySheet } from '../ui/SendMoneySheet';
+import { ExchangeMoneySheet } from '../ui/ExchangeMoneySheet';
 import { formatBalance } from '../../lib/formatBalance';
+import { useBalances } from '../../hooks/useBalances';
 
 interface WalletViewProps {
   isBalanceVisible?: boolean;
@@ -18,11 +21,16 @@ interface WalletViewProps {
   copBalance?: number;
 }
 
-export function WalletView({ isBalanceVisible = true, titleRef, scrollProgress = 0, usdBalance = 5678.90, copBalance = 1500000.50 }: WalletViewProps) {
+export function WalletView({ isBalanceVisible = true, titleRef, scrollProgress = 0, usdBalance: initialUsdBalance = 5678.90, copBalance: initialCopBalance = 1500000.50 }: WalletViewProps) {
   const title = 'Wallet';
   const [selectedFilter, setSelectedFilter] = useState<string>('Actividad');
   const previousFilterRef = useRef<string>('Actividad');
   const [slideDirection, setSlideDirection] = useState<'left' | 'right'>('right');
+  const [isSendMoneySheetOpen, setIsSendMoneySheetOpen] = useState(false);
+  const [isExchangeMoneySheetOpen, setIsExchangeMoneySheetOpen] = useState(false);
+  
+  // Hook para saldos dinámicos sincronizados con sessionStorage
+  const { usdBalance, copBalance } = useBalances(initialUsdBalance, initialCopBalance);
   
   // Calcular saldo total: sumar USD y convertir COP a USD (aproximadamente 1 USD = 4000 COP)
   // Para simplificar, mostraremos el total en USD sumando ambos valores
@@ -391,7 +399,7 @@ export function WalletView({ isBalanceVisible = true, titleRef, scrollProgress =
           >
             <button
               type="button"
-              onClick={() => console.log('Cambiar')}
+              onClick={() => setIsExchangeMoneySheetOpen(true)}
               style={{
                 width: '64px', // Contenedor de 64px
                 height: '64px', // Contenedor de 64px
@@ -457,7 +465,7 @@ export function WalletView({ isBalanceVisible = true, titleRef, scrollProgress =
           >
             <button
               type="button"
-              onClick={() => console.log('Enviar')}
+              onClick={() => setIsSendMoneySheetOpen(true)}
               style={{
                 width: '64px', // Contenedor de 64px
                 height: '64px', // Contenedor de 64px
@@ -551,7 +559,7 @@ export function WalletView({ isBalanceVisible = true, titleRef, scrollProgress =
           <RecentMovementsSection 
             isBalanceVisible={isBalanceVisible} 
             maxItems={3} 
-            filterBySource="wallet" 
+            filterBySource="wallet-and-cash" 
           />
           
           {/* Group Card - Debajo de Últimos movimientos */}
@@ -650,6 +658,22 @@ export function WalletView({ isBalanceVisible = true, titleRef, scrollProgress =
           />
         </div>
       </div>
+
+      {/* Bottom Sheet para enviar dinero */}
+      <SendMoneySheet
+        isOpen={isSendMoneySheetOpen}
+        onClose={() => setIsSendMoneySheetOpen(false)}
+        usdBalance={usdBalance}
+        copBalance={copBalance}
+      />
+
+      {/* Bottom Sheet para cambiar moneda */}
+      <ExchangeMoneySheet
+        isOpen={isExchangeMoneySheetOpen}
+        onClose={() => setIsExchangeMoneySheetOpen(false)}
+        initialUsdBalance={usdBalance}
+        initialCopBalance={copBalance}
+      />
     </div>
   );
 }

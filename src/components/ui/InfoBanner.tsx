@@ -19,7 +19,6 @@ export function InfoBanner({ title, description }: InfoBannerProps) {
         paddingBottom: spacing[6], // 24px
         paddingLeft: spacing[6], // 24px
         paddingRight: spacing[6], // 24px
-        marginBottom: spacing[4], // 16px de espacio inferior
         display: 'flex',
         alignItems: 'flex-start',
         gap: spacing[4], // 16px entre icono y contenido de texto

@@ -91,6 +91,9 @@ export function MonthlyPurchasesCard({
         marginBottom: 0, // Sin margen inferior para evitar espacio extra
         marginTop: 0,
         boxSizing: 'border-box',
+        width: '100%',
+        maxWidth: '100%', // Prevenir overflow
+        overflowX: 'hidden', // Prevenir overflow horizontal
       }}
     >
       {/* Sección izquierda: Contenido de texto */}

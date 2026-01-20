@@ -56,8 +56,8 @@ export function Header({ activeTab, onBalanceVisibilityChange, showTitle = false
     ? colors.semantic.background.white 
     : typography.sectionTitle.color;
 
-  // Aplicar blur glassmorphism en home, wallet y tarjeta cuando hay scroll
-  const shouldApplyBlur = (activeTab === 'home' || activeTab === 'wallet' || activeTab === 'tarjeta') && isScrolled;
+  // Aplicar blur glassmorphism en home, wallet, cash y tarjeta cuando hay scroll
+  const shouldApplyBlur = (activeTab === 'home' || activeTab === 'wallet' || activeTab === 'cash' || activeTab === 'tarjeta') && isScrolled;
   
   // Calcular opacidad máxima del gradiente basado en el scroll (progresivo, similar a Apple)
   // Opacidad mínima: 0.3, máxima: 0.8, transición suave entre 0 y 100px de scroll
@@ -81,8 +81,8 @@ export function Header({ activeTab, onBalanceVisibilityChange, showTitle = false
     : 'transparent';
 
   // Animación del avatar: de 48px a 40px al hacer scroll (mismo tamaño que los iconos)
-  // Solo aplica en home, wallet y tarjeta
-  const shouldAnimateAvatar = activeTab === 'home' || activeTab === 'wallet' || activeTab === 'tarjeta';
+  // Solo aplica en home, wallet, cash y tarjeta
+  const shouldAnimateAvatar = activeTab === 'home' || activeTab === 'wallet' || activeTab === 'cash' || activeTab === 'tarjeta';
   // Valores en px: spacing[12]=48px, spacing[10]=40px, spacing[3]=12px
   const avatarStartSize = 48; // header.sizes.profileImage = spacing[12]
   const avatarEndSize = 40; // header.sizes.actionIcon = spacing[10]

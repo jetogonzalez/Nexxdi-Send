@@ -6,7 +6,7 @@ import { useMovements } from '../../hooks/useMovements';
 interface RecentMovementsWrapperProps {
   isBalanceVisible?: boolean;
   maxItems?: number;
-  filterBySource?: 'wallet' | 'card' | 'general' | 'wallet-and-card'; // Filtrar por fuente: wallet (cuentas), card (tarjeta), general (todos), wallet-and-card (ambos)
+  filterBySource?: 'wallet' | 'card' | 'general' | 'wallet-and-card' | 'cash' | 'wallet-and-cash'; // Filtrar por fuente: wallet (cuentas), card (tarjeta), general (todos), wallet-and-card (ambos), cash (transferencias), wallet-and-cash (wallet + cash)
 }
 
 /**

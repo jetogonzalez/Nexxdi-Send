@@ -16,7 +16,10 @@
     "open:android": "npx cap open android",
     "sync": "npx cap sync",
     "android:build": "cd android && ./gradlew bundleRelease",
-    "android:build:apk": "cd android && ./gradlew assembleRelease"
+    "android:build:apk": "cd android && ./gradlew assembleRelease",
+    "clean": "./scripts/clean-cache.sh",
+    "clean:build": "./scripts/clean-cache.sh && npm run build",
+    "clean:deploy": "./scripts/clean-cache.sh && npm run build && firebase deploy"
   },
   "dependencies": {
     "@astrojs/check": "0.9.6",

@@ -25,18 +25,75 @@ const slideHintKeyframes = `
       padding-left: 0;
     }
   }
+  
+  @keyframes spinLoader {
+    0% {
+      transform: rotate(0deg);
+    }
+    100% {
+      transform: rotate(2160deg); /* 6 vueltas = 6 * 360 = 2160 grados para efecto de "pensando" */
+    }
+  }
 `;
 
 interface SliderToBlockProps {
   onComplete: () => void;
   disabled?: boolean;
   key?: string | number; // Para resetear el componente cuando cambia
+  onCloseSheet?: () => void; // Callback para cerrar el bottom sheet
+  onShowToast?: (message: string) => void; // Callback para mostrar toast
+  mode?: 'lock' | 'unlock' | 'exchange'; // Modo: bloquear, desbloquear o cambiar
+  customLabel?: string; // Label personalizado
+  customIcon?: string; // Icono personalizado (ruta)
+  customToastMessage?: string; // Mensaje de toast personalizado
 }
 
-export function SliderToBlock({ onComplete, disabled = false }: SliderToBlockProps) {
+export function SliderToBlock({ 
+  onComplete, 
+  disabled = false,
+  onCloseSheet,
+  onShowToast,
+  mode = 'lock',
+  customLabel,
+  customIcon,
+  customToastMessage,
+}: SliderToBlockProps) {
+  // Determinar label según el modo
+  const getLabel = () => {
+    if (customLabel) return customLabel;
+    switch (mode) {
+      case 'lock': return 'Desliza para bloquear';
+      case 'unlock': return 'Desliza para desbloquear';
+      case 'exchange': return 'Desliza para cambiar';
+      default: return 'Desliza para confirmar';
+    }
+  };
+  
+  // Determinar icono según el modo
+  const getIcon = () => {
+    if (customIcon) return customIcon;
+    switch (mode) {
+      case 'lock': return '/img/icons/global/lock.svg';
+      case 'unlock': return '/img/icons/global/lock-open.svg';
+      case 'exchange': return '/img/icons/global/fx.svg';
+      default: return '/img/icons/global/check.svg';
+    }
+  };
+  
+  // Determinar mensaje de toast según el modo
+  const getToastMessage = () => {
+    if (customToastMessage) return customToastMessage;
+    switch (mode) {
+      case 'lock': return 'Bloqueo temporal activado';
+      case 'unlock': return 'Tarjeta desbloqueada';
+      case 'exchange': return 'Cambio realizado exitosamente';
+      default: return 'Acción completada';
+    }
+  };
   const [isDragging, setIsDragging] = useState(false);
   const [progress, setProgress] = useState(0); // 0 a 100
   const [isCompleted, setIsCompleted] = useState(false);
+  const [isLoading, setIsLoading] = useState(false); // Estado para mostrar el loader
   const [sliderWidth, setSliderWidth] = useState(0);
   const [hasShownHint, setHasShownHint] = useState(false);
   const [hasInteracted, setHasInteracted] = useState(false); // Flag para saber si el usuario ya interactuó
@@ -44,6 +101,7 @@ export function SliderToBlock({ onComplete, disabled = false }: SliderToBlockPro
   const thumbRef = useRef<HTMLDivElement>(null);
   const startXRef = useRef(0);
   const startProgressRef = useRef(0);
+  const pointerIdRef = useRef<number | null>(null);
 
   // Calcular ancho del slider
   useEffect(() => {
@@ -69,8 +127,19 @@ export function SliderToBlock({ onComplete, disabled = false }: SliderToBlockPro
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []); // Solo ejecutar una vez al montar el componente
 
-  const handleStart = useCallback((clientX: number) => {
+  // Definir handlers ANTES del useEffect que los usa
+  const handleStart = useCallback((clientX: number, pointerId: number, element: HTMLElement) => {
     if (disabled || isCompleted) return;
+    
+    // Capturar el pointer para evitar que otros elementos lo intercepten
+    try {
+      element.setPointerCapture(pointerId);
+      pointerIdRef.current = pointerId;
+    } catch (e) {
+      // Fallback si setPointerCapture no está disponible
+      console.warn('setPointerCapture not available');
+    }
+    
     setIsDragging(true);
     // Marcar que el usuario ya interactuó, la animación no debe aparecer más
     setHasInteracted(true);
@@ -92,79 +161,190 @@ export function SliderToBlock({ onComplete, disabled = false }: SliderToBlockPro
     
     setProgress(newProgress);
     
-    // Si llega al 100%, completar
+    // Si llega al 100%, iniciar secuencia de loader
     if (newProgress >= 100) {
       setIsCompleted(true);
       setIsDragging(false);
+      setIsLoading(true); // Activar loader
       // Feedback háptico si está disponible
       if ('vibrate' in navigator) {
         navigator.vibrate(50);
       }
-      onComplete();
+      
+      // Después de 6 vueltas del loader (2.4 segundos: 6 vueltas * 0.4s por vuelta)
+      setTimeout(() => {
+        // Ejecutar acción + cerrar sheet + toast
+        onComplete();
+        if (onShowToast) {
+          onShowToast(getToastMessage());
+        }
+        // Cerrar el sheet después de un pequeño delay adicional
+        if (onCloseSheet) {
+          setTimeout(() => {
+            onCloseSheet();
+          }, 200);
+        }
+      }, 2400); // 2.4 segundos para 6 vueltas (efecto de "pensando")
     }
-  }, [isDragging, disabled, isCompleted, onComplete, sliderWidth]);
+  }, [isDragging, disabled, isCompleted, onComplete, onCloseSheet, onShowToast, sliderWidth]);
 
-  const handleEnd = useCallback(() => {
+  const handleEnd = useCallback((pointerId: number, element: HTMLElement) => {
     if (!isDragging) return;
+    
+    // Liberar el pointer capture
+    try {
+      if (pointerIdRef.current !== null) {
+        element.releasePointerCapture(pointerIdRef.current);
+        pointerIdRef.current = null;
+      }
+    } catch (e) {
+      // Fallback si releasePointerCapture no está disponible
+    }
+    
     setIsDragging(false);
     
-    // Si no llegó al 100%, volver al inicio
+    // Si no llegó al 100%, resetear al inicio
     // NO resetear hasShownHint - la animación solo debe aparecer una vez al inicio
     if (progress < 100) {
       setProgress(0);
     }
   }, [isDragging, progress]);
-
-  // Mouse events
-  const handleMouseDown = (e: React.MouseEvent) => {
-    e.preventDefault();
-    handleStart(e.clientX);
-  };
-
-  // Touch events
-  const handleTouchStart = (e: React.TouchEvent) => {
-    if (e.touches.length > 0) {
+  
+  // Touch event handlers usando addEventListener nativo con { passive: false }
+  // CRÍTICO: React registra touchmove como passive por defecto, necesitamos listeners nativos
+  useEffect(() => {
+    const thumbElement = thumbRef.current;
+    if (!thumbElement) return;
+    
+    const handleTouchStartNative = (e: TouchEvent) => {
+      console.log('DOWN (touch native)'); // DEBUG
+      if (disabled || isCompleted) return;
+      // CRÍTICO: preventDefault() funciona porque el listener es no-pasivo
       e.preventDefault();
-      handleStart(e.touches[0].clientX);
-    }
+      e.stopPropagation();
+      if (e.touches.length > 0) {
+        handleStart(e.touches[0].clientX, e.touches[0].identifier, thumbElement);
+      }
+    };
+    
+    const handleTouchMoveNative = (e: TouchEvent) => {
+      console.log('MOVE (touch native)'); // DEBUG
+      if (!isDragging || disabled || isCompleted) return;
+      // CRÍTICO: preventDefault() funciona porque el listener es no-pasivo
+      e.preventDefault();
+      e.stopPropagation();
+      if (e.touches.length > 0) {
+        handleMove(e.touches[0].clientX);
+      }
+    };
+    
+    const handleTouchEndNative = (e: TouchEvent) => {
+      if (!isDragging) return;
+      e.preventDefault();
+      e.stopPropagation();
+      handleEnd(-1, thumbElement);
+    };
+    
+    const handleTouchCancelNative = (e: TouchEvent) => {
+      if (!isDragging) return;
+      e.preventDefault();
+      e.stopPropagation();
+      handleEnd(-1, thumbElement);
+    };
+    
+    // CRÍTICO: addEventListener nativo con { passive: false } para poder usar preventDefault()
+    thumbElement.addEventListener('touchstart', handleTouchStartNative, { passive: false });
+    thumbElement.addEventListener('touchmove', handleTouchMoveNative, { passive: false });
+    thumbElement.addEventListener('touchend', handleTouchEndNative, { passive: false });
+    thumbElement.addEventListener('touchcancel', handleTouchCancelNative, { passive: false });
+    
+    return () => {
+      thumbElement.removeEventListener('touchstart', handleTouchStartNative);
+      thumbElement.removeEventListener('touchmove', handleTouchMoveNative);
+      thumbElement.removeEventListener('touchend', handleTouchEndNative);
+      thumbElement.removeEventListener('touchcancel', handleTouchCancelNative);
+    };
+  }, [disabled, isCompleted, isDragging, handleStart, handleMove, handleEnd]);
+
+  // Pointer Events - reemplaza mouse/touch events
+  const handlePointerDown = (e: React.PointerEvent<HTMLDivElement>) => {
+    console.log('DOWN'); // DEBUG: Verificar si se dispara en iPhone
+    if (disabled || isCompleted) return;
+    
+    // Prevenir comportamiento por defecto y propagación
+    e.preventDefault();
+    e.stopPropagation();
+    
+    const element = e.currentTarget;
+    handleStart(e.clientX, e.pointerId, element);
   };
 
-  // Global event listeners
+  const handlePointerMove = (e: React.PointerEvent<HTMLDivElement>) => {
+    console.log('MOVE'); // DEBUG: Verificar si se dispara en iPhone
+    if (!isDragging || disabled || isCompleted) return;
+    
+    // Prevenir comportamiento por defecto y propagación
+    e.preventDefault();
+    e.stopPropagation();
+    
+    handleMove(e.clientX);
+  };
+
+  const handlePointerUp = (e: React.PointerEvent<HTMLDivElement>) => {
+    if (!isDragging) return;
+    
+    // Prevenir comportamiento por defecto y propagación
+    e.preventDefault();
+    e.stopPropagation();
+    
+    const element = e.currentTarget;
+    handleEnd(e.pointerId, element);
+  };
+
+  const handlePointerCancel = (e: React.PointerEvent<HTMLDivElement>) => {
+    if (!isDragging) return;
+    
+    // Prevenir comportamiento por defecto y propagación
+    e.preventDefault();
+    e.stopPropagation();
+    
+    const element = e.currentTarget;
+    handleEnd(e.pointerId, element);
+  };
+
+  // Global event listeners para touch events con { passive: false }
+  // CRÍTICO: Estos listeners se activan cuando isDragging es true
   useEffect(() => {
     if (!isDragging) return;
 
-    const handleMouseMove = (e: MouseEvent) => {
-      e.preventDefault();
-      handleMove(e.clientX);
-    };
-
-    const handleTouchMove = (e: TouchEvent) => {
+    // Touch listeners globales con { passive: false } para poder usar preventDefault()
+    const handleTouchMoveGlobal = (e: TouchEvent) => {
+      console.log('MOVE (touch global)'); // DEBUG
       if (e.touches.length > 0) {
-        e.preventDefault();
+        e.preventDefault(); // Ahora funciona porque el listener es no-pasivo
+        e.stopPropagation();
         handleMove(e.touches[0].clientX);
       }
     };
 
-    const handleMouseUp = () => {
-      handleEnd();
+    const handleTouchEndGlobal = (e: TouchEvent) => {
+      const element = thumbRef.current;
+      if (element) {
+        e.preventDefault();
+        e.stopPropagation();
+        handleEnd(-1, element);
+      }
     };
 
-    const handleTouchEnd = () => {
-      handleEnd();
-    };
-
-    document.addEventListener('mousemove', handleMouseMove, { passive: false });
-    document.addEventListener('mouseup', handleMouseUp);
-    document.addEventListener('touchmove', handleTouchMove, { passive: false });
-    document.addEventListener('touchend', handleTouchEnd);
-    document.addEventListener('touchcancel', handleTouchEnd);
+    // CRÍTICO: Usar addEventListener nativo con { passive: false }
+    document.addEventListener('touchmove', handleTouchMoveGlobal, { passive: false });
+    document.addEventListener('touchend', handleTouchEndGlobal, { passive: false });
+    document.addEventListener('touchcancel', handleTouchEndGlobal, { passive: false });
 
     return () => {
-      document.removeEventListener('mousemove', handleMouseMove);
-      document.removeEventListener('mouseup', handleMouseUp);
-      document.removeEventListener('touchmove', handleTouchMove);
-      document.removeEventListener('touchend', handleTouchEnd);
-      document.removeEventListener('touchcancel', handleTouchEnd);
+      document.removeEventListener('touchmove', handleTouchMoveGlobal);
+      document.removeEventListener('touchend', handleTouchEndGlobal);
+      document.removeEventListener('touchcancel', handleTouchEndGlobal);
     };
   }, [isDragging, handleMove, handleEnd]);
 
@@ -226,15 +406,17 @@ export function SliderToBlock({ onComplete, disabled = false }: SliderToBlockPro
             opacity: 1, // Siempre visible
           }}
         >
-          Desliza para bloquear
+          {getLabel()}
         </div>
       )}
 
       {/* Thumb draggable */}
       <div
         ref={thumbRef}
-        onMouseDown={handleMouseDown}
-        onTouchStart={handleTouchStart}
+        onPointerDown={handlePointerDown}
+        onPointerMove={handlePointerMove}
+        onPointerUp={handlePointerUp}
+        onPointerCancel={handlePointerCancel}
         style={{
           position: 'absolute',
           left: thumbLeft,
@@ -251,8 +433,12 @@ export function SliderToBlock({ onComplete, disabled = false }: SliderToBlockPro
           cursor: disabled || isCompleted ? 'default' : isDragging ? 'grabbing' : 'grab',
           transition: isDragging ? 'none' : 'width 0.1s ease-out, justify-content 0.3s ease-out, padding-right 0.3s ease-out, padding-left 0.3s ease-out',
           zIndex: 2,
-          userSelect: 'none',
+          touchAction: 'none', // CRÍTICO: Prevenir scroll y gestos táctiles
+          userSelect: 'none', // CRÍTICO: Prevenir selección de texto
           WebkitUserSelect: 'none',
+          MozUserSelect: 'none',
+          msUserSelect: 'none',
+          WebkitTouchCallout: 'none', // Prevenir menú contextual en iOS
           // Animación sutil: el ícono siempre alineado a la derecha con 18px durante la animación
           // No mostrar cuando está arrastrando, cuando hay progreso, o cuando el usuario ya interactuó
           animation: !isDragging && !isCompleted && progress === 0 && hasShownHint && !hasInteracted
@@ -260,18 +446,50 @@ export function SliderToBlock({ onComplete, disabled = false }: SliderToBlockPro
             : 'none',
         }}
       >
-        {/* Icono de lock */}
-        <img
-          src="/img/icons/global/lock.svg"
-          alt="Bloquear"
-          style={{
-            width: '20px',
-            height: '20px',
-            display: 'block',
-            filter: 'brightness(0) invert(1)', // Convertir a blanco
-            flexShrink: 0, // El icono nunca se encoge
-          }}
-        />
+        {/* Icono de lock o loader */}
+        {isLoading ? (
+          <img
+            src="/img/icons/global/loader.svg"
+            alt="Cargando"
+            style={{
+              width: '18px',
+              height: '18px',
+              display: 'block',
+              filter: 'brightness(0) invert(1)', // Convertir a blanco (igual que lock)
+              flexShrink: 0, // El icono nunca se encoge
+              touchAction: 'none', // CRÍTICO: Prevenir gestos en el hijo también
+              pointerEvents: 'none', // El icono no debe interceptar eventos
+              userSelect: 'none',
+              WebkitUserSelect: 'none',
+              MozUserSelect: 'none',
+              msUserSelect: 'none',
+              WebkitTouchCallout: 'none',
+              animation: 'spinLoader 2.4s cubic-bezier(0.4, 0.0, 0.2, 1) forwards', // 6 vueltas en 2.4s
+              transformOrigin: 'center center', // Rotar desde el centro
+            }}
+            draggable={false}
+          />
+        ) : (
+          <img
+            src={getIcon()}
+            alt={getLabel()}
+            style={{
+              width: '18px',
+              height: '18px',
+              display: 'block',
+              filter: 'brightness(0) invert(1)', // Convertir a blanco
+              flexShrink: 0, // El icono nunca se encoge
+              touchAction: 'none', // CRÍTICO: Prevenir gestos en el hijo también
+              pointerEvents: 'none', // El icono no debe interceptar eventos
+              userSelect: 'none',
+              WebkitUserSelect: 'none',
+              MozUserSelect: 'none',
+              msUserSelect: 'none',
+              WebkitTouchCallout: 'none',
+            }}
+            draggable={false}
+          />
+        )}
       </div>
     </div>
     </>

@@ -20,10 +20,24 @@ export function FaceIDButton({ onFaceID }: FaceIDButtonProps) {
       </p>
       <button
         type="button"
-        onClick={async () => {
+        onClick={async (e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          console.log('Face ID button clicked'); // DEBUG
           if (onFaceID) {
-            await onFaceID();
+            try {
+              const result = await onFaceID();
+              console.log('Face ID result:', result); // DEBUG
+            } catch (error) {
+              console.error('Face ID error:', error); // DEBUG
+            }
+          } else {
+            console.warn('onFaceID handler not provided'); // DEBUG
           }
+        }}
+        onTouchStart={(e) => {
+          // Prevenir que el touch se propague y cause scroll
+          e.stopPropagation();
         }}
         style={{
           width: spacing[16], // 64px
@@ -38,6 +52,10 @@ export function FaceIDButton({ onFaceID }: FaceIDButtonProps) {
           transition: `transform ${motion.duration.base} ${motion.easing.easeInOut}, opacity ${motion.duration.base} ${motion.easing.easeInOut}`,
           margin: '0 auto',
           padding: 0,
+          touchAction: 'manipulation', // Prevenir gestos táctiles que interfieran
+          WebkitTapHighlightColor: 'transparent',
+          userSelect: 'none',
+          WebkitUserSelect: 'none',
         }}
         onMouseEnter={(e) => {
           e.currentTarget.style.transform = 'scale(1.05)';

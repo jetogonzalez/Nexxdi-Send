@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { colors, spacing, typography, borderRadius, button } from '../../config/design-tokens';
 import { LiquidGlassButton } from './LiquidGlassButton';
 import { motion } from '../../lib/motion';
@@ -18,6 +18,14 @@ export function SavePasswordModal({ isOpen, onSave, onSkip }: SavePasswordModalP
   const [isDragging, setIsDragging] = useState(false);
   const startYRef = useRef(0);
   const sheetRef = useRef<HTMLDivElement>(null);
+  const dragYRef = useRef(0);
+  const isDraggingRef = useRef(false);
+  
+  // Sincronizar refs con state
+  useEffect(() => {
+    dragYRef.current = dragY;
+    isDraggingRef.current = isDragging;
+  }, [dragY, isDragging]);
 
   useEffect(() => {
     if (isOpen) {
@@ -34,39 +42,118 @@ export function SavePasswordModal({ isOpen, onSave, onSkip }: SavePasswordModalP
     };
   }, [isOpen]);
 
-  // Drag handlers para expandir/colapsar y cerrar
-  const handleTouchStart = (e: React.TouchEvent) => {
-    e.preventDefault(); // Prevenir scroll mientras se arrastra
-    setIsDragging(true);
-    startYRef.current = e.touches[0].clientY;
-    setDragY(0);
-  };
+  // Drag handlers usando addEventListener nativo con { passive: false }
+  // CRÍTICO: React registra touchmove como passive por defecto, necesitamos listeners nativos
+  useEffect(() => {
+    const dragHandleElement = sheetRef.current?.querySelector('[data-drag-handle]') as HTMLElement;
+    if (!dragHandleElement || !isOpen) return;
 
-  const handleTouchMove = (e: React.TouchEvent) => {
-    if (!isDragging) return;
-    e.preventDefault(); // Prevenir scroll mientras se arrastra
-    const currentY = e.touches[0].clientY;
-    const deltaY = currentY - startYRef.current;
-    setDragY(deltaY);
-  };
+    const handleTouchStartNative = (e: TouchEvent) => {
+      console.log('Modal DOWN (touch native)'); // DEBUG
+      e.preventDefault(); // Ahora funciona porque el listener es no-pasivo
+      e.stopPropagation();
+      setIsDragging(true);
+      isDraggingRef.current = true;
+      startYRef.current = e.touches[0].clientY;
+      setDragY(0);
+      dragYRef.current = 0;
+    };
 
-  const handleTouchEnd = (e: React.TouchEvent) => {
+    const handleTouchMoveNative = (e: TouchEvent) => {
+      if (!isDraggingRef.current) return;
+      console.log('Modal MOVE (touch native)'); // DEBUG
+      e.preventDefault(); // Ahora funciona porque el listener es no-pasivo
+      e.stopPropagation();
+      if (e.touches.length > 0) {
+        const currentY = e.touches[0].clientY;
+        const deltaY = currentY - startYRef.current;
+        setDragY(deltaY);
+        dragYRef.current = deltaY;
+      }
+    };
+
+    const handleTouchEndNative = (e: TouchEvent) => {
+      if (!isDraggingRef.current) return;
+      e.preventDefault();
+      e.stopPropagation();
+      
+      const threshold = 100; // Umbral para cerrar
+      const currentDragY = dragYRef.current;
+      
+      // Si se arrastra hacia abajo más del umbral, cerrar
+      if (currentDragY > threshold) {
+        onSkip();
+      } else {
+        // Siempre volver al tamaño original (colapsado) cuando se suelta
+        setSheetState('collapsed');
+      }
+      
+      setIsDragging(false);
+      isDraggingRef.current = false;
+      setDragY(0);
+      dragYRef.current = 0;
+    };
+
+    // CRÍTICO: addEventListener nativo con { passive: false } para poder usar preventDefault()
+    dragHandleElement.addEventListener('touchstart', handleTouchStartNative, { passive: false });
+    dragHandleElement.addEventListener('touchmove', handleTouchMoveNative, { passive: false });
+    dragHandleElement.addEventListener('touchend', handleTouchEndNative, { passive: false });
+    dragHandleElement.addEventListener('touchcancel', handleTouchEndNative, { passive: false });
+
+    return () => {
+      dragHandleElement.removeEventListener('touchstart', handleTouchStartNative);
+      dragHandleElement.removeEventListener('touchmove', handleTouchMoveNative);
+      dragHandleElement.removeEventListener('touchend', handleTouchEndNative);
+      dragHandleElement.removeEventListener('touchcancel', handleTouchEndNative);
+    };
+  }, [isOpen, onSkip]);
+
+  // Listeners globales para cuando se está arrastrando
+  useEffect(() => {
     if (!isDragging) return;
-    e.preventDefault();
-    
-    const threshold = 100; // Umbral para cerrar
-    
-    // Si se arrastra hacia abajo más del umbral, cerrar
-    if (dragY > threshold) {
-      onSkip();
-    } else {
-      // Siempre volver al tamaño original (colapsado) cuando se suelta
-      setSheetState('collapsed');
-    }
-    
-    setIsDragging(false);
-    setDragY(0);
-  };
+
+    const handleTouchMoveGlobal = (e: TouchEvent) => {
+      console.log('Modal MOVE (touch global)'); // DEBUG
+      if (e.touches.length > 0 && isDraggingRef.current) {
+        e.preventDefault();
+        e.stopPropagation();
+        const currentY = e.touches[0].clientY;
+        const deltaY = currentY - startYRef.current;
+        setDragY(deltaY);
+        dragYRef.current = deltaY;
+      }
+    };
+
+    const handleTouchEndGlobal = (e: TouchEvent) => {
+      if (!isDraggingRef.current) return;
+      e.preventDefault();
+      e.stopPropagation();
+      
+      const threshold = 100;
+      const currentDragY = dragYRef.current;
+      
+      if (currentDragY > threshold) {
+        onSkip();
+      } else {
+        setSheetState('collapsed');
+      }
+      
+      setIsDragging(false);
+      isDraggingRef.current = false;
+      setDragY(0);
+      dragYRef.current = 0;
+    };
+
+    document.addEventListener('touchmove', handleTouchMoveGlobal, { passive: false });
+    document.addEventListener('touchend', handleTouchEndGlobal, { passive: false });
+    document.addEventListener('touchcancel', handleTouchEndGlobal, { passive: false });
+
+    return () => {
+      document.removeEventListener('touchmove', handleTouchMoveGlobal);
+      document.removeEventListener('touchend', handleTouchEndGlobal);
+      document.removeEventListener('touchcancel', handleTouchEndGlobal);
+    };
+  }, [isDragging, onSkip]);
 
   // Calcular altura del sheet basado en el estado y el drag
   const getSheetHeight = () => {
@@ -142,6 +229,7 @@ export function SavePasswordModal({ isOpen, onSave, onSkip }: SavePasswordModalP
       >
         {/* Drag Handle - Área táctil aumentada para móviles */}
         <div
+          data-drag-handle
           style={{
             display: 'flex',
             justifyContent: 'center',
@@ -149,13 +237,13 @@ export function SavePasswordModal({ isOpen, onSave, onSkip }: SavePasswordModalP
             paddingTop: spacing[6], // Más espacio arriba (24px)
             paddingBottom: spacing[8], // Más espacio abajo para área táctil más grande (32px)
             cursor: 'grab',
-            touchAction: 'none',
+            touchAction: 'none', // CRÍTICO: Prevenir scroll y gestos táctiles
             minHeight: spacing[16], // Área táctil mínima de 64px para facilitar el drag en móviles
             WebkitTapHighlightColor: 'transparent',
+            userSelect: 'none',
+            WebkitUserSelect: 'none',
+            WebkitTouchCallout: 'none',
           }}
-          onTouchStart={handleTouchStart}
-          onTouchMove={handleTouchMove}
-          onTouchEnd={handleTouchEnd}
         >
           <div
             style={{

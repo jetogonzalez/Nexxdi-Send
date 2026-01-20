@@ -15,14 +15,18 @@ const BALANCE_VISIBILITY_KEY = 'nexxdi_cash_balance_visible';
 
 export default function HomePage() {
   const [activeTab, setActiveTab] = useState('home');
-  // Cargar estado inicial desde localStorage (por defecto true si no existe)
-  const [isBalanceVisible, setIsBalanceVisible] = useState(() => {
+  // Inicializar siempre como true para evitar diferencias entre servidor y cliente
+  const [isBalanceVisible, setIsBalanceVisible] = useState(true);
+  
+  // Cargar el estado desde localStorage solo en el cliente después del mount
+  useEffect(() => {
     if (typeof window !== 'undefined') {
       const saved = localStorage.getItem(BALANCE_VISIBILITY_KEY);
-      return saved !== null ? saved === 'true' : true;
+      if (saved !== null) {
+        setIsBalanceVisible(saved === 'true');
+      }
     }
-    return true;
-  });
+  }, []);
   const previousTabRef = useRef('home');
   const [isScrolled, setIsScrolled] = useState(false);
   const [scrollTop, setScrollTop] = useState(0);
@@ -217,21 +221,23 @@ export default function HomePage() {
   // Valores de saldo compartidos entre vistas (USD y COP)
   const currencyBalanceUSD = 5678.90; // Valor de ejemplo para USD
   const currencyBalanceCOP = 1500000.50; // Valor de ejemplo para COP (peso colombiano)
+  // Valor de la tarjeta Visa (mismo que se muestra en TarjetaView)
+  const cardBalance = 379.21; // Valor de la tarjeta virtual
 
   const renderContent = () => {
     switch (activeTab) {
       case 'home':
-        return <HomeView titleRef={(el) => { titleRefs.current['home'] = el; }} scrollProgress={scrollProgress} isBalanceVisible={isBalanceVisible} usdBalance={currencyBalanceUSD} copBalance={currencyBalanceCOP} />;
+        return <HomeView titleRef={(el) => { titleRefs.current['home'] = el; }} scrollProgress={scrollProgress} isBalanceVisible={isBalanceVisible} usdBalance={currencyBalanceUSD} copBalance={currencyBalanceCOP} cardBalance={cardBalance} />;
       case 'wallet':
         return <WalletView isBalanceVisible={isBalanceVisible} titleRef={(el) => { titleRefs.current['wallet'] = el; }} scrollProgress={scrollProgress} usdBalance={currencyBalanceUSD} copBalance={currencyBalanceCOP} />;
       case 'cash':
-        return <CashView />;
+        return <CashView isBalanceVisible={isBalanceVisible} usdBalance={currencyBalanceUSD} copBalance={currencyBalanceCOP} />;
       case 'tarjeta':
         return <TarjetaView titleRef={(el) => { titleRefs.current['tarjeta'] = el; }} scrollProgress={scrollProgress} isBalanceVisible={isBalanceVisible} />;
       case 'mas':
         return <MasView />;
       default:
-        return <HomeView titleRef={(el) => { titleRefs.current['home'] = el; }} scrollProgress={scrollProgress} isBalanceVisible={isBalanceVisible} usdBalance={currencyBalanceUSD} copBalance={currencyBalanceCOP} />;
+        return <HomeView titleRef={(el) => { titleRefs.current['home'] = el; }} scrollProgress={scrollProgress} isBalanceVisible={isBalanceVisible} usdBalance={currencyBalanceUSD} copBalance={currencyBalanceCOP} cardBalance={cardBalance} />;
     }
   };
 

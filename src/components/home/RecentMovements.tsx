@@ -14,14 +14,14 @@ export interface Movement {
   contactName?: string;
   imageUrl?: string;
   type: 'purchase' | 'deposit' | 'transfer' | 'withdrawal';
-  source: 'wallet' | 'card' | 'general'; // Fuente del movimiento: wallet (cuentas), card (tarjeta), general (todos)
+  source: 'wallet' | 'card' | 'general' | 'cash'; // Fuente del movimiento: wallet (cuentas), card (tarjeta), general (todos), cash (transferencias)
 }
 
 interface RecentMovementsProps {
   movements: Movement[];
   isBalanceVisible?: boolean;
   maxItems?: number;
-  filterBySource?: 'wallet' | 'card' | 'general' | 'wallet-and-card'; // Filtrar por fuente específica
+  filterBySource?: 'wallet' | 'card' | 'general' | 'wallet-and-card' | 'cash' | 'wallet-and-cash'; // Filtrar por fuente específica
 }
 
 /**
@@ -84,6 +84,9 @@ export function RecentMovements({ movements, isBalanceVisible = true, maxItems =
   if (filterBySource === 'wallet-and-card') {
     // Mostrar solo movimientos de wallet y tarjeta (unión de ambos)
     filteredMovements = movements.filter((m) => m.source === 'wallet' || m.source === 'card');
+  } else if (filterBySource === 'wallet-and-cash') {
+    // Mostrar solo movimientos de wallet y cash (transferencias)
+    filteredMovements = movements.filter((m) => m.source === 'wallet' || m.source === 'cash');
   } else if (filterBySource && filterBySource !== 'general') {
     filteredMovements = movements.filter((m) => m.source === filterBySource);
   }

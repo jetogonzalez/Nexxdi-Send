@@ -10,6 +10,8 @@ export default function WelcomeScreen() {
   const [showLoginSheet, setShowLoginSheet] = useState(false);
   const [isAuthenticating, setIsAuthenticating] = useState(false);
   const [authProgress, setAuthProgress] = useState(0); // Progreso de autenticación (0-100)
+  const [isFaceIDButtonActive, setIsFaceIDButtonActive] = useState(false);
+  const [isLoginButtonActive, setIsLoginButtonActive] = useState(false);
   
   // Resetear progreso cuando no está autenticando
   useEffect(() => {
@@ -257,17 +259,60 @@ export default function WelcomeScreen() {
           flexDirection: 'column',
           gap: spacing[4],
           backgroundColor: colors.semantic.background.main,
+          zIndex: 1000, // Asegurar que los botones estén por encima de todo
+          pointerEvents: 'auto', // Asegurar que los eventos funcionen
         }}
       >
         {/* Botón Face ID - Principal */}
         <button
           type="button"
-          onClick={handleBiometricAuth}
+          onClick={(e) => {
+            console.log('Face ID button clicked'); // DEBUG
+            e.stopPropagation();
+            setIsFaceIDButtonActive(false); // Resetear estado activo
+            if (!isAuthenticating) {
+              handleBiometricAuth();
+            }
+          }}
+          onPointerDown={(e) => {
+            e.stopPropagation();
+            setIsFaceIDButtonActive(true);
+          }}
+          onPointerUp={(e) => {
+            e.stopPropagation();
+            setIsFaceIDButtonActive(false);
+          }}
+          onPointerLeave={(e) => {
+            e.stopPropagation();
+            setIsFaceIDButtonActive(false);
+          }}
+          onTouchStart={(e) => {
+            e.stopPropagation();
+            setIsFaceIDButtonActive(true);
+          }}
+          onTouchEnd={(e) => {
+            e.stopPropagation();
+            setIsFaceIDButtonActive(false);
+          }}
+          onMouseDown={(e) => {
+            e.stopPropagation();
+            setIsFaceIDButtonActive(true);
+          }}
+          onMouseUp={(e) => {
+            e.stopPropagation();
+            setIsFaceIDButtonActive(false);
+          }}
+          onMouseLeave={(e) => {
+            e.stopPropagation();
+            setIsFaceIDButtonActive(false);
+          }}
           disabled={isAuthenticating}
           style={{
             width: '100%',
             height: '56px',
-            backgroundColor: colors.semantic.text.primary,
+            backgroundColor: isFaceIDButtonActive 
+              ? 'rgba(28, 31, 33, 0.8)' // Ligeramente más claro cuando está activo
+              : colors.semantic.text.primary,
             color: colors.semantic.background.white,
             border: 'none',
             borderRadius: borderRadius.full,
@@ -280,7 +325,17 @@ export default function WelcomeScreen() {
             justifyContent: 'center',
             gap: spacing[3],
             opacity: isAuthenticating ? 0.7 : 1,
-            transition: 'opacity 0.2s ease, background-color 0.2s ease',
+            transition: 'opacity 0.2s ease, background-color 0.15s ease',
+            touchAction: 'manipulation', // Prevenir gestos táctiles que interfieran
+            userSelect: 'none',
+            WebkitUserSelect: 'none',
+            MozUserSelect: 'none',
+            msUserSelect: 'none',
+            WebkitTouchCallout: 'none',
+            position: 'relative',
+            zIndex: 1001, // Asegurar que esté por encima de otros elementos
+            outline: 'none', // Remover outline por defecto
+            WebkitTapHighlightColor: 'transparent', // Remover highlight en iOS
           }}
         >
           <img
@@ -290,6 +345,7 @@ export default function WelcomeScreen() {
               width: '26px',
               height: '26px',
               filter: 'brightness(0) invert(1)',
+              pointerEvents: 'none', // Prevenir que el icono capture eventos
             }}
           />
           {isAuthenticating ? 'Autenticando...' : 'Inicia con Face ID'}
@@ -298,11 +354,50 @@ export default function WelcomeScreen() {
         {/* Botón Login con usuario/contraseña - Secundario */}
         <button
           type="button"
-          onClick={() => setShowLoginSheet(true)}
+          onClick={(e) => {
+            console.log('Login button clicked'); // DEBUG
+            e.stopPropagation();
+            setIsLoginButtonActive(false); // Resetear estado activo
+            setShowLoginSheet(true);
+          }}
+          onPointerDown={(e) => {
+            e.stopPropagation();
+            setIsLoginButtonActive(true);
+          }}
+          onPointerUp={(e) => {
+            e.stopPropagation();
+            setIsLoginButtonActive(false);
+          }}
+          onPointerLeave={(e) => {
+            e.stopPropagation();
+            setIsLoginButtonActive(false);
+          }}
+          onTouchStart={(e) => {
+            e.stopPropagation();
+            setIsLoginButtonActive(true);
+          }}
+          onTouchEnd={(e) => {
+            e.stopPropagation();
+            setIsLoginButtonActive(false);
+          }}
+          onMouseDown={(e) => {
+            e.stopPropagation();
+            setIsLoginButtonActive(true);
+          }}
+          onMouseUp={(e) => {
+            e.stopPropagation();
+            setIsLoginButtonActive(false);
+          }}
+          onMouseLeave={(e) => {
+            e.stopPropagation();
+            setIsLoginButtonActive(false);
+          }}
           style={{
             width: '100%',
             height: '56px',
-            backgroundColor: 'rgba(0, 0, 0, 0.0627)',
+            backgroundColor: isLoginButtonActive 
+              ? 'rgba(0, 0, 0, 0.1)' // Ligeramente más oscuro cuando está activo
+              : 'rgba(0, 0, 0, 0.0627)',
             color: colors.semantic.text.primary,
             border: 'none',
             borderRadius: borderRadius.full,
@@ -310,7 +405,17 @@ export default function WelcomeScreen() {
             fontSize: typography.fontSize.base,
             fontWeight: typography.fontWeight.bold,
             cursor: 'pointer',
-            transition: 'opacity 0.2s ease',
+            transition: 'opacity 0.2s ease, background-color 0.15s ease',
+            touchAction: 'manipulation', // Prevenir gestos táctiles que interfieran
+            userSelect: 'none',
+            WebkitUserSelect: 'none',
+            MozUserSelect: 'none',
+            msUserSelect: 'none',
+            WebkitTouchCallout: 'none',
+            position: 'relative',
+            zIndex: 1001, // Asegurar que esté por encima de otros elementos
+            outline: 'none', // Remover outline por defecto
+            WebkitTapHighlightColor: 'transparent', // Remover highlight en iOS
           }}
         >
           Inicia con tu usuario y contraseña
