@@ -227,7 +227,7 @@ export default function HomePage() {
   const renderContent = () => {
     switch (activeTab) {
       case 'home':
-        return <HomeView titleRef={(el) => { titleRefs.current['home'] = el; }} scrollProgress={scrollProgress} isBalanceVisible={isBalanceVisible} usdBalance={currencyBalanceUSD} copBalance={currencyBalanceCOP} cardBalance={cardBalance} />;
+        return <HomeView titleRef={(el) => { titleRefs.current['home'] = el; }} scrollProgress={scrollProgress} isBalanceVisible={isBalanceVisible} usdBalance={currencyBalanceUSD} copBalance={currencyBalanceCOP} cardBalance={cardBalance} onNavigate={handleTabChange} />;
       case 'wallet':
         return <WalletView isBalanceVisible={isBalanceVisible} titleRef={(el) => { titleRefs.current['wallet'] = el; }} scrollProgress={scrollProgress} usdBalance={currencyBalanceUSD} copBalance={currencyBalanceCOP} />;
       case 'cash':
@@ -237,7 +237,7 @@ export default function HomePage() {
       case 'mas':
         return <MasView isBalanceVisible={isBalanceVisible} cardBalance={cardBalance} />;
       default:
-        return <HomeView titleRef={(el) => { titleRefs.current['home'] = el; }} scrollProgress={scrollProgress} isBalanceVisible={isBalanceVisible} usdBalance={currencyBalanceUSD} copBalance={currencyBalanceCOP} cardBalance={cardBalance} />;
+        return <HomeView titleRef={(el) => { titleRefs.current['home'] = el; }} scrollProgress={scrollProgress} isBalanceVisible={isBalanceVisible} usdBalance={currencyBalanceUSD} copBalance={currencyBalanceCOP} cardBalance={cardBalance} onNavigate={handleTabChange} />;
     }
   };
 

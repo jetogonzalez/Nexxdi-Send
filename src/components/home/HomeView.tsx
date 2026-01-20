@@ -33,9 +33,10 @@ interface HomeViewProps {
   usdBalance?: number;
   copBalance?: number;
   cardBalance?: number;
+  onNavigate?: (tab: string) => void;
 }
 
-export function HomeView({ titleRef, scrollProgress = 0, isBalanceVisible = true, usdBalance: initialUsdBalance = 5678.90, copBalance: initialCopBalance = 1500000.50, cardBalance = 379.21 }: HomeViewProps) {
+export function HomeView({ titleRef, scrollProgress = 0, isBalanceVisible = true, usdBalance: initialUsdBalance = 5678.90, copBalance: initialCopBalance = 1500000.50, cardBalance = 379.21, onNavigate }: HomeViewProps) {
   const title = 'Hola, Luis';
   const [showPersonalizeSheet, setShowPersonalizeSheet] = useState(false);
   const [homeSections, setHomeSections] = useState<HomeSection[]>(defaultSections);
@@ -79,6 +80,13 @@ export function HomeView({ titleRef, scrollProgress = 0, isBalanceVisible = true
             <CardWalletSlider
               isBalanceVisible={isBalanceVisible}
               cardBalance={cardBalance}
+              onCardDoubleTap={(card) => {
+                if (card.type === 'usd' || card.type === 'cop') {
+                  onNavigate?.('wallet');
+                } else if (card.type === 'visa') {
+                  onNavigate?.('tarjeta');
+                }
+              }}
             />
           </div>
         );
