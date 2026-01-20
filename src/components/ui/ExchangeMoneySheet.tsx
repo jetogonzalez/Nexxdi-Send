@@ -402,17 +402,50 @@ export function ExchangeMoneySheet({ isOpen, onClose, initialUsdBalance, initial
           {/* Slider para confirmar cambio */}
           <div style={{ marginTop: spacing[4] }}>
             <SliderToBlock
+              key={`exchange-${isOpen}`}
               mode="exchange"
               onComplete={() => {
-                const fromAmount = parseFormattedValue(exchangeFromAmount);
-                const toAmount = convert(fromAmount, exchangeFromCurrency.symbol, exchangeToCurrency.symbol);
+                // Calcular montos basados en el campo que se editó
+                let fromAmount: number;
+                let toAmount: number;
                 const fromSymbol = exchangeFromCurrency.symbol as 'USD' | 'COP';
                 const toSymbol = exchangeToCurrency.symbol as 'USD' | 'COP';
+                
+                if (exchangeLastEditedField === 'from') {
+                  fromAmount = parseFormattedValue(exchangeFromAmount);
+                  toAmount = convert(fromAmount, fromSymbol, toSymbol);
+                } else {
+                  toAmount = parseFormattedValue(exchangeToAmount);
+                  fromAmount = convert(toAmount, toSymbol, fromSymbol);
+                }
+                
+                // Validar que el monto no exceda el saldo disponible
+                const availableBalance = fromSymbol === 'USD' ? usdBalance : copBalance;
+                if (fromAmount > availableBalance) {
+                  console.error('Monto excede saldo disponible');
+                  return;
+                }
+                
+                // Validar monto mínimo
+                if (fromAmount <= 0) {
+                  console.error('Monto inválido');
+                  return;
+                }
+                
+                console.log('Ejecutando cambio:', { 
+                  fromAmount, 
+                  fromSymbol, 
+                  toAmount, 
+                  toSymbol,
+                  availableBalance,
+                  usdBalance,
+                  copBalance
+                });
                 
                 // 1. Realizar el cambio de saldos
                 performExchange(fromSymbol, toSymbol, fromAmount, toAmount);
                 
-                // 2. Agregar movimiento de salida (negativo)
+                // 2. Agregar movimiento de salida (negativo) - aparece en wallet y general
                 const now = new Date();
                 addMovement({
                   name: `Cambio de moneda · ${fromSymbol} → ${toSymbol}`,
@@ -421,7 +454,7 @@ export function ExchangeMoneySheet({ isOpen, onClose, initialUsdBalance, initial
                   date: now,
                   logoUrl: '/img/icons/global/fx.svg',
                   type: 'transfer',
-                  source: 'cash',
+                  source: 'wallet', // Aparece en wallet y general
                 });
                 
                 // 3. Agregar movimiento de entrada (positivo) - 1 segundo después
@@ -433,10 +466,8 @@ export function ExchangeMoneySheet({ isOpen, onClose, initialUsdBalance, initial
                   date: entryDate,
                   logoUrl: '/img/icons/global/fx.svg',
                   type: 'deposit',
-                  source: 'cash',
+                  source: 'wallet', // Aparece en wallet y general
                 });
-                
-                console.log('Cambio completado:', { from: fromAmount, fromCurrency: fromSymbol, to: toAmount, toCurrency: toSymbol });
               }}
               onCloseSheet={handleClose}
               onShowToast={(message) => { console.log('Toast:', message); }}

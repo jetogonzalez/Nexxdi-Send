@@ -102,6 +102,7 @@ export function SliderToBlock({
   const startXRef = useRef(0);
   const startProgressRef = useRef(0);
   const pointerIdRef = useRef<number | null>(null);
+  const hasCalledCompleteRef = useRef(false); // Prevenir doble ejecución de onComplete
 
   // Calcular ancho del slider
   useEffect(() => {
@@ -114,6 +115,17 @@ export function SliderToBlock({
     updateWidth();
     window.addEventListener('resize', updateWidth);
     return () => window.removeEventListener('resize', updateWidth);
+  }, []);
+
+  // Resetear el slider cuando cambia el key (cuando se reabre el sheet)
+  useEffect(() => {
+    // Resetear todos los estados cuando el componente se monta/remonta
+    setProgress(0);
+    setIsCompleted(false);
+    setIsLoading(false);
+    setIsDragging(false);
+    setHasInteracted(false);
+    hasCalledCompleteRef.current = false;
   }, []);
 
   // Mostrar hint una sola vez después de un pequeño delay cuando el componente se monta
@@ -162,7 +174,8 @@ export function SliderToBlock({
     setProgress(newProgress);
     
     // Si llega al 100%, iniciar secuencia de loader
-    if (newProgress >= 100) {
+    if (newProgress >= 100 && !hasCalledCompleteRef.current) {
+      hasCalledCompleteRef.current = true; // Marcar como ejecutado
       setIsCompleted(true);
       setIsDragging(false);
       setIsLoading(true); // Activar loader
