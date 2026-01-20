@@ -568,7 +568,7 @@ export function HomeView({ titleRef, scrollProgress = 0, isBalanceVisible = true
       {/* Sección Personalizar Home - siempre visible al final */}
       <div
         style={{
-          marginTop: '1.5rem',
+          marginTop: '0.75rem',
           marginBottom: 0,
         }}
       >
