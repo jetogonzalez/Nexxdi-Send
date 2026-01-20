@@ -617,7 +617,7 @@ export function HomeView({ titleRef, scrollProgress = 0, isBalanceVisible = true
               textAlign: 'center',
             }}
           >
-            Personaliza esta sección
+            Personaliza tu Inicio
           </span>
         </button>
       </div>

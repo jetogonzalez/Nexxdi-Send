@@ -270,7 +270,7 @@ export function PersonalizeHomeSheet({ isOpen, onClose, sections: initialSection
     <BottomSheet
       isOpen={isOpen}
       onClose={onClose}
-      title="Personaliza esta sección"
+      title="Personaliza tu Inicio"
       leftIcon={closeIcon}
       rightIcon={checkIcon}
       onLeftIconClick={onClose}
