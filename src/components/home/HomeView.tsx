@@ -1,9 +1,7 @@
 import { useState, useEffect } from 'react';
 import { borderRadius, colors, spacing, typography } from '../../config/design-tokens';
 import { formatBalance } from '../../lib/formatBalance';
-import { VirtualCard } from './VirtualCard';
-import { CurrencyCard } from './CurrencyCard';
-import { CardDeck } from './CardDeck';
+import { CardWalletSlider } from '../ui/CardWalletSlider';
 import { CurrencyChangeCard } from './CurrencyChangeCard';
 import { RecentMovementsSection } from './RecentMovementsSection';
 import { BalanceCard } from '../ui/BalanceCard';
@@ -77,23 +75,12 @@ export function HomeView({ titleRef, scrollProgress = 0, isBalanceVisible = true
     switch (sectionId) {
       case 'productos':
         return (
-          <CardDeck>
-            <CurrencyCard 
-              currency="USD"
-              currencyName="Dólares"
-              balance={currencyBalanceUSD}
+          <div style={{ marginBottom: '1.5rem' }}>
+            <CardWalletSlider
               isBalanceVisible={isBalanceVisible}
-              backgroundColor={colors.semantic.background.white}
+              cardBalance={cardBalance}
             />
-            <CurrencyCard 
-              currency="COP"
-              currencyName="Peso Colombiano"
-              balance={currencyBalanceCOP}
-              isBalanceVisible={isBalanceVisible}
-              backgroundColor={colors.semantic.background.white}
-            />
-            <VirtualCard balance={cardBalance} isBalanceVisible={isBalanceVisible} />
-          </CardDeck>
+          </div>
         );
       
       case 'acciones':

@@ -235,7 +235,7 @@ export default function HomePage() {
       case 'tarjeta':
         return <TarjetaView titleRef={(el) => { titleRefs.current['tarjeta'] = el; }} scrollProgress={scrollProgress} isBalanceVisible={isBalanceVisible} />;
       case 'mas':
-        return <MasView />;
+        return <MasView isBalanceVisible={isBalanceVisible} cardBalance={cardBalance} />;
       default:
         return <HomeView titleRef={(el) => { titleRefs.current['home'] = el; }} scrollProgress={scrollProgress} isBalanceVisible={isBalanceVisible} usdBalance={currencyBalanceUSD} copBalance={currencyBalanceCOP} cardBalance={cardBalance} />;
     }
