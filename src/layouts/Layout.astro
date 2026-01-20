@@ -132,4 +132,49 @@ const { title, description = "Aplicación móvil Nexxdi Cash" } = Astro.props;
     height: 0;
   }
 
+  /* ========================================
+     PRESS EFFECT - Escala al presionar
+     ======================================== */
+  
+  /* Clase para elementos clickeables con efecto de presión */
+  .pressable {
+    transition: transform 0.15s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    -webkit-tap-highlight-color: transparent;
+    user-select: none;
+  }
+
+  .pressable:active {
+    transform: scale(0.97);
+  }
+
+  /* Botones nativos con efecto de presión */
+  button:not([disabled]),
+  [role="button"]:not([disabled]) {
+    transition: transform 0.15s cubic-bezier(0.25, 0.46, 0.45, 0.94), 
+                opacity 0.15s ease,
+                background-color 0.15s ease;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  button:not([disabled]):active,
+  [role="button"]:not([disabled]):active {
+    transform: scale(0.97);
+  }
+
+  /* Links y elementos interactivos */
+  a:not([disabled]) {
+    transition: transform 0.15s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  a:not([disabled]):active {
+    transform: scale(0.97);
+  }
+
+  /* Evitar efecto en elementos que ya manejan su propia escala (como cards del slider) */
+  .no-press-effect,
+  .no-press-effect:active {
+    transform: none !important;
+  }
+
 </style>

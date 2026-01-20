@@ -477,6 +477,7 @@ export function CardWalletSlider({ onCardSelect, onCardDoubleTap, onFrontCardCha
         return (
           <div
             key={card.id}
+            className="no-press-effect"
             onClick={() => handleCardClick(card.id)}
             onMouseDown={(e) => handleMouseDown(card.id, e)}
             onTouchStart={(e) => handleTouchStart(card.id, e)}
