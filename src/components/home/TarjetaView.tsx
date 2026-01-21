@@ -637,7 +637,7 @@ export function TarjetaView({ titleRef, scrollProgress = 0, isBalanceVisible = t
             aria-label="Ver datos"
           >
             <img
-              src="/img/icons/button-bar/icon-card-inactive.svg"
+              src="/img/icons/global/details.card.svg"
               alt="Ver datos"
               style={{
                 width: '24px',
