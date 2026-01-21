@@ -16,14 +16,14 @@ export default function SplashScreen() {
       
       // Redirigir después del fade out (400ms = motion.duration.base)
       redirectTimerRef.current = setTimeout(() => {
-        console.log('Redirigiendo a /welcome');
+        console.log('Redirigiendo a /pin');
         if (typeof window !== 'undefined') {
           try {
-            window.location.href = '/welcome';
+            window.location.href = '/pin';
           } catch (error) {
             console.error('Error al redirigir:', error);
             // Fallback: usar replace
-            window.location.replace('/welcome');
+            window.location.replace('/pin');
           }
         }
       }, 400); // Esperar a que termine el fade out (motion.duration.base = 400ms)
