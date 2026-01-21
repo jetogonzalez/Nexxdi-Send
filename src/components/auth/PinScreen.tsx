@@ -28,7 +28,15 @@ export function PinScreen({ onSuccess }: PinScreenProps) {
   const [error, setError] = useState(false);
   const [shake, setShake] = useState(false);
 
+  // Función para vibrar
+  const vibrate = (pattern: number | number[] = 10) => {
+    if (typeof navigator !== 'undefined' && navigator.vibrate) {
+      navigator.vibrate(pattern);
+    }
+  };
+
   const handleNumberPress = (num: string) => {
+    vibrate(10);
     if (pin.length < 4) {
       const newPin = pin + num;
       setPin(newPin);
@@ -38,12 +46,14 @@ export function PinScreen({ onSuccess }: PinScreenProps) {
       if (newPin.length === 4) {
         if (newPin === CORRECT_PIN) {
           // PIN correcto - guardar validación en sessionStorage
+          vibrate(30);
           setPinValidated();
           setTimeout(() => {
             onSuccess();
           }, 200);
         } else {
-          // PIN incorrecto
+          // PIN incorrecto - vibración más larga
+          vibrate([50, 30, 50]);
           setError(true);
           setShake(true);
           setTimeout(() => {
@@ -56,6 +66,7 @@ export function PinScreen({ onSuccess }: PinScreenProps) {
   };
 
   const handleDelete = () => {
+    vibrate(10);
     setPin(pin.slice(0, -1));
     setError(false);
   };
@@ -201,12 +212,32 @@ export function PinScreen({ onSuccess }: PinScreenProps) {
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
-                    transition: 'all 0.2s ease',
+                    transition: 'all 0.2s cubic-bezier(0.25, 0.46, 0.45, 0.94)',
                     fontFamily: typography.fontFamily.sans.join(', '),
                     fontSize: 'min(4.5vw, 18px)',
                     fontWeight: typography.fontWeight.bold,
                     color: colors.semantic.text.primary,
                     WebkitTapHighlightColor: 'transparent',
+                  }}
+                  onMouseDown={(e) => {
+                    e.currentTarget.style.transform = 'scale(0.92)';
+                    e.currentTarget.style.opacity = '0.7';
+                  }}
+                  onMouseUp={(e) => {
+                    e.currentTarget.style.transform = 'scale(1)';
+                    e.currentTarget.style.opacity = '1';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.transform = 'scale(1)';
+                    e.currentTarget.style.opacity = '1';
+                  }}
+                  onTouchStart={(e) => {
+                    e.currentTarget.style.transform = 'scale(0.92)';
+                    e.currentTarget.style.opacity = '0.7';
+                  }}
+                  onTouchEnd={(e) => {
+                    e.currentTarget.style.transform = 'scale(1)';
+                    e.currentTarget.style.opacity = '1';
                   }}
                 >
                   Borrar
@@ -232,12 +263,12 @@ export function PinScreen({ onSuccess }: PinScreenProps) {
                   fontSize: 'min(7vw, 32px)',
                   fontWeight: typography.fontWeight.medium,
                   color: colors.semantic.text.primary,
-                  transition: 'all 0.15s ease',
+                  transition: 'all 0.2s cubic-bezier(0.25, 0.46, 0.45, 0.94)',
                   WebkitTapHighlightColor: 'transparent',
                 }}
                 onMouseDown={(e) => {
-                  e.currentTarget.style.transform = 'scale(0.95)';
-                  e.currentTarget.style.backgroundColor = colors.semantic.border.light;
+                  e.currentTarget.style.transform = 'scale(0.92)';
+                  e.currentTarget.style.backgroundColor = colors.semantic.border.medium;
                 }}
                 onMouseUp={(e) => {
                   e.currentTarget.style.transform = 'scale(1)';
@@ -248,8 +279,8 @@ export function PinScreen({ onSuccess }: PinScreenProps) {
                   e.currentTarget.style.backgroundColor = colors.semantic.background.main;
                 }}
                 onTouchStart={(e) => {
-                  e.currentTarget.style.transform = 'scale(0.95)';
-                  e.currentTarget.style.backgroundColor = colors.semantic.border.light;
+                  e.currentTarget.style.transform = 'scale(0.92)';
+                  e.currentTarget.style.backgroundColor = colors.semantic.border.medium;
                 }}
                 onTouchEnd={(e) => {
                   e.currentTarget.style.transform = 'scale(1)';
