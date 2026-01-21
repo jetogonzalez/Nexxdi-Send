@@ -356,7 +356,7 @@ export function CardWalletSlider({ onCardSelect, onCardDoubleTap, onFrontCardCha
             />
           )}
           
-          {/* Contenido de bloqueo centrado */}
+          {/* Contenido de bloqueo centrado - contenedor circular como en TarjetaView */}
           {isCardBlocked && (
             <div
               style={{
@@ -372,15 +372,29 @@ export function CardWalletSlider({ onCardSelect, onCardDoubleTap, onFrontCardCha
                 pointerEvents: 'none',
               }}
             >
-              <img
-                src="/img/icons/global/lock.svg"
-                alt="Bloqueada"
+              {/* Contenedor circular blanco */}
+              <div
                 style={{
-                  width: 24,
-                  height: 24,
-                  filter: 'brightness(0) invert(1)', // Blanco
+                  width: 56,
+                  height: 56,
+                  borderRadius: '50%',
+                  backgroundColor: 'rgba(255, 255, 255, 0.7)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
                 }}
-              />
+              >
+                <img
+                  src="/img/icons/global/lock.svg"
+                  alt="Bloqueada"
+                  style={{
+                    width: 24,
+                    height: 24,
+                    display: 'block',
+                    filter: 'none', // Negro (sin filtro)
+                  }}
+                />
+              </div>
               <span
                 style={{
                   fontSize: 14,
