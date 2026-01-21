@@ -94,7 +94,7 @@ const countryToCurrencyMap: Record<string, string[]> = {
   'dinamarca': ['dkk'], 'noruega': ['nok'], 'suecia': ['sek'], 'polonia': ['pln'],
 };
 
-// Función para obtener la bandera de una moneda
+// Función para obtener la bandera de una moneda (local SVG)
 const getCurrencyFlag = (symbol: string): string => {
   const currencyToCountry: Record<string, string> = {
     'USD': 'US', 'EUR': 'EU', 'COP': 'CO', 'MXN': 'MX', 'PEN': 'PE',
@@ -105,7 +105,7 @@ const getCurrencyFlag = (symbol: string): string => {
     'THB': 'TH', 'TWD': 'TW', 'AED': 'AE', 'UYU': 'UY',
   };
   const countryCode = currencyToCountry[symbol] || 'US';
-  return `https://flagcdn.com/w80/${countryCode.toLowerCase()}.png`;
+  return `/img/icons/country-flags/${countryCode}.svg`;
 };
 
 export function SendMoneySheet({ isOpen, onClose, usdBalance, copBalance }: SendMoneySheetProps) {

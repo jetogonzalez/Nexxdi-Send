@@ -24,13 +24,13 @@ interface CurrencyOption {
   balance: string;
 }
 
-// Función para obtener la bandera de una moneda
+// Función para obtener la bandera de una moneda (local SVG)
 const getCurrencyFlag = (symbol: string): string => {
   const currencyToCountry: Record<string, string> = {
     'USD': 'US', 'COP': 'CO',
   };
   const countryCode = currencyToCountry[symbol] || 'US';
-  return `https://flagcdn.com/w80/${countryCode.toLowerCase()}.png`;
+  return `/img/icons/country-flags/${countryCode}.svg`;
 };
 
 export function ExchangeMoneySheet({ isOpen, onClose, initialUsdBalance, initialCopBalance }: ExchangeMoneySheetProps) {
