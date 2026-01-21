@@ -159,7 +159,7 @@ export default function WelcomeScreen() {
             }}
           >
             <img
-              src="/img/user/fernando-plaza.jpg"
+              src={currentUser.photo}
               alt="Usuario"
               style={{
                 width: '100%',
