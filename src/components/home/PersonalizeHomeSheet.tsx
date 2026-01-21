@@ -305,7 +305,7 @@ export function PersonalizeHomeSheet({ isOpen, onClose, sections: initialSection
             WebkitUserSelect: 'none',
           }}
         >
-          Elige qué secciones quieres ver en tu Home, ocúltalas o cámbiales el orden según tu preferencia.
+          Elige qué secciones quieres ver en tu pantalla de Inicio, ocúltalas o cámbiales el orden según tu preferencia.
         </p>
         
         {sections.map((section, index) => (

@@ -509,9 +509,9 @@ export function ExchangeMoneySheet({ isOpen, onClose, initialUsdBalance, initial
                 setExchangeFromCurrency(currency);
                 setIsFromCurrencySheetOpen(false);
               }}
-              style={{ width: '100%', display: 'flex', alignItems: 'center', gap: spacing[3], padding: 0, backgroundColor: 'transparent', border: 'none', cursor: 'pointer', transition: 'opacity 0.2s ease' }}
-              onMouseEnter={(e) => { e.currentTarget.style.opacity = '0.7'; }}
-              onMouseLeave={(e) => { e.currentTarget.style.opacity = '1'; }}
+              style={{ width: '100%', display: 'flex', alignItems: 'center', gap: spacing[3], padding: 0, backgroundColor: 'transparent', border: 'none', cursor: 'pointer' }}
+              
+              
             >
               <img src={getCurrencyFlag(currency.symbol)} alt={`Bandera ${currency.symbol}`} style={{ width: '40px', height: '40px', borderRadius: borderRadius.full, objectFit: 'cover', flexShrink: 0, marginTop: spacing[4], marginBottom: spacing[4] }} />
               <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: `${spacing[4]} 0`, borderBottom: index < currencies.length - 1 ? `1px solid ${colors.semantic.border.light}` : 'none' }}>
@@ -561,9 +561,9 @@ export function ExchangeMoneySheet({ isOpen, onClose, initialUsdBalance, initial
                 setExchangeToCurrency(currency);
                 setIsToCurrencySheetOpen(false);
               }}
-              style={{ width: '100%', display: 'flex', alignItems: 'center', gap: spacing[3], padding: 0, backgroundColor: 'transparent', border: 'none', cursor: 'pointer', transition: 'opacity 0.2s ease' }}
-              onMouseEnter={(e) => { e.currentTarget.style.opacity = '0.7'; }}
-              onMouseLeave={(e) => { e.currentTarget.style.opacity = '1'; }}
+              style={{ width: '100%', display: 'flex', alignItems: 'center', gap: spacing[3], padding: 0, backgroundColor: 'transparent', border: 'none', cursor: 'pointer' }}
+              
+              
             >
               <img src={getCurrencyFlag(currency.symbol)} alt={`Bandera ${currency.symbol}`} style={{ width: '40px', height: '40px', borderRadius: borderRadius.full, objectFit: 'cover', flexShrink: 0, marginTop: spacing[4], marginBottom: spacing[4] }} />
               <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: `${spacing[4]} 0`, borderBottom: index < currencies.length - 1 ? `1px solid ${colors.semantic.border.light}` : 'none' }}>

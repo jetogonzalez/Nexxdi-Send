@@ -648,9 +648,9 @@ export function SendMoneySheet({ isOpen, onClose, usdBalance, copBalance }: Send
                 setSendCurrency(currency);
                 setIsSendCurrencySheetOpen(false);
               }}
-              style={{ width: '100%', display: 'flex', alignItems: 'center', gap: spacing[3], padding: 0, backgroundColor: 'transparent', border: 'none', cursor: 'pointer', transition: 'opacity 0.2s ease' }}
-              onMouseEnter={(e) => { e.currentTarget.style.opacity = '0.7'; }}
-              onMouseLeave={(e) => { e.currentTarget.style.opacity = '1'; }}
+              style={{ width: '100%', display: 'flex', alignItems: 'center', gap: spacing[3], padding: 0, backgroundColor: 'transparent', border: 'none', cursor: 'pointer' }}
+              
+              
             >
               <img src={getCurrencyFlag(currency.symbol)} alt={`Bandera ${currency.symbol}`} style={{ width: '40px', height: '40px', borderRadius: borderRadius.full, objectFit: 'cover', flexShrink: 0, marginTop: spacing[4], marginBottom: spacing[4] }} />
               <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: `${spacing[4]} 0`, borderBottom: index < currencies.length - 1 ? `1px solid ${colors.semantic.border.light}` : 'none' }}>
@@ -731,9 +731,9 @@ export function SendMoneySheet({ isOpen, onClose, usdBalance, copBalance }: Send
                       setIsReceiveCurrencySheetOpen(false);
                       setCurrencySearch('');
                     }}
-                    style={{ width: '100%', display: 'flex', alignItems: 'center', gap: spacing[3], padding: 0, backgroundColor: 'transparent', border: 'none', cursor: 'pointer', transition: 'opacity 0.2s ease' }}
-                    onMouseEnter={(e) => { e.currentTarget.style.opacity = '0.7'; }}
-                    onMouseLeave={(e) => { e.currentTarget.style.opacity = '1'; }}
+                    style={{ width: '100%', display: 'flex', alignItems: 'center', gap: spacing[3], padding: 0, backgroundColor: 'transparent', border: 'none', cursor: 'pointer' }}
+                    
+                    
                   >
                     <img src={getCurrencyFlag(currency.symbol)} alt={`Bandera ${currency.symbol}`} style={{ width: '40px', height: '40px', borderRadius: borderRadius.full, objectFit: 'cover', flexShrink: 0, marginTop: spacing[3], marginBottom: spacing[3] }} />
                     <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: `${spacing[3]} 0`, borderBottom: index < filteredPopular.length - 1 ? `1px solid ${colors.semantic.border.light}` : 'none' }}>
@@ -772,9 +772,9 @@ export function SendMoneySheet({ isOpen, onClose, usdBalance, copBalance }: Send
                       setIsReceiveCurrencySheetOpen(false);
                       setCurrencySearch('');
                     }}
-                    style={{ width: '100%', display: 'flex', alignItems: 'center', gap: spacing[3], padding: 0, backgroundColor: 'transparent', border: 'none', cursor: 'pointer', transition: 'opacity 0.2s ease' }}
-                    onMouseEnter={(e) => { e.currentTarget.style.opacity = '0.7'; }}
-                    onMouseLeave={(e) => { e.currentTarget.style.opacity = '1'; }}
+                    style={{ width: '100%', display: 'flex', alignItems: 'center', gap: spacing[3], padding: 0, backgroundColor: 'transparent', border: 'none', cursor: 'pointer' }}
+                    
+                    
                   >
                     <img src={getCurrencyFlag(currency.symbol)} alt={`Bandera ${currency.symbol}`} style={{ width: '40px', height: '40px', borderRadius: borderRadius.full, objectFit: 'cover', flexShrink: 0, marginTop: spacing[3], marginBottom: spacing[3] }} />
                     <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: `${spacing[3]} 0`, borderBottom: index < filteredOther.length - 1 ? `1px solid ${colors.semantic.border.light}` : 'none' }}>
