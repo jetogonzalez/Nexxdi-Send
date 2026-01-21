@@ -168,21 +168,22 @@ export function PinScreen({ onSuccess }: PinScreenProps) {
           flexDirection: 'column',
           alignItems: 'center',
           width: '100%',
+          maxWidth: '400px',
+          padding: `0 ${spacing[4]}`,
         }}
       >
         <div
           style={{
             display: 'grid',
             gridTemplateColumns: 'repeat(3, 1fr)',
-            gap: spacing[3],
-            maxWidth: '320px',
+            gap: 'min(5vw, 24px)',
             width: '100%',
             justifyItems: 'center',
           }}
         >
           {numbers.map((num, index) => {
             if (num === '') {
-              return <div key={index} style={{ width: '84px', height: '84px' }} />;
+              return <div key={index} style={{ width: 'min(22vw, 90px)', height: 'min(22vw, 90px)' }} />;
             }
 
             if (num === 'delete') {
@@ -191,8 +192,8 @@ export function PinScreen({ onSuccess }: PinScreenProps) {
                   key={index}
                   onClick={handleDelete}
                   style={{
-                    width: '84px',
-                    height: '84px',
+                    width: 'min(22vw, 90px)',
+                    height: 'min(22vw, 90px)',
                     borderRadius: borderRadius.full,
                     border: 'none',
                     backgroundColor: 'transparent',
@@ -202,7 +203,7 @@ export function PinScreen({ onSuccess }: PinScreenProps) {
                     justifyContent: 'center',
                     transition: 'all 0.2s ease',
                     fontFamily: typography.fontFamily.sans.join(', '),
-                    fontSize: '18px',
+                    fontSize: 'min(4.5vw, 18px)',
                     fontWeight: typography.fontWeight.bold,
                     color: colors.semantic.text.primary,
                     WebkitTapHighlightColor: 'transparent',
@@ -218,8 +219,8 @@ export function PinScreen({ onSuccess }: PinScreenProps) {
                 key={index}
                 onClick={() => handleNumberPress(num)}
                 style={{
-                  width: '84px',
-                  height: '84px',
+                  width: 'min(22vw, 90px)',
+                  height: 'min(22vw, 90px)',
                   borderRadius: borderRadius.full,
                   border: 'none',
                   backgroundColor: colors.semantic.background.main,
@@ -228,7 +229,7 @@ export function PinScreen({ onSuccess }: PinScreenProps) {
                   alignItems: 'center',
                   justifyContent: 'center',
                   fontFamily: typography.fontFamily.sans.join(', '),
-                  fontSize: '32px',
+                  fontSize: 'min(8vw, 36px)',
                   fontWeight: typography.fontWeight.semibold,
                   color: colors.semantic.text.primary,
                   transition: 'all 0.15s ease',
