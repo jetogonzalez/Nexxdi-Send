@@ -74,8 +74,8 @@ export function PinScreen({ onSuccess }: PinScreenProps) {
         display: 'flex',
         flexDirection: 'column',
         alignItems: 'center',
-        justifyContent: 'space-between',
-        padding: `env(safe-area-inset-top, 60px) ${spacing[6]} env(safe-area-inset-bottom, 40px)`,
+        justifyContent: 'center',
+        padding: `env(safe-area-inset-top, 20px) ${spacing[6]} env(safe-area-inset-bottom, 20px)`,
         zIndex: 9999,
         boxSizing: 'border-box',
       }}
@@ -86,8 +86,8 @@ export function PinScreen({ onSuccess }: PinScreenProps) {
           display: 'flex',
           flexDirection: 'column',
           alignItems: 'center',
-          paddingTop: '8vh',
           width: '100%',
+          marginBottom: spacing[8],
         }}
       >
         {/* Título */}
@@ -168,7 +168,6 @@ export function PinScreen({ onSuccess }: PinScreenProps) {
           flexDirection: 'column',
           alignItems: 'center',
           width: '100%',
-          paddingBottom: spacing[4],
         }}
       >
         <div
