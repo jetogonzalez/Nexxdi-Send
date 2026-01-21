@@ -890,7 +890,7 @@ export function CashView({ isBalanceVisible = true, usdBalance: initialUsdBalanc
               gap: spacing[2],
               backgroundColor: 'rgba(0, 0, 0, 0.05)',
               borderRadius: borderRadius.full,
-              padding: `${spacing[2]} ${spacing[4]}`,
+              padding: '0.5rem',
               border: 'none',
               cursor: 'pointer',
               transition: 'background-color 0.2s ease',
