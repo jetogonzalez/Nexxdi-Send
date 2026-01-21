@@ -410,7 +410,7 @@ export function ExchangeMoneySheet({ isOpen, onClose, initialUsdBalance, initial
                 Costo del servicio
               </span>
               <span style={{ fontSize: typography.fontSize.sm, fontWeight: typography.fontWeight.bold, color: colors.semantic.text.primary, fontFamily: typography.fontFamily.sans.join(', ') }}>
-                $0
+                GRATIS
               </span>
             </div>
           </div>
