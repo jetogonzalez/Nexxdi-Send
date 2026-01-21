@@ -67,9 +67,9 @@ export function PinScreen({ onSuccess }: PinScreenProps) {
       {/* Logo */}
       <div style={{ marginBottom: spacing[8] }}>
         <img
-          src="/img/logos/logo-nexxdi-cash.svg"
+          src="/img/icons/logos/nexxdi-cash-logo-color.svg"
           alt="Nexxdi Cash"
-          style={{ height: '40px' }}
+          style={{ height: '32px' }}
         />
       </div>
 
@@ -173,37 +173,13 @@ export function PinScreen({ onSuccess }: PinScreenProps) {
                   alignItems: 'center',
                   justifyContent: 'center',
                   transition: 'all 0.2s ease',
+                  fontFamily: typography.fontFamily.sans.join(', '),
+                  fontSize: typography.fontSize.sm,
+                  fontWeight: typography.fontWeight.medium,
+                  color: colors.semantic.text.primary,
                 }}
               >
-                <svg
-                  width="24"
-                  height="24"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  xmlns="http://www.w3.org/2000/svg"
-                >
-                  <path
-                    d="M9 18L15 12L9 6"
-                    stroke={colors.semantic.text.primary}
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    transform="rotate(180 12 12)"
-                  />
-                  <path
-                    d="M19 6H9L4 12L9 18H19C20.1046 18 21 17.1046 21 16V8C21 6.89543 20.1046 6 19 6Z"
-                    stroke={colors.semantic.text.primary}
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  />
-                  <path
-                    d="M13 10L17 14M17 10L13 14"
-                    stroke={colors.semantic.text.primary}
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                  />
-                </svg>
+                Borrar
               </button>
             );
           }
