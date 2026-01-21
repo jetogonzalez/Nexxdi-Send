@@ -683,6 +683,7 @@ export function SendMoneySheet({ isOpen, onClose, usdBalance, copBalance }: Send
         maxHeight={96}
         showGraber={true}
         zIndex={1100}
+        fullScreen={true}
         rightIcon={
           <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
             <path d="M18 6L6 18M6 6L18 18" stroke={colors.semantic.text.primary} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
@@ -690,9 +691,9 @@ export function SendMoneySheet({ isOpen, onClose, usdBalance, copBalance }: Send
         }
         onRightIconClick={() => { setIsReceiveCurrencySheetOpen(false); setCurrencySearch(''); }}
       >
-        <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
-          {/* Barra de búsqueda */}
-          <div style={{ position: 'sticky', top: 0, backgroundColor: colors.semantic.background.white, paddingBottom: spacing[4], zIndex: 10 }}>
+        <div style={{ display: 'flex', flexDirection: 'column', height: '100%', overflow: 'hidden' }}>
+          {/* Barra de búsqueda - fija */}
+          <div style={{ flexShrink: 0, backgroundColor: colors.semantic.background.white, paddingBottom: spacing[4] }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: spacing[3], backgroundColor: colors.semantic.background.main, borderRadius: borderRadius.full, padding: `${spacing[3]} ${spacing[4]}` }}>
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                 <path d="M21 21L16.65 16.65M19 11C19 15.4183 15.4183 19 11 19C6.58172 19 3 15.4183 3 11C3 6.58172 6.58172 3 11 3C15.4183 3 19 6.58172 19 11Z" stroke={colors.semantic.text.secondary} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
@@ -714,8 +715,8 @@ export function SendMoneySheet({ isOpen, onClose, usdBalance, copBalance }: Send
             </div>
           </div>
 
-          {/* Lista de monedas */}
-          <div style={{ flex: 1, overflowY: 'auto', paddingBottom: spacing[8] }}>
+          {/* Lista de monedas - scrolleable */}
+          <div style={{ flex: 1, overflowY: 'auto', paddingBottom: `calc(${spacing[8]} + env(safe-area-inset-bottom))` }}>
             {/* Destinos populares */}
             {filteredPopular.length > 0 && (
               <>
