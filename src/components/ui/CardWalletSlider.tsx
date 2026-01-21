@@ -18,6 +18,7 @@ interface CardWalletSliderProps {
   isBalanceVisible?: boolean;
   cardBalance?: number;
   cardBackground?: string;
+  isCardBlocked?: boolean;
 }
 
 const CARD_HEIGHT = 136;
@@ -66,7 +67,7 @@ const defaultCardOrder: CardData[] = [
 const DOUBLE_TAP_DELAY = 300; // ms para detectar doble tap
 const TAP_THRESHOLD = 20; // px máximo de movimiento para considerar tap
 
-export function CardWalletSlider({ onCardSelect, onCardDoubleTap, onFrontCardChange, isBalanceVisible = true, cardBalance = 379.21, cardBackground }: CardWalletSliderProps) {
+export function CardWalletSlider({ onCardSelect, onCardDoubleTap, onFrontCardChange, isBalanceVisible = true, cardBalance = 379.21, cardBackground, isCardBlocked = false }: CardWalletSliderProps) {
   const [cards, setCards] = useState<CardData[]>(defaultCardOrder);
   const [dragOffset, setDragOffset] = useState(0);
   const [isDragging, setIsDragging] = useState(false);
@@ -338,53 +339,114 @@ export function CardWalletSlider({ onCardSelect, onCardDoubleTap, onFrontCardCha
     if (card.type === 'visa') {
       return (
         <>
-          {/* Top row - VISA logo + Options */}
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%' }}>
+          {/* Overlay de bloqueo - debajo de los controles */}
+          {isCardBlocked && (
+            <div
+              style={{
+                position: 'absolute',
+                top: 0,
+                left: 0,
+                right: 0,
+                bottom: 0,
+                borderRadius: 24,
+                backgroundColor: 'rgba(0, 0, 0, 0.4)',
+                zIndex: 1,
+                pointerEvents: 'none',
+              }}
+            />
+          )}
+          
+          {/* Contenido de bloqueo centrado */}
+          {isCardBlocked && (
+            <div
+              style={{
+                position: 'absolute',
+                top: '50%',
+                left: '50%',
+                transform: 'translate(-50%, -50%)',
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                gap: spacing[2],
+                zIndex: 2,
+                pointerEvents: 'none',
+              }}
+            >
+              <img
+                src="/img/icons/global/lock.svg"
+                alt="Bloqueada"
+                style={{
+                  width: 24,
+                  height: 24,
+                  filter: 'brightness(0) invert(1)', // Blanco
+                }}
+              />
+              <span
+                style={{
+                  fontSize: 14,
+                  fontWeight: typography.fontWeight.bold,
+                  color: colors.semantic.background.white,
+                  fontFamily: typography.fontFamily.sans.join(', '),
+                  whiteSpace: 'nowrap',
+                }}
+              >
+                Tarjeta bloqueada
+              </span>
+            </div>
+          )}
+
+          {/* Top row - VISA logo + Options (encima del overlay) */}
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%', position: 'relative', zIndex: 3 }}>
             <img 
               src="/img/icons/payment/logo-visa.svg" 
               alt="VISA" 
-              style={{ height: 16 }}
+              style={{ 
+                height: 16,
+                opacity: isCardBlocked ? 0.5 : 1,
+              }}
             />
             <OptionsButton isVisa />
           </div>
-          {/* Bottom row - Balance + USD */}
-          <div style={{ display: 'flex', alignItems: 'baseline', gap: spacing[2] }}>
-            {isBalanceVisible ? (
-              <AnimatedBalance
-                value={cardBalance}
-                balanceKey="visa"
-                duration={600}
-                formatValue={(val) => formatCurrency(val, 'USD', false)}
-                style={{ 
+          {/* Bottom row - Balance + USD (oculto cuando está bloqueada) */}
+          {!isCardBlocked && (
+            <div style={{ display: 'flex', alignItems: 'baseline', gap: spacing[2], position: 'relative', zIndex: 3 }}>
+              {isBalanceVisible ? (
+                <AnimatedBalance
+                  value={cardBalance}
+                  balanceKey="visa"
+                  duration={600}
+                  formatValue={(val) => formatCurrency(val, 'USD', false)}
+                  style={{ 
+                    fontSize: 32,
+                    fontWeight: typography.fontWeight.bold,
+                    color: textColor,
+                    fontFamily: typography.fontFamily.sans.join(', '),
+                    letterSpacing: '-0.04em',
+                  }}
+                />
+              ) : (
+                <span style={{ 
                   fontSize: 32,
                   fontWeight: typography.fontWeight.bold,
                   color: textColor,
                   fontFamily: typography.fontFamily.sans.join(', '),
                   letterSpacing: '-0.04em',
-                }}
-              />
-            ) : (
-              <span style={{ 
-                fontSize: 32,
-                fontWeight: typography.fontWeight.bold,
-                color: textColor,
-                fontFamily: typography.fontFamily.sans.join(', '),
-                letterSpacing: '-0.04em',
-              }}>
-                •••
-              </span>
-            )}
-            {isBalanceVisible && (
-              <span style={{ 
-                fontSize: typography.fontSize.base,
-                fontWeight: typography.fontWeight.semibold,
-                color: 'rgba(255, 255, 255, 0.85)',
-                fontFamily: typography.fontFamily.sans.join(', '),
-              }}>
-                USD
-              </span>
-            )}
-          </div>
+                }}>
+                  •••
+                </span>
+              )}
+              {isBalanceVisible && (
+                <span style={{ 
+                  fontSize: typography.fontSize.base,
+                  fontWeight: typography.fontWeight.semibold,
+                  color: 'rgba(255, 255, 255, 0.85)',
+                  fontFamily: typography.fontFamily.sans.join(', '),
+                }}>
+                  USD
+                </span>
+              )}
+            </div>
+          )}
         </>
       );
     }
@@ -508,6 +570,7 @@ export function CardWalletSlider({ onCardSelect, onCardDoubleTap, onFrontCardCha
               WebkitTapHighlightColor: 'transparent',
               userSelect: 'none',
               touchAction: 'pan-x',
+              overflow: 'hidden',
             }}
           >
             {renderCardContent(card)}

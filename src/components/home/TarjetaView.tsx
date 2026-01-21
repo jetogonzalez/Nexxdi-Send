@@ -175,10 +175,12 @@ export function TarjetaView({ titleRef, scrollProgress = 0, isBalanceVisible = t
     cvv: '847',
   };
 
-  // Guardar el estado de bloqueo en localStorage cada vez que cambia
+  // Guardar el estado de bloqueo en localStorage y notificar a otros componentes
   useEffect(() => {
     if (typeof window !== 'undefined') {
       localStorage.setItem('cardLocked', String(isLocked));
+      // Notificar a otros componentes (como HomePage) del cambio
+      window.dispatchEvent(new CustomEvent('cardLockChanged'));
     }
   }, [isLocked]);
 

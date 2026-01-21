@@ -13,11 +13,13 @@ import { usePWAInstall } from '../../hooks/usePWAInstall';
 const CONTENT_TO_NAVIGATION_GAP = spacing[6]; // 24px entre el último elemento y la navegación
 
 const BALANCE_VISIBILITY_KEY = 'nexxdi_cash_balance_visible';
+const CARD_LOCKED_KEY = 'cardLocked';
 
 export default function HomePage() {
   const [activeTab, setActiveTab] = useState('home');
   // Inicializar siempre como true para evitar diferencias entre servidor y cliente
   const [isBalanceVisible, setIsBalanceVisible] = useState(true);
+  const [isCardBlocked, setIsCardBlocked] = useState(false);
   
   // Hook para notificaciones push y movimiento de bienvenida
   usePWAInstall();
@@ -29,7 +31,33 @@ export default function HomePage() {
       if (saved !== null) {
         setIsBalanceVisible(saved === 'true');
       }
+      
+      // Cargar estado de bloqueo de tarjeta
+      const cardLocked = localStorage.getItem(CARD_LOCKED_KEY);
+      if (cardLocked !== null) {
+        setIsCardBlocked(cardLocked === 'true');
+      }
     }
+  }, []);
+  
+  // Escuchar cambios en el estado de bloqueo desde otras vistas
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    
+    const handleStorageChange = () => {
+      const cardLocked = localStorage.getItem(CARD_LOCKED_KEY);
+      setIsCardBlocked(cardLocked === 'true');
+    };
+    
+    // Escuchar evento personalizado de cambio de bloqueo
+    window.addEventListener('cardLockChanged', handleStorageChange);
+    // También escuchar cambios de storage desde otras pestañas
+    window.addEventListener('storage', handleStorageChange);
+    
+    return () => {
+      window.removeEventListener('cardLockChanged', handleStorageChange);
+      window.removeEventListener('storage', handleStorageChange);
+    };
   }, []);
   const previousTabRef = useRef('home');
   const [isScrolled, setIsScrolled] = useState(false);
@@ -231,7 +259,7 @@ export default function HomePage() {
   const renderContent = () => {
     switch (activeTab) {
       case 'home':
-        return <HomeView titleRef={(el) => { titleRefs.current['home'] = el; }} scrollProgress={scrollProgress} isBalanceVisible={isBalanceVisible} usdBalance={currencyBalanceUSD} copBalance={currencyBalanceCOP} cardBalance={cardBalance} onNavigate={handleTabChange} />;
+        return <HomeView titleRef={(el) => { titleRefs.current['home'] = el; }} scrollProgress={scrollProgress} isBalanceVisible={isBalanceVisible} usdBalance={currencyBalanceUSD} copBalance={currencyBalanceCOP} cardBalance={cardBalance} onNavigate={handleTabChange} isCardBlocked={isCardBlocked} />;
       case 'wallet':
         return <WalletView isBalanceVisible={isBalanceVisible} titleRef={(el) => { titleRefs.current['wallet'] = el; }} scrollProgress={scrollProgress} usdBalance={currencyBalanceUSD} copBalance={currencyBalanceCOP} />;
       case 'cash':
@@ -241,7 +269,7 @@ export default function HomePage() {
       case 'mas':
         return <MasView isBalanceVisible={isBalanceVisible} cardBalance={cardBalance} />;
       default:
-        return <HomeView titleRef={(el) => { titleRefs.current['home'] = el; }} scrollProgress={scrollProgress} isBalanceVisible={isBalanceVisible} usdBalance={currencyBalanceUSD} copBalance={currencyBalanceCOP} cardBalance={cardBalance} onNavigate={handleTabChange} />;
+        return <HomeView titleRef={(el) => { titleRefs.current['home'] = el; }} scrollProgress={scrollProgress} isBalanceVisible={isBalanceVisible} usdBalance={currencyBalanceUSD} copBalance={currencyBalanceCOP} cardBalance={cardBalance} onNavigate={handleTabChange} isCardBlocked={isCardBlocked} />;
     }
   };
 
