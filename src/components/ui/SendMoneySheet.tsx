@@ -662,7 +662,7 @@ export function SendMoneySheet({ isOpen, onClose, usdBalance, copBalance }: Send
                     {currency.balance} {currency.symbol}
                   </p>
                 </div>
-                <div style={{ width: '24px', height: '24px', borderRadius: borderRadius.full, border: sendCurrency.id === currency.id ? 'none' : `2px solid ${colors.semantic.border.medium}`, backgroundColor: sendCurrency.id === currency.id ? colors.semantic.button.primary : 'transparent', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <div style={{ width: '24px', height: '24px', borderRadius: borderRadius.full, border: sendCurrency.id === currency.id ? `2px solid ${colors.primary.main}` : `2px solid ${colors.semantic.border.medium}`, backgroundColor: sendCurrency.id === currency.id ? colors.primary.main : 'transparent', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                   {sendCurrency.id === currency.id && (
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                       <path d="M5 12L10 17L19 8" stroke="white" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" />
@@ -744,7 +744,7 @@ export function SendMoneySheet({ isOpen, onClose, usdBalance, copBalance }: Send
                           {currency.symbol}
                         </p>
                       </div>
-                      <div style={{ width: '24px', height: '24px', borderRadius: borderRadius.full, border: receiveCurrency.id === currency.id ? 'none' : `2px solid ${colors.semantic.border.medium}`, backgroundColor: receiveCurrency.id === currency.id ? colors.semantic.button.primary : 'transparent', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                      <div style={{ width: '24px', height: '24px', borderRadius: borderRadius.full, border: receiveCurrency.id === currency.id ? `2px solid ${colors.primary.main}` : `2px solid ${colors.semantic.border.medium}`, backgroundColor: receiveCurrency.id === currency.id ? colors.primary.main : 'transparent', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                         {receiveCurrency.id === currency.id && (
                           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                             <path d="M5 12L10 17L19 8" stroke="white" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" />
@@ -785,7 +785,7 @@ export function SendMoneySheet({ isOpen, onClose, usdBalance, copBalance }: Send
                           {currency.symbol}
                         </p>
                       </div>
-                      <div style={{ width: '24px', height: '24px', borderRadius: borderRadius.full, border: receiveCurrency.id === currency.id ? 'none' : `2px solid ${colors.semantic.border.medium}`, backgroundColor: receiveCurrency.id === currency.id ? colors.semantic.button.primary : 'transparent', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                      <div style={{ width: '24px', height: '24px', borderRadius: borderRadius.full, border: receiveCurrency.id === currency.id ? `2px solid ${colors.primary.main}` : `2px solid ${colors.semantic.border.medium}`, backgroundColor: receiveCurrency.id === currency.id ? colors.primary.main : 'transparent', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                         {receiveCurrency.id === currency.id && (
                           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                             <path d="M5 12L10 17L19 8" stroke="white" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" />
