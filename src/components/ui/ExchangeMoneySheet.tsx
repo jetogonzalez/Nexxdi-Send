@@ -376,15 +376,15 @@ export function ExchangeMoneySheet({ isOpen, onClose, initialUsdBalance, initial
             </div>
           </div>
 
-          {/* Resumen con tasa de cambio */}
+          {/* Detalle de la operación */}
           <div style={{ backgroundColor: 'rgb(110 147 221 / 12%)', border: '1px solid rgb(110 147 221 / 20%)', borderRadius: '24px', padding: spacing[6], marginTop: spacing[2] }}>
             <p style={{ fontSize: typography.fontSize.sm, fontWeight: typography.fontWeight.semibold, color: colors.semantic.text.primary, fontFamily: typography.fontFamily.sans.join(', '), marginBottom: spacing[3] }}>
-              Resumen de conversión
+              Detalle de la operación
             </p>
             
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: spacing[2] }}>
               <span style={{ fontSize: typography.fontSize.sm, color: colors.semantic.text.primary, fontFamily: typography.fontFamily.sans.join(', ') }}>
-                Tasa de cambio
+                Cambio actual
               </span>
               <span style={{ fontSize: typography.fontSize.sm, fontWeight: typography.fontWeight.semibold, color: colors.semantic.text.primary, fontFamily: typography.fontFamily.sans.join(', ') }}>
                 {(() => {
@@ -396,12 +396,21 @@ export function ExchangeMoneySheet({ isOpen, onClose, initialUsdBalance, initial
               </span>
             </div>
             
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: spacing[2] }}>
               <span style={{ fontSize: typography.fontSize.sm, color: colors.semantic.text.primary, fontFamily: typography.fontFamily.sans.join(', ') }}>
-                Válido por
+                Tiempo restante
               </span>
               <span style={{ fontSize: typography.fontSize.xs, fontWeight: typography.fontWeight.bold, color: '#92400E', fontFamily: typography.fontFamily.sans.join(', '), backgroundColor: '#FEF3C7', padding: `${spacing[1]} ${spacing[2]}`, borderRadius: borderRadius.full }}>
-                {rateTimer}s
+                {rateTimer} s
+              </span>
+            </div>
+            
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+              <span style={{ fontSize: typography.fontSize.sm, color: colors.semantic.text.primary, fontFamily: typography.fontFamily.sans.join(', ') }}>
+                Costo del servicio
+              </span>
+              <span style={{ fontSize: typography.fontSize.sm, fontWeight: typography.fontWeight.bold, color: colors.semantic.text.primary, fontFamily: typography.fontFamily.sans.join(', ') }}>
+                $0
               </span>
             </div>
           </div>
