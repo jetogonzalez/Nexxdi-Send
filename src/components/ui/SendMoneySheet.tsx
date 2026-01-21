@@ -480,7 +480,7 @@ export function SendMoneySheet({ isOpen, onClose, usdBalance, copBalance }: Send
             </div>
 
             {/* Botón de intercambiar monedas */}
-            <div style={{ display: 'flex', justifyContent: 'center', height: spacing[2], position: 'relative', zIndex: 10 }}>
+            <div style={{ display: 'flex', justifyContent: 'center', height: spacing[4], position: 'relative', zIndex: 10 }}>
               <button
                 onClick={swapCurrencies}
                 style={{

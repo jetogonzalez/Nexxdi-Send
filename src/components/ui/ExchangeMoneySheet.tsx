@@ -275,7 +275,7 @@ export function ExchangeMoneySheet({ isOpen, onClose, initialUsdBalance, initial
             </div>
 
             {/* Botón de intercambiar monedas */}
-            <div style={{ display: 'flex', justifyContent: 'center', height: spacing[2], position: 'relative', zIndex: 10 }}>
+            <div style={{ display: 'flex', justifyContent: 'center', height: spacing[4], position: 'relative', zIndex: 10 }}>
               <button
                 onClick={() => {
                   const tempCurrency = exchangeFromCurrency;
