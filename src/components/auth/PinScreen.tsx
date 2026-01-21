@@ -64,15 +64,6 @@ export function PinScreen({ onSuccess }: PinScreenProps) {
         zIndex: 9999,
       }}
     >
-      {/* Logo */}
-      <div style={{ marginBottom: spacing[8] }}>
-        <img
-          src="/img/icons/logos/nexxdi-cash-logo-color.svg"
-          alt="Nexxdi Cash"
-          style={{ height: '32px' }}
-        />
-      </div>
-
       {/* Título */}
       <h1
         style={{
