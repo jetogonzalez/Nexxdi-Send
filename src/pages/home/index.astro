@@ -1,8 +1,8 @@
 ---
 import Layout from '../../layouts/Layout.astro';
-import HomePage from '../../components/home/HomePage.tsx';
+import ProtectedHome from '../../components/home/ProtectedHome';
 ---
 
 <Layout title="Home - Nexxdi Cash">
-  <HomePage client:load />
+  <ProtectedHome client:load />
 </Layout>

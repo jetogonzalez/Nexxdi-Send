@@ -1,8 +1,8 @@
 ---
 import Layout from '../../layouts/Layout.astro';
-import LoginPage from '../../components/auth/LoginPage';
+import ProtectedLogin from '../../components/auth/ProtectedLogin';
 ---
 
 <Layout title="Iniciar sesión - Nexxdi Cash">
-  <LoginPage client:load />
+  <ProtectedLogin client:load />
 </Layout>

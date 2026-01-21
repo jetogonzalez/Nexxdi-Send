@@ -1,8 +1,8 @@
 ---
 import Layout from '../../layouts/Layout.astro';
-import WelcomeScreen from '../../components/auth/WelcomeScreen';
+import ProtectedWelcome from '../../components/auth/ProtectedWelcome';
 ---
 
 <Layout title="Bienvenido - Nexxdi Cash">
-  <WelcomeScreen client:load />
+  <ProtectedWelcome client:load />
 </Layout>

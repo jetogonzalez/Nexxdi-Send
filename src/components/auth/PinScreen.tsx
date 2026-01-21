@@ -8,6 +8,20 @@ interface PinScreenProps {
 }
 
 const CORRECT_PIN = '9092';
+const PIN_VALIDATED_KEY = 'nexxdi_pin_validated';
+
+// Función para verificar si el PIN ya fue validado
+export function isPinValidated(): boolean {
+  if (typeof window === 'undefined') return false;
+  return sessionStorage.getItem(PIN_VALIDATED_KEY) === 'true';
+}
+
+// Función para marcar el PIN como validado
+export function setPinValidated(): void {
+  if (typeof window !== 'undefined') {
+    sessionStorage.setItem(PIN_VALIDATED_KEY, 'true');
+  }
+}
 
 export function PinScreen({ onSuccess }: PinScreenProps) {
   const [pin, setPin] = useState('');
@@ -23,7 +37,8 @@ export function PinScreen({ onSuccess }: PinScreenProps) {
       // Verificar si el PIN está completo
       if (newPin.length === 4) {
         if (newPin === CORRECT_PIN) {
-          // PIN correcto
+          // PIN correcto - guardar validación en sessionStorage
+          setPinValidated();
           setTimeout(() => {
             onSuccess();
           }, 200);
