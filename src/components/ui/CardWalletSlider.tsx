@@ -398,7 +398,7 @@ export function CardWalletSlider({ onCardSelect, onCardDoubleTap, onFrontCardCha
               <span
                 style={{
                   fontSize: 14,
-                  fontWeight: typography.fontWeight.bold,
+                  fontWeight: typography.fontWeight.extrabold,
                   color: colors.semantic.background.white,
                   fontFamily: typography.fontFamily.sans.join(', '),
                   whiteSpace: 'nowrap',
@@ -432,7 +432,7 @@ export function CardWalletSlider({ onCardSelect, onCardDoubleTap, onFrontCardCha
                   formatValue={(val) => formatCurrency(val, 'USD', false)}
                   style={{ 
                     fontSize: 32,
-                    fontWeight: typography.fontWeight.bold,
+                    fontWeight: typography.fontWeight.extrabold,
                     color: textColor,
                     fontFamily: typography.fontFamily.sans.join(', '),
                     letterSpacing: '-0.04em',
@@ -441,7 +441,7 @@ export function CardWalletSlider({ onCardSelect, onCardDoubleTap, onFrontCardCha
               ) : (
                 <span style={{ 
                   fontSize: 32,
-                  fontWeight: typography.fontWeight.bold,
+                  fontWeight: typography.fontWeight.extrabold,
                   color: textColor,
                   fontFamily: typography.fontFamily.sans.join(', '),
                   letterSpacing: '-0.04em',
@@ -452,7 +452,7 @@ export function CardWalletSlider({ onCardSelect, onCardDoubleTap, onFrontCardCha
               {isBalanceVisible && (
                 <span style={{ 
                   fontSize: typography.fontSize.base,
-                  fontWeight: typography.fontWeight.semibold,
+                  fontWeight: typography.fontWeight.bold,
                   color: 'rgba(255, 255, 255, 0.85)',
                   fontFamily: typography.fontFamily.sans.join(', '),
                 }}>
@@ -486,7 +486,7 @@ export function CardWalletSlider({ onCardSelect, onCardDoubleTap, onFrontCardCha
             />
 <span style={{ 
             fontSize: typography.fontSize.base,
-            fontWeight: typography.fontWeight.bold,
+            fontWeight: typography.fontWeight.extrabold,
             color: textColor,
             fontFamily: typography.fontFamily.sans.join(', '),
           }}>
@@ -504,7 +504,7 @@ export function CardWalletSlider({ onCardSelect, onCardDoubleTap, onFrontCardCha
             formatValue={(val) => formatCurrency(val, currencySymbol, false)}
             style={{ 
               fontSize: 32,
-              fontWeight: typography.fontWeight.bold,
+              fontWeight: typography.fontWeight.extrabold,
               color: textColor,
               fontFamily: typography.fontFamily.sans.join(', '),
               letterSpacing: '-0.04em',
@@ -513,7 +513,7 @@ export function CardWalletSlider({ onCardSelect, onCardDoubleTap, onFrontCardCha
         ) : (
           <span style={{ 
             fontSize: 32,
-            fontWeight: typography.fontWeight.bold,
+            fontWeight: typography.fontWeight.extrabold,
             color: textColor,
             fontFamily: typography.fontFamily.sans.join(', '),
             letterSpacing: '-0.04em',
