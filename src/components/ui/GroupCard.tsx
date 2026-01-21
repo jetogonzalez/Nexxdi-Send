@@ -1,6 +1,7 @@
 "use client";
 
 import { borderRadius, colors, spacing, typography } from '../../config/design-tokens';
+import { currentUser } from '../../config/userProfile';
 import { formatCurrency } from '../../lib/formatBalance';
 import { CircularProgress } from './CircularProgress';
 import { MovementAvatar } from '../home/MovementAvatar';
@@ -46,15 +47,15 @@ export function GroupCard({
   avatars = [],
   isBalanceVisible = true,
 }: GroupCardProps) {
-  // Avatares por defecto: Juan Robledo (izquierda/arriba) y Fernando (derecha/abajo, superpuesto)
+  // Avatares por defecto: Juan Robledo (izquierda/arriba) y usuario actual (derecha/abajo, superpuesto)
   const defaultAvatars: AvatarData[] = [
     {
       contactName: 'Juan Robledo',
       imageUrl: '/img/user/juan-robledo.png', // Avatar izquierda/arriba (base)
     },
     {
-      contactName: 'Fernando',
-      imageUrl: '/img/user/fernando-plaza.jpg', // Avatar de Fernando (derecha/abajo, superpuesto sobre el otro)
+      contactName: currentUser.firstName,
+      imageUrl: currentUser.photo, // Avatar del usuario actual (derecha/abajo, superpuesto sobre el otro)
     },
   ];
 
