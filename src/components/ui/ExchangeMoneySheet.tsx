@@ -70,8 +70,13 @@ export function ExchangeMoneySheet({ isOpen, onClose, initialUsdBalance, initial
   useEffect(() => {
     const updatedFromCurrency = currencies.find(c => c.id === exchangeFromCurrency.id);
     const updatedToCurrency = currencies.find(c => c.id === exchangeToCurrency.id);
-    if (updatedFromCurrency) setExchangeFromCurrency(updatedFromCurrency);
-    if (updatedToCurrency) setExchangeToCurrency(updatedToCurrency);
+    // Solo actualizar si el balance cambió para evitar loops infinitos
+    if (updatedFromCurrency && updatedFromCurrency.balance !== exchangeFromCurrency.balance) {
+      setExchangeFromCurrency(updatedFromCurrency);
+    }
+    if (updatedToCurrency && updatedToCurrency.balance !== exchangeToCurrency.balance) {
+      setExchangeToCurrency(updatedToCurrency);
+    }
   }, [usdBalance, copBalance]);
   
   // Timer para la tasa de cambio

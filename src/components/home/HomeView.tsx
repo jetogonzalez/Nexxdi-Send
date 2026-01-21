@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { borderRadius, colors, spacing, typography } from '../../config/design-tokens';
+import { currentUser } from '../../config/userProfile';
 import { formatBalance } from '../../lib/formatBalance';
 import { CardWalletSlider } from '../ui/CardWalletSlider';
 import { CurrencyChangeCard } from './CurrencyChangeCard';
@@ -38,7 +39,7 @@ interface HomeViewProps {
 }
 
 export function HomeView({ titleRef, scrollProgress = 0, isBalanceVisible = true, usdBalance: initialUsdBalance = 5678.90, copBalance: initialCopBalance = 1500000.50, cardBalance = 379.21, onNavigate, isCardBlocked = false }: HomeViewProps) {
-  const title = 'Hola, Luis';
+  const title = currentUser.greeting;
   const [showPersonalizeSheet, setShowPersonalizeSheet] = useState(false);
   const [homeSections, setHomeSections] = useState<HomeSection[]>(defaultSections);
   const [isSendMoneySheetOpen, setIsSendMoneySheetOpen] = useState(false);

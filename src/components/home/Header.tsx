@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { colors, spacing, typography, borderRadius, header } from '../../config/design-tokens';
+import { currentUser } from '../../config/userProfile';
 import { EyeIcon, GiftIcon, SearchIcon } from './HeaderIcons';
 
 interface HeaderProps {
@@ -183,7 +184,7 @@ export function Header({ activeTab, onBalanceVisibilityChange, showTitle = false
           }}
         >
           <img
-            src="/img/user/fernando-plaza.jpg"
+            src={currentUser.photo}
             alt="Perfil"
             style={{
               width: '100%',

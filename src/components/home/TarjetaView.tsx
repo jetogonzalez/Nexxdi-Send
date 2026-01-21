@@ -2,6 +2,7 @@
 
 import { useState, useRef, useEffect } from 'react';
 import { borderRadius, colors, spacing, typography } from '../../config/design-tokens';
+import { currentUser } from '../../config/userProfile';
 import { transitions } from '../../config/transitions-tokens';
 import { RecentMovementsSection } from './RecentMovementsSection';
 import { SegmentedButton } from '../ui/SegmentedButton';
@@ -170,7 +171,7 @@ export function TarjetaView({ titleRef, scrollProgress = 0, isBalanceVisible = t
   // Datos de la tarjeta (simulados)
   const cardData = {
     number: '4532 8790 1234 2345',
-    name: 'Luis Fernando Plaza Renteria',
+    name: currentUser.fullName,
     expiry: '12/28',
     cvv: '847',
   };

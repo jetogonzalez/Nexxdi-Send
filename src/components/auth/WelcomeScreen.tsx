@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { colors, spacing, typography, borderRadius } from '../../config/design-tokens';
+import { currentUser } from '../../config/userProfile';
 import { LoginForm } from './LoginForm';
 import { BottomSheet } from '../ui/BottomSheet';
 import {
@@ -241,7 +242,7 @@ export default function WelcomeScreen() {
               lineHeight: typography.lineHeight.tight, // Altura de línea ajustada
             }}
           >
-            Luis
+            {currentUser.firstName}
           </h1>
         </div>
       </div>

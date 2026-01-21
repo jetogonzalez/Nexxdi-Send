@@ -8,6 +8,7 @@ import { TarjetaView } from './TarjetaView';
 import { MasView } from './MasView';
 import { SectionTransition } from './SectionTransition';
 import { colors, spacing } from '../../config/design-tokens';
+import { currentUser } from '../../config/userProfile';
 import { usePWAInstall } from '../../hooks/usePWAInstall';
 
 const CONTENT_TO_NAVIGATION_GAP = spacing[6]; // 24px entre el último elemento y la navegación
@@ -73,7 +74,7 @@ export default function HomePage() {
   
   // Títulos para cada sección
   const sectionTitles: Record<string, string> = {
-    home: 'Hola, Luis',
+    home: currentUser.greeting,
     wallet: 'Wallet',
     tarjeta: 'Tarjeta Virtual',
   };
