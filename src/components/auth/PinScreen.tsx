@@ -75,7 +75,7 @@ export function PinScreen({ onSuccess }: PinScreenProps) {
         flexDirection: 'column',
         alignItems: 'center',
         justifyContent: 'center',
-        padding: `calc(env(safe-area-inset-top, 20px) + 120px) ${spacing[6]} env(safe-area-inset-bottom, 20px)`,
+        padding: `calc(env(safe-area-inset-top, 20px) + 120px) ${spacing[6]} calc(env(safe-area-inset-bottom, 20px) + 40px)`,
         zIndex: 9999,
         boxSizing: 'border-box',
       }}
@@ -183,7 +183,7 @@ export function PinScreen({ onSuccess }: PinScreenProps) {
         >
           {numbers.map((num, index) => {
             if (num === '') {
-              return <div key={index} style={{ width: 'min(22vw, 90px)', height: 'min(22vw, 90px)' }} />;
+              return <div key={index} style={{ width: 'min(20vw, 80px)', height: 'min(20vw, 80px)' }} />;
             }
 
             if (num === 'delete') {
@@ -192,8 +192,8 @@ export function PinScreen({ onSuccess }: PinScreenProps) {
                   key={index}
                   onClick={handleDelete}
                   style={{
-                    width: 'min(22vw, 90px)',
-                    height: 'min(22vw, 90px)',
+                    width: 'min(20vw, 80px)',
+                    height: 'min(20vw, 80px)',
                     borderRadius: borderRadius.full,
                     border: 'none',
                     backgroundColor: 'transparent',
@@ -219,8 +219,8 @@ export function PinScreen({ onSuccess }: PinScreenProps) {
                 key={index}
                 onClick={() => handleNumberPress(num)}
                 style={{
-                  width: 'min(22vw, 90px)',
-                  height: 'min(22vw, 90px)',
+                  width: 'min(20vw, 80px)',
+                  height: 'min(20vw, 80px)',
                   borderRadius: borderRadius.full,
                   border: 'none',
                   backgroundColor: colors.semantic.background.main,
@@ -229,8 +229,8 @@ export function PinScreen({ onSuccess }: PinScreenProps) {
                   alignItems: 'center',
                   justifyContent: 'center',
                   fontFamily: typography.fontFamily.sans.join(', '),
-                  fontSize: 'min(8vw, 36px)',
-                  fontWeight: typography.fontWeight.semibold,
+                  fontSize: 'min(7vw, 32px)',
+                  fontWeight: typography.fontWeight.medium,
                   color: colors.semantic.text.primary,
                   transition: 'all 0.15s ease',
                   WebkitTapHighlightColor: 'transparent',
