@@ -86,7 +86,7 @@ export function PinScreen({ onSuccess }: PinScreenProps) {
           display: 'flex',
           flexDirection: 'column',
           alignItems: 'center',
-          paddingTop: '15vh',
+          paddingTop: '8vh',
           width: '100%',
         }}
       >
@@ -109,7 +109,7 @@ export function PinScreen({ onSuccess }: PinScreenProps) {
             fontFamily: typography.fontFamily.sans.join(', '),
             fontSize: typography.fontSize.base,
             color: colors.semantic.text.secondary,
-            marginBottom: spacing[8],
+            marginBottom: spacing[6],
             textAlign: 'center',
           }}
         >
@@ -168,14 +168,14 @@ export function PinScreen({ onSuccess }: PinScreenProps) {
           flexDirection: 'column',
           alignItems: 'center',
           width: '100%',
-          paddingBottom: spacing[8],
+          paddingBottom: spacing[4],
         }}
       >
         <div
           style={{
             display: 'grid',
             gridTemplateColumns: 'repeat(3, 1fr)',
-            gap: spacing[4],
+            gap: spacing[3],
             maxWidth: '320px',
             width: '100%',
             justifyItems: 'center',
@@ -203,8 +203,8 @@ export function PinScreen({ onSuccess }: PinScreenProps) {
                     justifyContent: 'center',
                     transition: 'all 0.2s ease',
                     fontFamily: typography.fontFamily.sans.join(', '),
-                    fontSize: typography.fontSize.base,
-                    fontWeight: typography.fontWeight.semibold,
+                    fontSize: '18px',
+                    fontWeight: typography.fontWeight.bold,
                     color: colors.semantic.text.primary,
                     WebkitTapHighlightColor: 'transparent',
                   }}
