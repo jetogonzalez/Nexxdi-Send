@@ -716,7 +716,7 @@ export function SendMoneySheet({ isOpen, onClose, usdBalance, copBalance }: Send
           </div>
 
           {/* Lista de monedas - scrolleable */}
-          <div style={{ flex: 1, overflowY: 'auto', paddingBottom: `calc(${spacing[8]} + env(safe-area-inset-bottom))` }}>
+          <div className="hide-scrollbar" style={{ flex: 1, overflowY: 'auto', paddingBottom: `calc(${spacing[8]} + env(safe-area-inset-bottom))` }}>
             {/* Destinos populares */}
             {filteredPopular.length > 0 && (
               <>
