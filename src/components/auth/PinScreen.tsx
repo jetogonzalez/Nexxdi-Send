@@ -180,8 +180,8 @@ export function PinScreen({ onSuccess }: PinScreenProps) {
                   justifyContent: 'center',
                   transition: 'all 0.2s ease',
                   fontFamily: typography.fontFamily.sans.join(', '),
-                  fontSize: typography.fontSize.sm,
-                  fontWeight: typography.fontWeight.medium,
+                  fontSize: typography.fontSize.base,
+                  fontWeight: typography.fontWeight.semibold,
                   color: colors.semantic.text.primary,
                 }}
               >
