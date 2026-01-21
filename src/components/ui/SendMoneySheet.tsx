@@ -601,7 +601,7 @@ export function SendMoneySheet({ isOpen, onClose, usdBalance, copBalance }: Send
               <span style={{ fontSize: typography.fontSize.sm, color: colors.semantic.text.primary, fontFamily: typography.fontFamily.sans.join(', ') }}>
                 Nuestra tarifa
               </span>
-              <span style={{ fontSize: typography.fontSize.xs, fontWeight: typography.fontWeight.bold, color: '#166534', fontFamily: typography.fontFamily.sans.join(', '), backgroundColor: '#DCFCE7', padding: `${spacing[1]} ${spacing[2]}`, borderRadius: borderRadius.full }}>
+              <span style={{ fontSize: typography.fontSize.sm, fontWeight: typography.fontWeight.bold, color: colors.semantic.text.primary, fontFamily: typography.fontFamily.sans.join(', ') }}>
                 GRATIS
               </span>
             </div>
