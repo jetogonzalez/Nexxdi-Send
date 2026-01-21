@@ -74,167 +74,193 @@ export function PinScreen({ onSuccess }: PinScreenProps) {
         display: 'flex',
         flexDirection: 'column',
         alignItems: 'center',
-        justifyContent: 'center',
-        padding: spacing[6],
+        justifyContent: 'space-between',
+        padding: `env(safe-area-inset-top, 60px) ${spacing[6]} env(safe-area-inset-bottom, 40px)`,
         zIndex: 9999,
+        boxSizing: 'border-box',
       }}
     >
-      {/* Título */}
-      <h1
-        style={{
-          fontFamily: typography.fontFamily.sans.join(', '),
-          fontSize: typography.fontSize.xl,
-          fontWeight: typography.fontWeight.bold,
-          color: colors.semantic.text.primary,
-          marginBottom: spacing[2],
-          textAlign: 'center',
-        }}
-      >
-        Ingresa tu PIN
-      </h1>
-
-      <p
-        style={{
-          fontFamily: typography.fontFamily.sans.join(', '),
-          fontSize: typography.fontSize.sm,
-          color: colors.semantic.text.secondary,
-          marginBottom: spacing[8],
-          textAlign: 'center',
-        }}
-      >
-        Acceso restringido
-      </p>
-
-      {/* Indicadores de PIN */}
+      {/* Sección superior - Título y PIN dots */}
       <div
         style={{
           display: 'flex',
-          gap: spacing[4],
-          marginBottom: spacing[8],
-          animation: shake ? 'shake 0.5s ease-in-out' : 'none',
-        }}
-      >
-        {[0, 1, 2, 3].map((index) => (
-          <div
-            key={index}
-            style={{
-              width: '16px',
-              height: '16px',
-              borderRadius: borderRadius.full,
-              backgroundColor: pin.length > index
-                ? error
-                  ? '#EF4444'
-                  : colors.primary.main
-                : colors.semantic.border.light,
-              transition: 'all 0.2s ease',
-              transform: pin.length > index ? 'scale(1.1)' : 'scale(1)',
-            }}
-          />
-        ))}
-      </div>
-
-      {/* Mensaje de error */}
-      {error && (
-        <p
-          style={{
-            fontFamily: typography.fontFamily.sans.join(', '),
-            fontSize: typography.fontSize.sm,
-            color: '#EF4444',
-            marginBottom: spacing[4],
-            textAlign: 'center',
-          }}
-        >
-          PIN incorrecto
-        </p>
-      )}
-
-      {/* Teclado numérico */}
-      <div
-        style={{
-          display: 'grid',
-          gridTemplateColumns: 'repeat(3, 1fr)',
-          gap: spacing[3],
-          maxWidth: '280px',
+          flexDirection: 'column',
+          alignItems: 'center',
+          paddingTop: '15vh',
           width: '100%',
         }}
       >
-        {numbers.map((num, index) => {
-          if (num === '') {
-            return <div key={index} />;
-          }
+        {/* Título */}
+        <h1
+          style={{
+            fontFamily: typography.fontFamily.sans.join(', '),
+            fontSize: '28px',
+            fontWeight: typography.fontWeight.bold,
+            color: colors.semantic.text.primary,
+            marginBottom: spacing[2],
+            textAlign: 'center',
+          }}
+        >
+          Ingresa tu PIN
+        </h1>
 
-          if (num === 'delete') {
+        <p
+          style={{
+            fontFamily: typography.fontFamily.sans.join(', '),
+            fontSize: typography.fontSize.base,
+            color: colors.semantic.text.secondary,
+            marginBottom: spacing[8],
+            textAlign: 'center',
+          }}
+        >
+          Acceso restringido
+        </p>
+
+        {/* Indicadores de PIN */}
+        <div
+          style={{
+            display: 'flex',
+            gap: spacing[5],
+            animation: shake ? 'shake 0.5s ease-in-out' : 'none',
+          }}
+        >
+          {[0, 1, 2, 3].map((index) => (
+            <div
+              key={index}
+              style={{
+                width: '18px',
+                height: '18px',
+                borderRadius: borderRadius.full,
+                backgroundColor: pin.length > index
+                  ? error
+                    ? '#EF4444'
+                    : colors.primary.main
+                  : colors.semantic.border.light,
+                transition: 'all 0.2s ease',
+                transform: pin.length > index ? 'scale(1.15)' : 'scale(1)',
+              }}
+            />
+          ))}
+        </div>
+
+        {/* Mensaje de error */}
+        <div style={{ height: '32px', display: 'flex', alignItems: 'center', marginTop: spacing[4] }}>
+          {error && (
+            <p
+              style={{
+                fontFamily: typography.fontFamily.sans.join(', '),
+                fontSize: typography.fontSize.sm,
+                color: '#EF4444',
+                textAlign: 'center',
+                margin: 0,
+              }}
+            >
+              PIN incorrecto
+            </p>
+          )}
+        </div>
+      </div>
+
+      {/* Sección inferior - Teclado numérico */}
+      <div
+        style={{
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          width: '100%',
+          paddingBottom: spacing[8],
+        }}
+      >
+        <div
+          style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(3, 1fr)',
+            gap: spacing[4],
+            maxWidth: '320px',
+            width: '100%',
+            justifyItems: 'center',
+          }}
+        >
+          {numbers.map((num, index) => {
+            if (num === '') {
+              return <div key={index} style={{ width: '84px', height: '84px' }} />;
+            }
+
+            if (num === 'delete') {
+              return (
+                <button
+                  key={index}
+                  onClick={handleDelete}
+                  style={{
+                    width: '84px',
+                    height: '84px',
+                    borderRadius: borderRadius.full,
+                    border: 'none',
+                    backgroundColor: 'transparent',
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    transition: 'all 0.2s ease',
+                    fontFamily: typography.fontFamily.sans.join(', '),
+                    fontSize: typography.fontSize.base,
+                    fontWeight: typography.fontWeight.semibold,
+                    color: colors.semantic.text.primary,
+                    WebkitTapHighlightColor: 'transparent',
+                  }}
+                >
+                  Borrar
+                </button>
+              );
+            }
+
             return (
               <button
                 key={index}
-                onClick={handleDelete}
+                onClick={() => handleNumberPress(num)}
                 style={{
-                  width: '72px',
-                  height: '72px',
+                  width: '84px',
+                  height: '84px',
                   borderRadius: borderRadius.full,
                   border: 'none',
-                  backgroundColor: 'transparent',
+                  backgroundColor: colors.semantic.background.main,
                   cursor: 'pointer',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
-                  transition: 'all 0.2s ease',
                   fontFamily: typography.fontFamily.sans.join(', '),
-                  fontSize: typography.fontSize.base,
+                  fontSize: '32px',
                   fontWeight: typography.fontWeight.semibold,
                   color: colors.semantic.text.primary,
+                  transition: 'all 0.15s ease',
+                  WebkitTapHighlightColor: 'transparent',
+                }}
+                onMouseDown={(e) => {
+                  e.currentTarget.style.transform = 'scale(0.95)';
+                  e.currentTarget.style.backgroundColor = colors.semantic.border.light;
+                }}
+                onMouseUp={(e) => {
+                  e.currentTarget.style.transform = 'scale(1)';
+                  e.currentTarget.style.backgroundColor = colors.semantic.background.main;
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.transform = 'scale(1)';
+                  e.currentTarget.style.backgroundColor = colors.semantic.background.main;
+                }}
+                onTouchStart={(e) => {
+                  e.currentTarget.style.transform = 'scale(0.95)';
+                  e.currentTarget.style.backgroundColor = colors.semantic.border.light;
+                }}
+                onTouchEnd={(e) => {
+                  e.currentTarget.style.transform = 'scale(1)';
+                  e.currentTarget.style.backgroundColor = colors.semantic.background.main;
                 }}
               >
-                Borrar
+                {num}
               </button>
             );
-          }
-
-          return (
-            <button
-              key={index}
-              onClick={() => handleNumberPress(num)}
-              style={{
-                width: '72px',
-                height: '72px',
-                borderRadius: borderRadius.full,
-                border: 'none',
-                backgroundColor: colors.semantic.background.main,
-                cursor: 'pointer',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                fontFamily: typography.fontFamily.sans.join(', '),
-                fontSize: typography.fontSize['2xl'],
-                fontWeight: typography.fontWeight.semibold,
-                color: colors.semantic.text.primary,
-                transition: 'all 0.15s ease',
-              }}
-              onMouseDown={(e) => {
-                e.currentTarget.style.transform = 'scale(0.95)';
-                e.currentTarget.style.backgroundColor = colors.semantic.border.light;
-              }}
-              onMouseUp={(e) => {
-                e.currentTarget.style.transform = 'scale(1)';
-                e.currentTarget.style.backgroundColor = colors.semantic.background.main;
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.transform = 'scale(1)';
-                e.currentTarget.style.backgroundColor = colors.semantic.background.main;
-              }}
-              onTouchStart={(e) => {
-                e.currentTarget.style.transform = 'scale(0.95)';
-                e.currentTarget.style.backgroundColor = colors.semantic.border.light;
-              }}
-              onTouchEnd={(e) => {
-                e.currentTarget.style.transform = 'scale(1)';
-                e.currentTarget.style.backgroundColor = colors.semantic.background.main;
-              }}
-            >
-              {num}
-            </button>
-          );
-        })}
+          })}
+        </div>
       </div>
 
       {/* CSS para la animación de shake */}
@@ -242,8 +268,8 @@ export function PinScreen({ onSuccess }: PinScreenProps) {
         {`
           @keyframes shake {
             0%, 100% { transform: translateX(0); }
-            10%, 30%, 50%, 70%, 90% { transform: translateX(-8px); }
-            20%, 40%, 60%, 80% { transform: translateX(8px); }
+            10%, 30%, 50%, 70%, 90% { transform: translateX(-10px); }
+            20%, 40%, 60%, 80% { transform: translateX(10px); }
           }
         `}
       </style>
