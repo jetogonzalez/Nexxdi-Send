@@ -1,4 +1,4 @@
-const CACHE_NAME = 'cash-app-v5';
+const CACHE_NAME = 'cash-app-v6';
 const urlsToCache = [
   '/manifest.json',
 ];
@@ -65,7 +65,7 @@ self.addEventListener('push', (event) => {
   };
 
   event.waitUntil(
-    self.registration.showNotification('Nexxdi Cash', options)
+    self.registration.showNotification('💸 Nueva notificación', options)
   );
 });
 
