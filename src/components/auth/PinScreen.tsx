@@ -75,7 +75,7 @@ export function PinScreen({ onSuccess }: PinScreenProps) {
         flexDirection: 'column',
         alignItems: 'center',
         justifyContent: 'center',
-        padding: `env(safe-area-inset-top, 20px) ${spacing[6]} env(safe-area-inset-bottom, 20px)`,
+        padding: `calc(env(safe-area-inset-top, 20px) + 60px) ${spacing[6]} env(safe-area-inset-bottom, 20px)`,
         zIndex: 9999,
         boxSizing: 'border-box',
       }}
