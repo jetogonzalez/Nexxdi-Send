@@ -198,6 +198,29 @@ export function ExchangeMoneySheet({ isOpen, onClose, initialUsdBalance, initial
                 Cuenta origen
               </p>
               <div style={{ display: 'flex', alignItems: 'center', gap: spacing[4] }}>
+                <button
+                  onClick={() => setIsFromCurrencySheetOpen(true)}
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: spacing[2],
+                    backgroundColor: colors.semantic.background.white,
+                    borderRadius: borderRadius.full,
+                    padding: `${spacing[2]} ${spacing[4]}`,
+                    border: 'none',
+                    cursor: 'pointer',
+                    transition: 'background-color 0.2s ease',
+                  }}
+                >
+                  <img src={getCurrencyFlag(exchangeFromCurrency.symbol)} alt={exchangeFromCurrency.name} style={{ width: '24px', height: '24px', borderRadius: borderRadius.full, objectFit: 'cover' }} />
+                  <span style={{ fontSize: typography.fontSize.base, fontWeight: typography.fontWeight.semibold, color: colors.semantic.text.primary, fontFamily: typography.fontFamily.sans.join(', ') }}>
+                    {exchangeFromCurrency.symbol}
+                  </span>
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M6 9L12 15L18 9" stroke={colors.semantic.text.secondary} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                  </svg>
+                </button>
+                
                 <div style={{ flex: 1, overflow: 'hidden' }}>
                   <input
                     type="text"
@@ -227,33 +250,11 @@ export function ExchangeMoneySheet({ isOpen, onClose, initialUsdBalance, initial
                       transition: 'font-size 0.15s ease-out',
                       WebkitAppearance: 'none',
                       MozAppearance: 'textfield',
+                      textAlign: 'right',
                     }}
                     placeholder="0"
                   />
                 </div>
-                
-                <button
-                  onClick={() => setIsFromCurrencySheetOpen(true)}
-                  style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: spacing[2],
-                    backgroundColor: colors.semantic.background.white,
-                    borderRadius: borderRadius.full,
-                    padding: `${spacing[2]} ${spacing[4]}`,
-                    border: 'none',
-                    cursor: 'pointer',
-                    transition: 'background-color 0.2s ease',
-                  }}
-                >
-                  <img src={getCurrencyFlag(exchangeFromCurrency.symbol)} alt={exchangeFromCurrency.name} style={{ width: '24px', height: '24px', borderRadius: borderRadius.full, objectFit: 'cover' }} />
-                  <span style={{ fontSize: typography.fontSize.base, fontWeight: typography.fontWeight.semibold, color: colors.semantic.text.primary, fontFamily: typography.fontFamily.sans.join(', ') }}>
-                    {exchangeFromCurrency.symbol}
-                  </span>
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M6 9L12 15L18 9" stroke={colors.semantic.text.secondary} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                  </svg>
-                </button>
               </div>
               
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: spacing[3] }}>
@@ -314,6 +315,29 @@ export function ExchangeMoneySheet({ isOpen, onClose, initialUsdBalance, initial
                 Cuenta destino
               </p>
               <div style={{ display: 'flex', alignItems: 'center', gap: spacing[4] }}>
+                <button
+                  onClick={() => setIsToCurrencySheetOpen(true)}
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: spacing[2],
+                    backgroundColor: colors.semantic.background.white,
+                    borderRadius: borderRadius.full,
+                    padding: `${spacing[2]} ${spacing[4]}`,
+                    border: 'none',
+                    cursor: 'pointer',
+                    transition: 'background-color 0.2s ease',
+                  }}
+                >
+                  <img src={getCurrencyFlag(exchangeToCurrency.symbol)} alt={exchangeToCurrency.name} style={{ width: '24px', height: '24px', borderRadius: borderRadius.full, objectFit: 'cover' }} />
+                  <span style={{ fontSize: typography.fontSize.base, fontWeight: typography.fontWeight.semibold, color: colors.semantic.text.primary, fontFamily: typography.fontFamily.sans.join(', ') }}>
+                    {exchangeToCurrency.symbol}
+                  </span>
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M6 9L12 15L18 9" stroke={colors.semantic.text.secondary} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                  </svg>
+                </button>
+                
                 <div style={{ flex: 1, overflow: 'hidden' }}>
                   <input
                     type="text"
@@ -343,33 +367,11 @@ export function ExchangeMoneySheet({ isOpen, onClose, initialUsdBalance, initial
                       transition: 'font-size 0.15s ease-out',
                       WebkitAppearance: 'none',
                       MozAppearance: 'textfield',
+                      textAlign: 'right',
                     }}
                     placeholder="0"
                   />
                 </div>
-                
-                <button
-                  onClick={() => setIsToCurrencySheetOpen(true)}
-                  style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: spacing[2],
-                    backgroundColor: colors.semantic.background.white,
-                    borderRadius: borderRadius.full,
-                    padding: `${spacing[2]} ${spacing[4]}`,
-                    border: 'none',
-                    cursor: 'pointer',
-                    transition: 'background-color 0.2s ease',
-                  }}
-                >
-                  <img src={getCurrencyFlag(exchangeToCurrency.symbol)} alt={exchangeToCurrency.name} style={{ width: '24px', height: '24px', borderRadius: borderRadius.full, objectFit: 'cover' }} />
-                  <span style={{ fontSize: typography.fontSize.base, fontWeight: typography.fontWeight.semibold, color: colors.semantic.text.primary, fontFamily: typography.fontFamily.sans.join(', ') }}>
-                    {exchangeToCurrency.symbol}
-                  </span>
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M6 9L12 15L18 9" stroke={colors.semantic.text.secondary} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                  </svg>
-                </button>
               </div>
             </div>
           </div>

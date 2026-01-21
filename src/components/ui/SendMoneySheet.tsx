@@ -410,33 +410,6 @@ export function SendMoneySheet({ isOpen, onClose, usdBalance, copBalance }: Send
                 Tú envías
               </p>
               <div style={{ display: 'flex', alignItems: 'center', gap: spacing[4] }}>
-                <div ref={sendContainerRef} style={{ flex: 1, overflow: 'hidden' }}>
-                  <input
-                    ref={sendInputRef}
-                    type="text"
-                    inputMode="decimal"
-                    pattern="[0-9]*[.,]?[0-9]*"
-                    value={lastEditedField === 'send' ? sendAmount : formatCurrency(calculateSendAmount(), sendCurrency.symbol as 'USD' | 'COP', false)}
-                    onChange={(e) => handleSendAmountChange(e.target.value)}
-                    style={{
-                      width: '100%',
-                      fontSize: `${inputFontSize}px`,
-                      fontWeight: typography.fontWeight.bold,
-                      color: colors.semantic.text.primary,
-                      fontFamily: typography.fontFamily.sans.join(', '),
-                      backgroundColor: 'transparent',
-                      border: 'none',
-                      outline: 'none',
-                      padding: 0,
-                      letterSpacing: '-0.04em',
-                      transition: 'font-size 0.15s ease-out',
-                      WebkitAppearance: 'none',
-                      MozAppearance: 'textfield',
-                    }}
-                    placeholder="0"
-                  />
-                </div>
-                
                 <button
                   onClick={() => setIsSendCurrencySheetOpen(true)}
                   style={{
@@ -459,6 +432,34 @@ export function SendMoneySheet({ isOpen, onClose, usdBalance, copBalance }: Send
                     <path d="M6 9L12 15L18 9" stroke={colors.semantic.text.secondary} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
                   </svg>
                 </button>
+                
+                <div ref={sendContainerRef} style={{ flex: 1, overflow: 'hidden' }}>
+                  <input
+                    ref={sendInputRef}
+                    type="text"
+                    inputMode="decimal"
+                    pattern="[0-9]*[.,]?[0-9]*"
+                    value={lastEditedField === 'send' ? sendAmount : formatCurrency(calculateSendAmount(), sendCurrency.symbol as 'USD' | 'COP', false)}
+                    onChange={(e) => handleSendAmountChange(e.target.value)}
+                    style={{
+                      width: '100%',
+                      fontSize: `${inputFontSize}px`,
+                      fontWeight: typography.fontWeight.bold,
+                      color: colors.semantic.text.primary,
+                      fontFamily: typography.fontFamily.sans.join(', '),
+                      backgroundColor: 'transparent',
+                      border: 'none',
+                      outline: 'none',
+                      padding: 0,
+                      letterSpacing: '-0.04em',
+                      transition: 'font-size 0.15s ease-out',
+                      WebkitAppearance: 'none',
+                      MozAppearance: 'textfield',
+                      textAlign: 'right',
+                    }}
+                    placeholder="0"
+                  />
+                </div>
               </div>
               
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: spacing[3] }}>
@@ -515,33 +516,6 @@ export function SendMoneySheet({ isOpen, onClose, usdBalance, copBalance }: Send
                 Destinatario recibe
               </p>
               <div style={{ display: 'flex', alignItems: 'center', gap: spacing[4] }}>
-                <div ref={receiveContainerRef} style={{ flex: 1, overflow: 'hidden' }}>
-                  <input
-                    ref={receiveInputRef}
-                    type="text"
-                    inputMode="decimal"
-                    pattern="[0-9]*[.,]?[0-9]*"
-                    value={lastEditedField === 'receive' ? receiveAmount : formatCurrency(calculateReceiveAmount(), receiveCurrency.symbol as 'USD' | 'COP', false)}
-                    onChange={(e) => handleReceiveAmountChange(e.target.value)}
-                    style={{
-                      width: '100%',
-                      fontSize: `${inputFontSize}px`,
-                      fontWeight: typography.fontWeight.bold,
-                      color: colors.semantic.text.primary,
-                      fontFamily: typography.fontFamily.sans.join(', '),
-                      backgroundColor: 'transparent',
-                      border: 'none',
-                      outline: 'none',
-                      padding: 0,
-                      letterSpacing: '-0.04em',
-                      transition: 'font-size 0.15s ease-out',
-                      WebkitAppearance: 'none',
-                      MozAppearance: 'textfield',
-                    }}
-                    placeholder="0"
-                  />
-                </div>
-                
                 <button
                   onClick={() => setIsReceiveCurrencySheetOpen(true)}
                   style={{
@@ -564,6 +538,34 @@ export function SendMoneySheet({ isOpen, onClose, usdBalance, copBalance }: Send
                     <path d="M6 9L12 15L18 9" stroke={colors.semantic.text.secondary} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
                   </svg>
                 </button>
+                
+                <div ref={receiveContainerRef} style={{ flex: 1, overflow: 'hidden' }}>
+                  <input
+                    ref={receiveInputRef}
+                    type="text"
+                    inputMode="decimal"
+                    pattern="[0-9]*[.,]?[0-9]*"
+                    value={lastEditedField === 'receive' ? receiveAmount : formatCurrency(calculateReceiveAmount(), receiveCurrency.symbol as 'USD' | 'COP', false)}
+                    onChange={(e) => handleReceiveAmountChange(e.target.value)}
+                    style={{
+                      width: '100%',
+                      fontSize: `${inputFontSize}px`,
+                      fontWeight: typography.fontWeight.bold,
+                      color: colors.semantic.text.primary,
+                      fontFamily: typography.fontFamily.sans.join(', '),
+                      backgroundColor: 'transparent',
+                      border: 'none',
+                      outline: 'none',
+                      padding: 0,
+                      letterSpacing: '-0.04em',
+                      transition: 'font-size 0.15s ease-out',
+                      WebkitAppearance: 'none',
+                      MozAppearance: 'textfield',
+                      textAlign: 'right',
+                    }}
+                    placeholder="0"
+                  />
+                </div>
               </div>
             </div>
           </div>
