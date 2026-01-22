@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { borderRadius, colors, spacing, typography } from '../../config/design-tokens';
 
 interface MovementAvatarProps {
-  /** URL del logo interno (18x18px) */
+  /** URL del logo interno (24x24px para logos, 18x18px para iconos) */
   logoUrl?: string;
   /** Nombre completo del contacto para generar iniciales */
   contactName?: string;
@@ -14,6 +14,8 @@ interface MovementAvatarProps {
   size?: number;
   /** Color del borde doble (ej: #7DBE42 para Carulla) */
   borderColor?: string;
+  /** Si es un icono de acción (conversión, envío, recibido) - usa 18px en lugar de 24px */
+  isIcon?: boolean;
 }
 
 /**
@@ -29,6 +31,7 @@ export function MovementAvatar({
   imageUrl,
   size = 40,
   borderColor,
+  isIcon = false,
 }: MovementAvatarProps) {
   const [logoError, setLogoError] = useState(false);
   const [imageError, setImageError] = useState(false);
@@ -50,8 +53,8 @@ export function MovementAvatar({
   const hasLogo = Boolean(logoUrl) && !logoError;
   const hasInitials = Boolean(contactName);
   
-  // Tamaño del logo interno (18x18px para iconos más pequeños)
-  const logoSize = 18;
+  // Tamaño del logo interno (24px para logos, 18px para iconos)
+  const logoSize = isIcon ? 18 : 24;
   
   // Tamaño de fuente para iniciales (ajustado proporcionalmente)
   const fontSize = size * 0.5; // Aproximadamente 20px para 40px

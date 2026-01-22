@@ -6,7 +6,7 @@ import type { Movement } from '../components/home/RecentMovements';
 const MOVEMENTS_STORAGE_KEY = 'nexxdi_cash_movements';
 const MOVEMENTS_VERSION_KEY = 'nexxdi_cash_movements_version';
 const MOVEMENTS_UPDATE_EVENT = 'nexxdi_movements_updated';
-const CURRENT_VERSION = '8'; // Incrementar cuando cambie la estructura de movimientos
+const CURRENT_VERSION = '9'; // Incrementar cuando cambie la estructura de movimientos
 
 /**
  * Hook para gestionar movimientos dinámicamente
@@ -111,6 +111,7 @@ export function useMovements() {
         logoUrl: '/img/icons/global/fx.svg',
         type: 'deposit',
         source: 'cash',
+        isIcon: true,
       },
       {
         id: 'cash-2b',
@@ -121,6 +122,7 @@ export function useMovements() {
         logoUrl: '/img/icons/global/fx.svg',
         type: 'transfer',
         source: 'cash',
+        isIcon: true,
       },
     ];
     setMovements(defaultMovements);

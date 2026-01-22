@@ -15,6 +15,7 @@ export interface Movement {
   imageUrl?: string;
   type: 'purchase' | 'deposit' | 'transfer' | 'withdrawal';
   source: 'wallet' | 'card' | 'general' | 'cash'; // Fuente del movimiento: wallet (cuentas), card (tarjeta), general (todos), cash (transferencias)
+  isIcon?: boolean; // Si es un icono de acción (conversión, envío) en lugar de logo de empresa
 }
 
 interface RecentMovementsProps {
@@ -151,6 +152,7 @@ export function RecentMovements({ movements, isBalanceVisible = true, maxItems =
                 ? colors.semantic.movementAvatar?.netflix || '#141414'
                 : undefined // Amazon no tiene color de fondo ni borde
             }
+            isIcon={movement.isIcon}
           />
           
           {/* Información del movimiento */}
