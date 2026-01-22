@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { borderRadius, colors, spacing, typography } from '../../config/design-tokens';
 
 interface MovementAvatarProps {
-  /** URL del logo interno (24x24px) */
+  /** URL del logo interno (18x18px) */
   logoUrl?: string;
   /** Nombre completo del contacto para generar iniciales */
   contactName?: string;
@@ -19,7 +19,7 @@ interface MovementAvatarProps {
 /**
  * Componente genérico para avatares de movimientos
  * - Avatar: 40x40px con fondo negro al 5% de opacidad
- * - Logo interno: 24x24px
+ * - Logo interno: 18x18px
  * - Iniciales: Primer nombre
  * - Imagen: Reemplaza el fondo cuando está disponible
  */
@@ -50,8 +50,8 @@ export function MovementAvatar({
   const hasLogo = Boolean(logoUrl) && !logoError;
   const hasInitials = Boolean(contactName);
   
-  // Tamaño del logo interno (24x24px según especificación)
-  const logoSize = 24;
+  // Tamaño del logo interno (18x18px para iconos más pequeños)
+  const logoSize = 18;
   
   // Tamaño de fuente para iniciales (ajustado proporcionalmente)
   const fontSize = size * 0.5; // Aproximadamente 20px para 40px
@@ -65,7 +65,7 @@ export function MovementAvatar({
   // Capa 1 (interior): logo - 24px
   const outerSize = size; // 40px - Capa exterior (fondo default)
   const middleSize = borderColor ? size : size; // 40px - Capa media (color del anillo) - mismo tamaño que exterior
-  const innerSize = logoSize; // 24px - Capa interior (logo)
+  const innerSize = logoSize; // 18px - Capa interior (logo)
 
   return (
     <div
