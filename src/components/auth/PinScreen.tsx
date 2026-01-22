@@ -27,6 +27,7 @@ export function PinScreen({ onSuccess }: PinScreenProps) {
   const [pin, setPin] = useState('');
   const [error, setError] = useState(false);
   const [shake, setShake] = useState(false);
+  const [pressedKey, setPressedKey] = useState<string | null>(null);
 
   // Función para vibrar
   const vibrate = (pattern: number | number[] = 10) => {
@@ -139,16 +140,19 @@ export function PinScreen({ onSuccess }: PinScreenProps) {
             <div
               key={index}
               style={{
-                width: '18px',
-                height: '18px',
-                borderRadius: borderRadius.full,
+                width: '16px',
+                height: '16px',
+                borderRadius: '50%',
                 backgroundColor: pin.length > index
                   ? error
                     ? '#EF4444'
                     : colors.primary.main
                   : colors.semantic.border.light,
-                transition: 'all 0.2s ease',
-                transform: pin.length > index ? 'scale(1.15)' : 'scale(1)',
+                transition: 'background-color 0.15s ease, transform 0.15s ease',
+                transform: pin.length > index ? 'scale(1.1)' : 'scale(1)',
+                boxShadow: 'none',
+                border: 'none',
+                outline: 'none',
               }}
             />
           ))}
@@ -198,10 +202,17 @@ export function PinScreen({ onSuccess }: PinScreenProps) {
             }
 
             if (num === 'delete') {
+              const isPressed = pressedKey === 'delete';
               return (
                 <button
                   key={index}
                   onClick={handleDelete}
+                  onTouchStart={() => setPressedKey('delete')}
+                  onTouchEnd={() => setPressedKey(null)}
+                  onTouchCancel={() => setPressedKey(null)}
+                  onMouseDown={() => setPressedKey('delete')}
+                  onMouseUp={() => setPressedKey(null)}
+                  onMouseLeave={() => setPressedKey(null)}
                   style={{
                     width: 'min(20vw, 80px)',
                     height: 'min(20vw, 80px)',
@@ -212,32 +223,14 @@ export function PinScreen({ onSuccess }: PinScreenProps) {
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
-                    transition: 'all 0.2s cubic-bezier(0.25, 0.46, 0.45, 0.94)',
+                    transition: 'transform 0.15s ease, opacity 0.15s ease',
                     fontFamily: typography.fontFamily.sans.join(', '),
                     fontSize: 'min(4.5vw, 18px)',
                     fontWeight: typography.fontWeight.bold,
                     color: colors.semantic.text.primary,
                     WebkitTapHighlightColor: 'transparent',
-                  }}
-                  onMouseDown={(e) => {
-                    e.currentTarget.style.transform = 'scale(0.92)';
-                    e.currentTarget.style.opacity = '0.7';
-                  }}
-                  onMouseUp={(e) => {
-                    e.currentTarget.style.transform = 'scale(1)';
-                    e.currentTarget.style.opacity = '1';
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.transform = 'scale(1)';
-                    e.currentTarget.style.opacity = '1';
-                  }}
-                  onTouchStart={(e) => {
-                    e.currentTarget.style.transform = 'scale(0.92)';
-                    e.currentTarget.style.opacity = '0.7';
-                  }}
-                  onTouchEnd={(e) => {
-                    e.currentTarget.style.transform = 'scale(1)';
-                    e.currentTarget.style.opacity = '1';
+                    transform: isPressed ? 'scale(0.9)' : 'scale(1)',
+                    opacity: isPressed ? 0.6 : 1,
                   }}
                 >
                   Borrar
@@ -245,16 +238,23 @@ export function PinScreen({ onSuccess }: PinScreenProps) {
               );
             }
 
+            const isPressed = pressedKey === num;
             return (
               <button
                 key={index}
                 onClick={() => handleNumberPress(num)}
+                onTouchStart={() => setPressedKey(num)}
+                onTouchEnd={() => setPressedKey(null)}
+                onTouchCancel={() => setPressedKey(null)}
+                onMouseDown={() => setPressedKey(num)}
+                onMouseUp={() => setPressedKey(null)}
+                onMouseLeave={() => setPressedKey(null)}
                 style={{
                   width: 'min(20vw, 80px)',
                   height: 'min(20vw, 80px)',
                   borderRadius: borderRadius.full,
                   border: 'none',
-                  backgroundColor: colors.semantic.background.main,
+                  backgroundColor: isPressed ? colors.semantic.border.medium : colors.semantic.background.main,
                   cursor: 'pointer',
                   display: 'flex',
                   alignItems: 'center',
@@ -263,28 +263,9 @@ export function PinScreen({ onSuccess }: PinScreenProps) {
                   fontSize: 'min(7vw, 32px)',
                   fontWeight: typography.fontWeight.medium,
                   color: colors.semantic.text.primary,
-                  transition: 'all 0.2s cubic-bezier(0.25, 0.46, 0.45, 0.94)',
+                  transition: 'transform 0.15s ease, background-color 0.15s ease',
                   WebkitTapHighlightColor: 'transparent',
-                }}
-                onMouseDown={(e) => {
-                  e.currentTarget.style.transform = 'scale(0.92)';
-                  e.currentTarget.style.backgroundColor = colors.semantic.border.medium;
-                }}
-                onMouseUp={(e) => {
-                  e.currentTarget.style.transform = 'scale(1)';
-                  e.currentTarget.style.backgroundColor = colors.semantic.background.main;
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.transform = 'scale(1)';
-                  e.currentTarget.style.backgroundColor = colors.semantic.background.main;
-                }}
-                onTouchStart={(e) => {
-                  e.currentTarget.style.transform = 'scale(0.92)';
-                  e.currentTarget.style.backgroundColor = colors.semantic.border.medium;
-                }}
-                onTouchEnd={(e) => {
-                  e.currentTarget.style.transform = 'scale(1)';
-                  e.currentTarget.style.backgroundColor = colors.semantic.background.main;
+                  transform: isPressed ? 'scale(0.9)' : 'scale(1)',
                 }}
               >
                 {num}
