@@ -308,6 +308,9 @@ export function CardWalletSlider({ onCardSelect, onCardDoubleTap, onFrontCardCha
         e.stopPropagation();
         console.log('Options clicked');
       }}
+      onTouchStart={(e) => e.stopPropagation()}
+      onTouchEnd={(e) => e.stopPropagation()}
+      onMouseDown={(e) => e.stopPropagation()}
       style={{
         width: 32,
         height: 32,
@@ -318,15 +321,21 @@ export function CardWalletSlider({ onCardSelect, onCardDoubleTap, onFrontCardCha
         alignItems: 'center',
         justifyContent: 'center',
         cursor: 'pointer',
+        WebkitTapHighlightColor: 'transparent',
+        touchAction: 'manipulation',
+        outline: 'none',
+        userSelect: 'none',
       }}
     >
       <img 
         src="/img/icons/global/icon-dots.svg" 
         alt="Opciones"
+        draggable={false}
         style={{ 
           width: 16, 
           height: 16,
           filter: isVisa ? 'brightness(0) invert(1)' : 'none',
+          pointerEvents: 'none',
         }}
       />
     </button>
