@@ -506,7 +506,7 @@ export function TarjetaView({ titleRef, scrollProgress = 0, isBalanceVisible = t
           paddingRight: spacing[5], // 20px para mantener alineación con el contenido
         }}
       >
-        {/* Botón Recargar tarjeta */}
+        {/* Botón Recargar */}
         <div
           style={{
             display: 'flex',
@@ -523,7 +523,7 @@ export function TarjetaView({ titleRef, scrollProgress = 0, isBalanceVisible = t
               e.stopPropagation();
               // Resetear estado inmediatamente
               e.currentTarget.style.backgroundColor = colors.semantic.background.white;
-              console.log('Recargar tarjeta');
+              console.log('Recargar');
             }}
             style={{
               width: '64px',
@@ -558,11 +558,11 @@ export function TarjetaView({ titleRef, scrollProgress = 0, isBalanceVisible = t
               e.stopPropagation();
               e.currentTarget.style.backgroundColor = colors.semantic.background.white;
             }}
-            aria-label="Recargar tarjeta"
+            aria-label="Recargar"
           >
             <img
               src="/img/icons/global/add.svg"
-              alt="Recargar tarjeta"
+              alt="Recargar"
               style={{
                 width: '24px',
                 height: '24px',
@@ -579,7 +579,7 @@ export function TarjetaView({ titleRef, scrollProgress = 0, isBalanceVisible = t
               textAlign: 'center',
             }}
           >
-            Recargar tarjeta
+            Recargar
           </span>
         </div>
 
