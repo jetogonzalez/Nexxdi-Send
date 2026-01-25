@@ -221,16 +221,6 @@ export function SegmentedButton({
               handleSelect(option);
             }}
             onKeyDown={(e) => handleKeyDown(e, index)}
-            onPointerDown={(e) => {
-              // Prevenir que el gesto se convierta en scroll del bottom sheet
-              e.preventDefault();
-              e.stopPropagation();
-            }}
-            onPointerMove={(e) => {
-              // Prevenir propagación durante el movimiento
-              e.preventDefault();
-              e.stopPropagation();
-            }}
             tabIndex={isActive ? 0 : -1}
             style={{
               position: 'relative',
