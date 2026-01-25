@@ -46,7 +46,6 @@ export function TarjetaView({ titleRef, scrollProgress = 0, isBalanceVisible = t
   const [isCardDataSheetOpen, setIsCardDataSheetOpen] = useState<boolean>(false); // Control del bottom sheet de datos de tarjeta
   const [showToast, setShowToast] = useState<boolean>(false); // Control del toast de confirmación
   const [toastMessage, setToastMessage] = useState<string>(''); // Mensaje del toast
-  const lockButtonRef = useRef<HTMLButtonElement | null>(null); // Ref para el botón de bloqueo/desbloqueo
   
   // Estado para animación de estrellas del cashback
   const [cashbackAnimationStarted, setCashbackAnimationStarted] = useState<boolean>(false);
@@ -184,13 +183,6 @@ export function TarjetaView({ titleRef, scrollProgress = 0, isBalanceVisible = t
       window.dispatchEvent(new CustomEvent('cardLockChanged'));
     }
   }, [isLocked]);
-
-  // Resetear el estado visual del botón cuando se abre un bottom sheet
-  useEffect(() => {
-    if (lockButtonRef.current && (isBlockSheetOpen || isUnlockSheetOpen)) {
-      lockButtonRef.current.style.backgroundColor = colors.semantic.background.white;
-    }
-  }, [isBlockSheetOpen, isUnlockSheetOpen]);
 
   // Determinar dirección de la animación según el cambio
   useEffect(() => {
@@ -518,11 +510,7 @@ export function TarjetaView({ titleRef, scrollProgress = 0, isBalanceVisible = t
         >
           <button
             type="button"
-            onClick={(e) => {
-              e.preventDefault();
-              e.stopPropagation();
-              // Resetear estado inmediatamente
-              e.currentTarget.style.backgroundColor = colors.semantic.background.white;
+            onClick={() => {
               console.log('Recargar');
             }}
             style={{
@@ -539,24 +527,6 @@ export function TarjetaView({ titleRef, scrollProgress = 0, isBalanceVisible = t
               transition: 'background-color 0.15s ease',
               WebkitTapHighlightColor: 'transparent',
               touchAction: 'manipulation',
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.backgroundColor = colors.gray[100];
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.backgroundColor = colors.semantic.background.white;
-            }}
-            onPointerDown={(e) => {
-              e.stopPropagation();
-              e.currentTarget.style.backgroundColor = colors.gray[100];
-            }}
-            onPointerUp={(e) => {
-              e.stopPropagation();
-              e.currentTarget.style.backgroundColor = colors.semantic.background.white;
-            }}
-            onPointerLeave={(e) => {
-              e.stopPropagation();
-              e.currentTarget.style.backgroundColor = colors.semantic.background.white;
             }}
             aria-label="Recargar"
           >
@@ -595,11 +565,7 @@ export function TarjetaView({ titleRef, scrollProgress = 0, isBalanceVisible = t
         >
           <button
             type="button"
-            onClick={(e) => {
-              e.preventDefault();
-              e.stopPropagation();
-              // Resetear estado inmediatamente
-              e.currentTarget.style.backgroundColor = colors.semantic.background.white;
+            onClick={() => {
               setIsCardDataSheetOpen(true);
             }}
             style={{
@@ -616,24 +582,6 @@ export function TarjetaView({ titleRef, scrollProgress = 0, isBalanceVisible = t
               transition: 'background-color 0.15s ease',
               WebkitTapHighlightColor: 'transparent',
               touchAction: 'manipulation',
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.backgroundColor = colors.gray[100];
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.backgroundColor = colors.semantic.background.white;
-            }}
-            onPointerDown={(e) => {
-              e.stopPropagation();
-              e.currentTarget.style.backgroundColor = colors.gray[100];
-            }}
-            onPointerUp={(e) => {
-              e.stopPropagation();
-              e.currentTarget.style.backgroundColor = colors.semantic.background.white;
-            }}
-            onPointerLeave={(e) => {
-              e.stopPropagation();
-              e.currentTarget.style.backgroundColor = colors.semantic.background.white;
             }}
             aria-label="Ver datos"
           >
@@ -671,29 +619,13 @@ export function TarjetaView({ titleRef, scrollProgress = 0, isBalanceVisible = t
           }}
         >
           <button
-            ref={lockButtonRef}
             type="button"
-            onClick={(e) => {
-              console.log('Botón desbloquear/bloquear clicked', { isLocked }); // DEBUG
-              e.stopPropagation();
-              // Resetear estado inmediatamente antes de abrir el bottom sheet
-              const button = e.currentTarget;
-              button.style.backgroundColor = colors.semantic.background.white;
-              
-              // Usar setTimeout para asegurar que el reset se aplique después del evento
-              setTimeout(() => {
-                if (button) {
-                  button.style.backgroundColor = colors.semantic.background.white;
-                }
-              }, 0);
-              
+            onClick={() => {
               if (!isLocked) {
                 // Si está desbloqueada, abrir el bottom sheet de bloqueo
-                console.log('Abriendo bottom sheet de bloqueo'); // DEBUG
                 setIsBlockSheetOpen(true);
               } else {
                 // Si está bloqueada, abrir el bottom sheet de desbloqueo
-                console.log('Abriendo bottom sheet de desbloqueo'); // DEBUG
                 setIsUnlockSheetOpen(true);
               }
             }}
@@ -713,37 +645,6 @@ export function TarjetaView({ titleRef, scrollProgress = 0, isBalanceVisible = t
               touchAction: 'manipulation',
               position: 'relative',
               zIndex: 10,
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.backgroundColor = colors.gray[100];
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.backgroundColor = colors.semantic.background.white; // Siempre volver a blanco tokenizado
-            }}
-            onPointerDown={(e) => {
-              e.stopPropagation();
-              e.currentTarget.style.backgroundColor = colors.gray[100];
-            }}
-            onPointerUp={(e) => {
-              e.stopPropagation();
-              const button = e.currentTarget;
-              button.style.backgroundColor = colors.semantic.background.white;
-              // Asegurar reset después de un pequeño delay
-              setTimeout(() => {
-                if (button) {
-                  button.style.backgroundColor = colors.semantic.background.white;
-                }
-              }, 50);
-            }}
-            onPointerLeave={(e) => {
-              e.stopPropagation();
-              const button = e.currentTarget;
-              button.style.backgroundColor = colors.semantic.background.white;
-            }}
-            onPointerCancel={(e) => {
-              e.stopPropagation();
-              const button = e.currentTarget;
-              button.style.backgroundColor = colors.semantic.background.white;
             }}
             aria-label={isLocked ? 'Desbloquear' : 'Bloqueo temporal'}
           >
