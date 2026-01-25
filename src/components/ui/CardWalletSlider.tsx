@@ -65,7 +65,7 @@ const defaultCardOrder: CardData[] = [
 ];
 
 const DOUBLE_TAP_DELAY = 300; // ms para detectar doble tap
-const TAP_THRESHOLD = 20; // px máximo de movimiento para considerar tap
+const TAP_THRESHOLD = 15; // px máximo de movimiento para considerar tap (reducido para mejor detección)
 
 export function CardWalletSlider({ onCardSelect, onCardDoubleTap, onFrontCardChange, isBalanceVisible = true, cardBalance = 379.21, cardBackground, isCardBlocked = false }: CardWalletSliderProps) {
   const [cards, setCards] = useState<CardData[]>(defaultCardOrder);
@@ -80,6 +80,7 @@ export function CardWalletSlider({ onCardSelect, onCardDoubleTap, onFrontCardCha
   const touchStartYRef = useRef(0);
   const touchCardIdRef = useRef<string | null>(null);
   const hasDraggedRef = useRef(false);
+  const dragOffsetRef = useRef(0); // Ref para evitar problemas con stale closures
 
   // Notify parent when front card changes
   useEffect(() => {
@@ -101,12 +102,21 @@ export function CardWalletSlider({ onCardSelect, onCardDoubleTap, onFrontCardCha
   // Click on a card:
   // - Front card: single tap navigates, double tap also navigates
   // - Middle/back cards: bring to front only (no navigation)
-  const handleCardClick = (cardId: string) => {
-    if (Math.abs(dragOffset) > 5) return;
+  const handleCardClick = useCallback((cardId: string) => {
+    // Usar ref para obtener el dragOffset más reciente
+    if (Math.abs(dragOffsetRef.current) > 5) {
+      console.log('CardWalletSlider: Click ignorado por dragOffset', dragOffsetRef.current);
+      return;
+    }
     
-    const index = cards.findIndex(c => c.id === cardId);
-    const isTopCard = index === cards.length - 1;
+    const currentCards = cardsStateRef.current;
+    const index = currentCards.findIndex(c => c.id === cardId);
+    if (index === -1) return;
+    
+    const isTopCard = index === currentCards.length - 1;
     const now = Date.now();
+    
+    console.log('CardWalletSlider: Card clicked', { cardId, isTopCard, cardType: currentCards[index].type });
     
     // If it's the front card
     if (isTopCard) {
@@ -116,7 +126,8 @@ export function CardWalletSlider({ onCardSelect, onCardDoubleTap, onFrontCardCha
           now - lastTapRef.current.time < DOUBLE_TAP_DELAY) {
         // Double tap detected on front card
         lastTapRef.current = null;
-        onCardDoubleTap?.(cards[index]);
+        console.log('CardWalletSlider: Double tap detected, navigating');
+        onCardDoubleTap?.(currentCards[index]);
         return;
       }
       
@@ -124,20 +135,22 @@ export function CardWalletSlider({ onCardSelect, onCardDoubleTap, onFrontCardCha
       lastTapRef.current = { cardId, time: now };
       
       // Single tap on front card - navigate
-      onCardSelect?.(cards[index]);
+      console.log('CardWalletSlider: Single tap on front card, navigating');
+      onCardSelect?.(currentCards[index]);
       return;
     }
 
     // Middle or back card - just bring to front (no navigation)
+    console.log('CardWalletSlider: Bringing card to front', cardId);
     const newCards = [
-      ...cards.slice(0, index),
-      ...cards.slice(index + 1),
-      cards[index]
+      ...currentCards.slice(0, index),
+      ...currentCards.slice(index + 1),
+      currentCards[index]
     ];
     setCards(newCards);
     // Reset tap ref when changing cards
     lastTapRef.current = null;
-  };
+  }, [onCardDoubleTap, onCardSelect]);
 
   // Drag start
   const handleDragStart = useCallback((cardId: string, clientY: number) => {
@@ -162,14 +175,16 @@ export function CardWalletSlider({ onCardSelect, onCardDoubleTap, onFrontCardCha
     
     const dampedOffset = Math.sign(offset) * Math.min(MAX_DRAG, Math.abs(offset) * 0.5);
     setDragOffset(dampedOffset);
+    dragOffsetRef.current = dampedOffset; // Mantener ref sincronizada
   }, []);
 
   // Drag end
   const handleDragEnd = useCallback(() => {
     setIsDragging(false);
     
+    const currentOffset = dragOffsetRef.current; // Usar ref para obtener valor más reciente
+    
     setCards(prevCards => {
-      const currentOffset = dragOffset;
       if (currentOffset > DRAG_THRESHOLD) {
         const frontCard = prevCards[prevCards.length - 1];
         return [frontCard, ...prevCards.slice(0, -1)];
@@ -182,8 +197,9 @@ export function CardWalletSlider({ onCardSelect, onCardDoubleTap, onFrontCardCha
     });
 
     setDragOffset(0);
+    dragOffsetRef.current = 0; // Resetear ref también
     draggingCardRef.current = null;
-  }, [dragOffset]);
+  }, []);
 
   // Handle tap/double tap on touch end
   // - Front card: single tap navigates, double tap also navigates
@@ -191,8 +207,15 @@ export function CardWalletSlider({ onCardSelect, onCardDoubleTap, onFrontCardCha
   const handleTouchTap = useCallback((cardId: string) => {
     const currentCards = cardsStateRef.current;
     const index = currentCards.findIndex(c => c.id === cardId);
+    if (index === -1) {
+      console.log('CardWalletSlider: Card not found', cardId);
+      return;
+    }
+    
     const isTopCard = index === currentCards.length - 1;
     const now = Date.now();
+    
+    console.log('CardWalletSlider: Touch tap detected', { cardId, isTopCard, cardType: currentCards[index].type });
     
     // If it's the front card
     if (isTopCard) {
@@ -202,6 +225,7 @@ export function CardWalletSlider({ onCardSelect, onCardDoubleTap, onFrontCardCha
           now - lastTapRef.current.time < DOUBLE_TAP_DELAY) {
         // Double tap detected on front card
         lastTapRef.current = null;
+        console.log('CardWalletSlider: Double tap detected, calling onCardDoubleTap');
         onCardDoubleTap?.(currentCards[index]);
         return;
       }
@@ -210,11 +234,13 @@ export function CardWalletSlider({ onCardSelect, onCardDoubleTap, onFrontCardCha
       lastTapRef.current = { cardId, time: now };
       
       // Single tap on front card - navigate
+      console.log('CardWalletSlider: Single tap on front card, calling onCardSelect');
       onCardSelect?.(currentCards[index]);
       return;
     }
 
     // Middle or back card - just bring to front (no navigation)
+    console.log('CardWalletSlider: Bringing card to front via touch', cardId);
     const newCards = [
       ...currentCards.slice(0, index),
       ...currentCards.slice(index + 1),
@@ -244,8 +270,11 @@ export function CardWalletSlider({ onCardSelect, onCardDoubleTap, onFrontCardCha
       const moveDistance = Math.abs(endY - startY);
       const wasDragged = hasDraggedRef.current;
       
+      console.log('CardWalletSlider: Touch end', { cardId, moveDistance, wasDragged, threshold: TAP_THRESHOLD });
+      
       // Only treat as tap if no significant drag happened
       if (cardId && moveDistance < TAP_THRESHOLD && !wasDragged) {
+        console.log('CardWalletSlider: Treating as tap');
         handleTouchTap(cardId);
       }
       
@@ -259,10 +288,15 @@ export function CardWalletSlider({ onCardSelect, onCardDoubleTap, onFrontCardCha
     };
 
     const onTouchCancel = () => {
+      console.log('CardWalletSlider: Touch cancelled');
       if (draggingCardRef.current) {
         handleDragEnd();
       }
       touchCardIdRef.current = null;
+      hasDraggedRef.current = false;
+      // Asegurar que dragOffset se resetea
+      setDragOffset(0);
+      dragOffsetRef.current = 0;
     };
 
     container.addEventListener('touchmove', onTouchMove, { passive: false });
@@ -278,6 +312,7 @@ export function CardWalletSlider({ onCardSelect, onCardDoubleTap, onFrontCardCha
 
   // Touch start handler
   const handleTouchStart = (cardId: string, e: React.TouchEvent) => {
+    console.log('CardWalletSlider: Touch start', { cardId, y: e.touches[0].clientY });
     touchCardIdRef.current = cardId;
     touchStartYRef.current = e.touches[0].clientY;
     hasDraggedRef.current = false; // Reset drag flag
