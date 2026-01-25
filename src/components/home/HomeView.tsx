@@ -84,18 +84,24 @@ export function HomeView({ titleRef, scrollProgress = 0, isBalanceVisible = true
               cardBalance={cardBalance}
               isCardBlocked={isCardBlocked}
               onCardSelect={(card) => {
+                console.log('HomeView: onCardSelect called', { cardType: card.type });
                 // Solo navegar si es la card principal (front card)
                 // El componente ya maneja esto internamente
                 if (card.type === 'usd' || card.type === 'cop') {
+                  console.log('HomeView: Navigating to wallet');
                   onNavigate?.('wallet');
                 } else if (card.type === 'visa') {
+                  console.log('HomeView: Navigating to tarjeta');
                   onNavigate?.('tarjeta');
                 }
               }}
               onCardDoubleTap={(card) => {
+                console.log('HomeView: onCardDoubleTap called', { cardType: card.type });
                 if (card.type === 'usd' || card.type === 'cop') {
+                  console.log('HomeView: Double tap - Navigating to wallet');
                   onNavigate?.('wallet');
                 } else if (card.type === 'visa') {
+                  console.log('HomeView: Double tap - Navigating to tarjeta');
                   onNavigate?.('tarjeta');
                 }
               }}

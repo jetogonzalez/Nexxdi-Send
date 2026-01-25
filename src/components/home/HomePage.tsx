@@ -241,6 +241,7 @@ export default function HomePage() {
   };
 
   const handleTabChange = (newTab: string) => {
+    console.log('HomePage: handleTabChange called', { from: activeTab, to: newTab });
     previousTabRef.current = activeTab;
     setActiveTab(newTab);
     // Reset scroll state cuando cambias de tab
@@ -258,6 +259,7 @@ export default function HomePage() {
   const cardBalance = 379.21; // Valor de la tarjeta virtual
 
   const renderContent = () => {
+    console.log('HomePage: renderContent called', { activeTab });
     switch (activeTab) {
       case 'home':
         return <HomeView titleRef={(el) => { titleRefs.current['home'] = el; }} scrollProgress={scrollProgress} isBalanceVisible={isBalanceVisible} usdBalance={currencyBalanceUSD} copBalance={currencyBalanceCOP} cardBalance={cardBalance} onNavigate={handleTabChange} isCardBlocked={isCardBlocked} />;
@@ -266,6 +268,7 @@ export default function HomePage() {
       case 'cash':
         return <CashView isBalanceVisible={isBalanceVisible} usdBalance={currencyBalanceUSD} copBalance={currencyBalanceCOP} />;
       case 'tarjeta':
+        console.log('HomePage: Rendering TarjetaView');
         return <TarjetaView titleRef={(el) => { titleRefs.current['tarjeta'] = el; }} scrollProgress={scrollProgress} isBalanceVisible={isBalanceVisible} />;
       case 'mas':
         return <MasView isBalanceVisible={isBalanceVisible} cardBalance={cardBalance} />;

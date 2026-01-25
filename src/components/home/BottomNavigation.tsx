@@ -100,8 +100,8 @@ export function BottomNavigation({ activeTab, onTabChange }: BottomNavigationPro
             <button
               key={tab.id}
               type="button"
-
               onClick={() => {
+                console.log('BottomNavigation: Tab clicked', { tabId: tab.id, isDisabled });
                 if (isDisabled) return;
                 onTabChange(tab.id);
               }}
