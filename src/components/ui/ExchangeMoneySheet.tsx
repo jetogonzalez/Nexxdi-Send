@@ -1,7 +1,8 @@
+
 "use client";
 
 import { useState, useEffect } from 'react';
-import { colors, spacing, typography, borderRadius } from '../../config/design-tokens';
+import { colors, spacing, typography, borderRadius, shadows } from '../../config/design-tokens';
 import { BottomSheet } from './BottomSheet';
 import { SliderToBlock } from './SliderToBlock';
 import { formatCurrency } from '../../lib/formatBalance';
@@ -47,7 +48,7 @@ export function ExchangeMoneySheet({ isOpen, onClose, initialUsdBalance, initial
   // Estados para el cambio de moneda
   const [exchangeFromCurrency, setExchangeFromCurrency] = useState<CurrencyOption>(currencies[0]);
   const [exchangeToCurrency, setExchangeToCurrency] = useState<CurrencyOption>(currencies[1]);
-  const [exchangeFromAmount, setExchangeFromAmount] = useState<string>('100');
+  const [exchangeFromAmount, setExchangeFromAmount] = useState<string>('');
   const [exchangeToAmount, setExchangeToAmount] = useState<string>('');
   const [exchangeLastEditedField, setExchangeLastEditedField] = useState<'from' | 'to'>('from');
   
@@ -58,12 +59,112 @@ export function ExchangeMoneySheet({ isOpen, onClose, initialUsdBalance, initial
   // Timer para la tasa de cambio
   const [rateTimer, setRateTimer] = useState(60);
   
-  // Font size para inputs
-  const [inputFontSize] = useState(36);
+  // Estado para error de saldo insuficiente
+  const [balanceError, setBalanceError] = useState(false);
   
-  // Límites de dígitos por moneda: COP = 10, USD = 7
+  // Estado para focus de inputs (mostrar botones MIN/MAX solo cuando está enfocado)
+  const [isFromInputFocused, setIsFromInputFocused] = useState(false);
+  const [isToInputFocused, setIsToInputFocused] = useState(false);
+  
+  // Monto mínimo en USD (y su equivalente en otras monedas)
+  const MIN_AMOUNT_USD = 10;
+  
+  // Validar si el monto cumple con el mínimo
+  const isAmountBelowMinimum = (): boolean => {
+    const amount = parseFormattedValue(exchangeFromAmount);
+    if (amount <= 0) return true;
+    
+    if (exchangeFromCurrency.symbol === 'USD') {
+      return amount < MIN_AMOUNT_USD;
+    } else {
+      // Convertir el mínimo USD a la moneda de origen
+      const minInSourceCurrency = convert(MIN_AMOUNT_USD, 'USD', exchangeFromCurrency.symbol);
+      return amount < minInSourceCurrency;
+    }
+  };
+  
+  // Verificar si hay algún error que impida la transacción
+  const hasTransactionError = (): boolean => {
+    return balanceError || isAmountBelowMinimum();
+  };
+  
+  // Calcular font size dinámico basado en longitud del valor (incluye separadores)
+  const getDynamicFontSize = (value: string): number => {
+    // Usar longitud total incluyendo separadores para mejor cálculo
+    const totalLength = value.length;
+    if (totalLength <= 3) return 36;
+    if (totalLength <= 5) return 32;
+    if (totalLength <= 7) return 28;
+    if (totalLength <= 9) return 24;
+    if (totalLength <= 11) return 20;
+    if (totalLength <= 13) return 17;
+    if (totalLength <= 15) return 14;
+    return 12;
+  };
+  
+  // Obtener placeholder mínimo por moneda
+  const getMinPlaceholder = (currency: string): string => {
+    return '0';
+  };
+  
+  // Obtener monto mínimo por moneda
+  const getMinAmount = (currency: string): number => {
+    if (currency === 'USD') return MIN_AMOUNT_USD;
+    return convert(MIN_AMOUNT_USD, 'USD', currency);
+  };
+  
+  // Obtener monto máximo (saldo disponible)
+  const getMaxAmount = (currency: string): number => {
+    return currency === 'USD' ? usdBalance : copBalance;
+  };
+  
+  // Aplicar monto mínimo al input origen
+  const handleFromMin = () => {
+    const minAmount = getMinAmount(exchangeFromCurrency.symbol);
+    // Para números enteros, no mostrar decimales
+    const formatted = Number.isInteger(minAmount) 
+      ? new Intl.NumberFormat('es-ES', { useGrouping: true }).format(minAmount)
+      : formatCurrency(minAmount, exchangeFromCurrency.symbol as 'USD' | 'COP', false);
+    setExchangeFromAmount(formatted);
+    setExchangeLastEditedField('from');
+    setBalanceError(minAmount > getMaxAmount(exchangeFromCurrency.symbol));
+  };
+  
+  // Aplicar monto máximo al input origen
+  const handleFromMax = () => {
+    const maxAmount = getMaxAmount(exchangeFromCurrency.symbol);
+    const formatted = formatCurrency(maxAmount, exchangeFromCurrency.symbol as 'USD' | 'COP', false);
+    setExchangeFromAmount(formatted);
+    setExchangeLastEditedField('from');
+    setBalanceError(false);
+  };
+  
+  // Aplicar monto mínimo al input destino
+  const handleToMin = () => {
+    const minInFrom = getMinAmount(exchangeFromCurrency.symbol);
+    const minInTo = convert(minInFrom, exchangeFromCurrency.symbol, exchangeToCurrency.symbol);
+    // Para números enteros, no mostrar decimales
+    const formatted = Number.isInteger(minInTo) 
+      ? new Intl.NumberFormat('es-ES', { useGrouping: true }).format(minInTo)
+      : formatCurrency(minInTo, exchangeToCurrency.symbol as 'USD' | 'COP', false);
+    setExchangeToAmount(formatted);
+    setExchangeLastEditedField('to');
+    setBalanceError(minInFrom > getMaxAmount(exchangeFromCurrency.symbol));
+  };
+  
+  // Aplicar monto máximo al input destino
+  const handleToMax = () => {
+    const maxInFrom = getMaxAmount(exchangeFromCurrency.symbol);
+    const maxInTo = convert(maxInFrom, exchangeFromCurrency.symbol, exchangeToCurrency.symbol);
+    const formatted = formatCurrency(maxInTo, exchangeToCurrency.symbol as 'USD' | 'COP', false);
+    setExchangeToAmount(formatted);
+    setExchangeLastEditedField('to');
+    setBalanceError(false);
+  };
+  
+  // Límites de dígitos por moneda: 12 dígitos enteros para todas
   const getMaxDigits = (currency: string): number => {
-    return currency === 'COP' ? 10 : 7;
+    return 12; // 12 dígitos enteros + decimales si aplica
   };
   
   // Actualizar currencies cuando cambien los balances
@@ -142,9 +243,11 @@ export function ExchangeMoneySheet({ isOpen, onClose, initialUsdBalance, initial
     if (!value) return '';
     
     const maxDigits = getMaxDigits(currency.symbol);
-    let cleanValue = value.replace(/[^\d.,]/g, '');
-    cleanValue = cleanValue.replace('.', ',');
     
+    // Eliminar todo excepto dígitos y coma (el punto se ignora como separador de miles)
+    let cleanValue = value.replace(/[^\d,]/g, '');
+    
+    // Manejar múltiples comas - solo permitir una
     const commaCount = (cleanValue.match(/,/g) || []).length;
     if (commaCount > 1) {
       const firstCommaIndex = cleanValue.indexOf(',');
@@ -152,7 +255,7 @@ export function ExchangeMoneySheet({ isOpen, onClose, initialUsdBalance, initial
     }
     
     const parts = cleanValue.split(',');
-    let integerPart = parts[0].replace(/\./g, '');
+    let integerPart = parts[0];
     
     if (integerPart.length > maxDigits) {
       integerPart = integerPart.slice(0, maxDigits);
@@ -226,39 +329,121 @@ export function ExchangeMoneySheet({ isOpen, onClose, initialUsdBalance, initial
                   </svg>
                 </button>
                 
-                <div style={{ flex: 1, overflow: 'hidden' }}>
+                <div style={{ flex: 1, overflow: 'hidden', position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: spacing[2] }}>
                   <input
                     type="text"
                     inputMode="decimal"
                     pattern="[0-9]*[.,]?[0-9]*"
-                    value={exchangeLastEditedField === 'from' ? exchangeFromAmount : formatCurrency(
-                      convert(parseFormattedValue(exchangeToAmount), exchangeToCurrency.symbol, exchangeFromCurrency.symbol),
-                      exchangeFromCurrency.symbol as 'USD' | 'COP',
-                      false
+                    value={exchangeLastEditedField === 'from' ? exchangeFromAmount : (
+                      exchangeToAmount ? formatCurrency(
+                        convert(parseFormattedValue(exchangeToAmount), exchangeToCurrency.symbol, exchangeFromCurrency.symbol),
+                        exchangeFromCurrency.symbol as 'USD' | 'COP',
+                        false
+                      ) : ''
                     )}
                     onChange={(e) => {
                       const validated = validateAmount(e.target.value, exchangeFromCurrency);
                       setExchangeFromAmount(validated);
                       setExchangeLastEditedField('from');
+                      // Verificar si excede el saldo
+                      const amount = parseFormattedValue(validated);
+                      const available = exchangeFromCurrency.symbol === 'USD' ? usdBalance : copBalance;
+                      setBalanceError(amount > available);
                     }}
+                    onFocus={() => setIsFromInputFocused(true)}
+                    onBlur={() => setTimeout(() => setIsFromInputFocused(false), 150)}
                     style={{
-                      width: '100%',
-                      fontSize: `${inputFontSize}px`,
+                      flex: 1,
+                      minWidth: 0,
+                      fontSize: `${getDynamicFontSize(exchangeFromAmount || '0')}px`,
                       fontWeight: typography.fontWeight.bold,
-                      color: colors.semantic.text.primary,
+                      color: balanceError ? colors.error[500] : colors.semantic.text.primary,
                       fontFamily: typography.fontFamily.sans.join(', '),
                       backgroundColor: 'transparent',
                       border: 'none',
                       outline: 'none',
                       padding: 0,
                       letterSpacing: '-0.04em',
-                      transition: 'font-size 0.15s ease-out',
+                      lineHeight: 1,
+                      transition: 'font-size 0.2s cubic-bezier(0.25, 0.46, 0.45, 0.94), color 0.15s ease',
                       WebkitAppearance: 'none',
                       MozAppearance: 'textfield',
                       textAlign: 'right',
                     }}
-                    placeholder="0"
+                    placeholder={getMinPlaceholder(exchangeFromCurrency.symbol)}
                   />
+                  {/* Botones MIN/MAX - solo aparecen cuando el input está enfocado y ambos campos vacíos */}
+                  {isFromInputFocused && !exchangeFromAmount && !exchangeToAmount && (
+                    <div style={{ 
+                      display: 'flex', 
+                      gap: spacing[1],
+                      flexShrink: 0,
+                      opacity: 1,
+                      transition: 'opacity 0.2s ease-out',
+                    }}>
+                      {getMaxAmount(exchangeFromCurrency.symbol) > 0 ? (
+                        <>
+                          <button
+                            onMouseDown={(e) => e.preventDefault()}
+                            onClick={handleFromMin}
+                            style={{
+                              backgroundColor: colors.semantic.button.secondary,
+                              color: colors.semantic.text.primary,
+                              fontSize: typography.fontSize.xs,
+                              fontWeight: typography.fontWeight.bold,
+                              fontFamily: typography.fontFamily.sans.join(', '),
+                              padding: `${spacing[1]} ${spacing[2]}`,
+                              borderRadius: borderRadius.full,
+                              border: 'none',
+                              cursor: 'pointer',
+                              transition: 'background-color 0.15s ease',
+                              whiteSpace: 'nowrap',
+                            }}
+                          >
+                            MÍN
+                          </button>
+                          <button
+                            onMouseDown={(e) => e.preventDefault()}
+                            onClick={handleFromMax}
+                            style={{
+                              backgroundColor: colors.semantic.text.primary,
+                              color: colors.white,
+                              fontSize: typography.fontSize.xs,
+                              fontWeight: typography.fontWeight.bold,
+                              fontFamily: typography.fontFamily.sans.join(', '),
+                              padding: `${spacing[1]} ${spacing[2]}`,
+                              borderRadius: borderRadius.full,
+                              border: 'none',
+                              cursor: 'pointer',
+                              transition: 'background-color 0.15s ease',
+                              whiteSpace: 'nowrap',
+                            }}
+                          >
+                            MÁX
+                          </button>
+                        </>
+                      ) : (
+                        <button
+                          onMouseDown={(e) => e.preventDefault()}
+                          onClick={() => onClose()}
+                          style={{
+                            backgroundColor: colors.semantic.text.primary,
+                            color: colors.white,
+                            fontSize: typography.fontSize.xs,
+                            fontWeight: typography.fontWeight.semibold,
+                            fontFamily: typography.fontFamily.sans.join(', '),
+                            padding: `${spacing[1]} ${spacing[2]}`,
+                            borderRadius: borderRadius.full,
+                            border: 'none',
+                            cursor: 'pointer',
+                            whiteSpace: 'nowrap',
+                          }}
+                        >
+                          Agregar saldo
+                        </button>
+                      )}
+                    </div>
+                  )}
                 </div>
               </div>
               
@@ -277,15 +462,82 @@ export function ExchangeMoneySheet({ isOpen, onClose, initialUsdBalance, initial
                   : `Mín. ${formatCurrency(10 * getRate('USD', 'COP'), 'COP', false)} COP · Máx. ${formatCurrency(copBalance, 'COP', false)} COP`
                 }
               </p>
+              {/* Mensaje de error cuando excede el saldo o no cumple mínimo */}
+              {(balanceError || (isAmountBelowMinimum() && parseFormattedValue(exchangeFromAmount) > 0)) && exchangeLastEditedField === 'from' && (
+                <div style={{ 
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  marginTop: spacing[2],
+                }}>
+                  <p style={{ 
+                    fontSize: typography.fontSize.sm, 
+                    color: colors.error[500], 
+                    fontFamily: typography.fontFamily.sans.join(', '), 
+                    margin: 0,
+                    fontWeight: typography.fontWeight.semibold,
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: spacing[1],
+                  }}>
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                      <path d="M12 8V12M12 16H12.01M22 12C22 17.5228 17.5228 22 12 22C6.47715 22 2 17.5228 2 12C2 6.47715 6.47715 2 12 2C17.5228 2 22 6.47715 22 12Z" stroke={colors.error[500]} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                    </svg>
+                    {balanceError ? 'Saldo insuficiente' : 'Monto mínimo no alcanzado'}
+                  </p>
+                  {balanceError && (
+                    <button
+                      onClick={() => {
+                        onClose();
+                        // Navegar a agregar saldo
+                      }}
+                      style={{
+                        backgroundColor: colors.semantic.text.primary,
+                        color: colors.white,
+                        fontSize: typography.fontSize.xs,
+                        fontWeight: typography.fontWeight.semibold,
+                        fontFamily: typography.fontFamily.sans.join(', '),
+                        padding: `${spacing[1]} ${spacing[3]}`,
+                        borderRadius: borderRadius.full,
+                        border: 'none',
+                        cursor: 'pointer',
+                      }}
+                    >
+                      Agregar saldo
+                    </button>
+                  )}
+                </div>
+              )}
             </div>
 
             {/* Botón de intercambiar monedas */}
             <div style={{ display: 'flex', justifyContent: 'center', height: spacing[4], position: 'relative', zIndex: 10 }}>
               <button
                 onClick={() => {
+                  // Obtener el valor actual del "to" (ya sea editado o calculado)
+                  const currentToValue = exchangeLastEditedField === 'to' 
+                    ? exchangeToAmount 
+                    : (exchangeFromAmount 
+                      ? formatCurrency(convert(parseFormattedValue(exchangeFromAmount), exchangeFromCurrency.symbol, exchangeToCurrency.symbol), exchangeToCurrency.symbol as 'USD' | 'COP', false)
+                      : '');
+                  
+                  // Intercambiar monedas
                   const tempCurrency = exchangeFromCurrency;
                   setExchangeFromCurrency(exchangeToCurrency);
                   setExchangeToCurrency(tempCurrency);
+                  
+                  // Mantener el valor de abajo (to) y recalcular el de arriba (from)
+                  setExchangeToAmount(currentToValue);
+                  setExchangeFromAmount('');
+                  setExchangeLastEditedField('to');
+                  
+                  // Verificar si hay error de saldo con la nueva configuración
+                  if (currentToValue) {
+                    const toAmount = parseFormattedValue(currentToValue);
+                    const fromAmount = convert(toAmount, exchangeToCurrency.symbol, exchangeFromCurrency.symbol);
+                    const available = exchangeToCurrency.symbol === 'USD' ? usdBalance : copBalance;
+                    setBalanceError(fromAmount > available);
+                  }
                 }}
                 style={{
                   width: '44px',
@@ -298,7 +550,7 @@ export function ExchangeMoneySheet({ isOpen, onClose, initialUsdBalance, initial
                   alignItems: 'center',
                   justifyContent: 'center',
                   transition: 'background-color 0.2s ease, transform 0.2s ease',
-                  boxShadow: '0 2px 8px rgba(0, 0, 0, 0.08)',
+                  boxShadow: shadows.button,
                   position: 'absolute',
                   top: '50%',
                   left: '50%',
@@ -343,53 +595,180 @@ export function ExchangeMoneySheet({ isOpen, onClose, initialUsdBalance, initial
                   </svg>
                 </button>
                 
-                <div style={{ flex: 1, overflow: 'hidden' }}>
+                <div style={{ flex: 1, overflow: 'hidden', position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: spacing[2] }}>
                   <input
                     type="text"
                     inputMode="decimal"
                     pattern="[0-9]*[.,]?[0-9]*"
-                    value={exchangeLastEditedField === 'to' ? exchangeToAmount : formatCurrency(
-                      convert(parseFormattedValue(exchangeFromAmount), exchangeFromCurrency.symbol, exchangeToCurrency.symbol),
-                      exchangeToCurrency.symbol as 'USD' | 'COP',
-                      false
+                    value={exchangeLastEditedField === 'to' ? exchangeToAmount : (
+                      exchangeFromAmount ? formatCurrency(
+                        convert(parseFormattedValue(exchangeFromAmount), exchangeFromCurrency.symbol, exchangeToCurrency.symbol),
+                        exchangeToCurrency.symbol as 'USD' | 'COP',
+                        false
+                      ) : ''
                     )}
                     onChange={(e) => {
                       const validated = validateAmount(e.target.value, exchangeToCurrency);
                       setExchangeToAmount(validated);
                       setExchangeLastEditedField('to');
+                      // Verificar si el monto convertido excede el saldo origen
+                      const toAmount = parseFormattedValue(validated);
+                      const fromAmount = convert(toAmount, exchangeToCurrency.symbol, exchangeFromCurrency.symbol);
+                      const available = exchangeFromCurrency.symbol === 'USD' ? usdBalance : copBalance;
+                      setBalanceError(fromAmount > available);
                     }}
+                    onFocus={() => setIsToInputFocused(true)}
+                    onBlur={() => setTimeout(() => setIsToInputFocused(false), 150)}
                     style={{
-                      width: '100%',
-                      fontSize: `${inputFontSize}px`,
+                      flex: 1,
+                      minWidth: 0,
+                      fontSize: `${getDynamicFontSize(exchangeLastEditedField === 'to' ? (exchangeToAmount || '0') : (exchangeFromAmount ? formatCurrency(convert(parseFormattedValue(exchangeFromAmount), exchangeFromCurrency.symbol, exchangeToCurrency.symbol), exchangeToCurrency.symbol as 'USD' | 'COP', false) : '0'))}px`,
                       fontWeight: typography.fontWeight.bold,
-                      color: colors.semantic.text.primary,
+                      color: balanceError ? colors.error[500] : colors.semantic.text.primary,
                       fontFamily: typography.fontFamily.sans.join(', '),
                       backgroundColor: 'transparent',
                       border: 'none',
                       outline: 'none',
                       padding: 0,
                       letterSpacing: '-0.04em',
-                      transition: 'font-size 0.15s ease-out',
+                      lineHeight: 1,
+                      transition: 'font-size 0.2s cubic-bezier(0.25, 0.46, 0.45, 0.94), color 0.15s ease',
                       WebkitAppearance: 'none',
                       MozAppearance: 'textfield',
                       textAlign: 'right',
                     }}
-                    placeholder="0"
+                    placeholder={getMinPlaceholder(exchangeToCurrency.symbol)}
                   />
+                  {/* Botones MIN/MAX - solo aparecen cuando el input está enfocado y ambos campos vacíos */}
+                  {isToInputFocused && !exchangeFromAmount && !exchangeToAmount && (
+                    <div style={{ 
+                      display: 'flex', 
+                      gap: spacing[1],
+                      flexShrink: 0,
+                      opacity: 1,
+                      transition: 'opacity 0.2s ease-out',
+                    }}>
+                      {getMaxAmount(exchangeFromCurrency.symbol) > 0 ? (
+                        <>
+                          <button
+                            onMouseDown={(e) => e.preventDefault()}
+                            onClick={handleToMin}
+                            style={{
+                              backgroundColor: colors.semantic.button.secondary,
+                              color: colors.semantic.text.primary,
+                              fontSize: typography.fontSize.xs,
+                              fontWeight: typography.fontWeight.bold,
+                              fontFamily: typography.fontFamily.sans.join(', '),
+                              padding: `${spacing[1]} ${spacing[2]}`,
+                              borderRadius: borderRadius.full,
+                              border: 'none',
+                              cursor: 'pointer',
+                              transition: 'background-color 0.15s ease',
+                              whiteSpace: 'nowrap',
+                            }}
+                          >
+                            MÍN
+                          </button>
+                          <button
+                            onMouseDown={(e) => e.preventDefault()}
+                            onClick={handleToMax}
+                            style={{
+                              backgroundColor: colors.semantic.text.primary,
+                              color: colors.white,
+                              fontSize: typography.fontSize.xs,
+                              fontWeight: typography.fontWeight.bold,
+                              fontFamily: typography.fontFamily.sans.join(', '),
+                              padding: `${spacing[1]} ${spacing[2]}`,
+                              borderRadius: borderRadius.full,
+                              border: 'none',
+                              cursor: 'pointer',
+                              transition: 'background-color 0.15s ease',
+                              whiteSpace: 'nowrap',
+                            }}
+                          >
+                            MÁX
+                          </button>
+                        </>
+                      ) : (
+                        <button
+                          onMouseDown={(e) => e.preventDefault()}
+                          onClick={() => onClose()}
+                          style={{
+                            backgroundColor: colors.semantic.text.primary,
+                            color: colors.white,
+                            fontSize: typography.fontSize.xs,
+                            fontWeight: typography.fontWeight.semibold,
+                            fontFamily: typography.fontFamily.sans.join(', '),
+                            padding: `${spacing[1]} ${spacing[2]}`,
+                            borderRadius: borderRadius.full,
+                            border: 'none',
+                            cursor: 'pointer',
+                            whiteSpace: 'nowrap',
+                          }}
+                        >
+                          Agregar saldo
+                        </button>
+                      )}
+                    </div>
+                  )}
                 </div>
               </div>
+              {/* Mensaje de error cuando el monto destino excede el saldo origen */}
+              {balanceError && exchangeLastEditedField === 'to' && (
+                <div style={{ 
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  marginTop: spacing[2],
+                }}>
+                  <p style={{ 
+                    fontSize: typography.fontSize.sm, 
+                    color: colors.error[500], 
+                    fontFamily: typography.fontFamily.sans.join(', '), 
+                    margin: 0,
+                    fontWeight: typography.fontWeight.semibold,
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: spacing[1],
+                  }}>
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                      <path d="M12 8V12M12 16H12.01M22 12C22 17.5228 17.5228 22 12 22C6.47715 22 2 17.5228 2 12C2 6.47715 6.47715 2 12 2C17.5228 2 22 6.47715 22 12Z" stroke={colors.error[500]} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                    </svg>
+                    Saldo insuficiente
+                  </p>
+                  <button
+                    onClick={() => {
+                      onClose();
+                      // Navegar a agregar saldo
+                    }}
+                    style={{
+                      backgroundColor: colors.semantic.text.primary,
+                      color: colors.white,
+                      fontSize: typography.fontSize.xs,
+                      fontWeight: typography.fontWeight.semibold,
+                      fontFamily: typography.fontFamily.sans.join(', '),
+                      padding: `${spacing[2]} ${spacing[3]}`,
+                      borderRadius: borderRadius.full,
+                      border: 'none',
+                      cursor: 'pointer',
+                    }}
+                  >
+                    Agregar saldo
+                  </button>
+                </div>
+              )}
             </div>
           </div>
 
           {/* Detalle de la operación */}
-          <div style={{ backgroundColor: 'rgb(110 147 221 / 12%)', border: '1px solid rgb(110 147 221 / 20%)', borderRadius: '24px', padding: spacing[6], marginTop: spacing[2] }}>
+          <div style={{ backgroundColor: 'rgb(110 147 221 / 12%)', border: '1px solid rgb(110 147 221 / 20%)', borderRadius: borderRadius['3xl'], padding: spacing[6], marginTop: spacing[2] }}>
             <p style={{ fontSize: typography.fontSize.sm, fontWeight: typography.fontWeight.semibold, color: colors.semantic.text.primary, fontFamily: typography.fontFamily.sans.join(', '), marginBottom: spacing[3] }}>
               Detalle de la operación
             </p>
             
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: spacing[2] }}>
               <span style={{ fontSize: typography.fontSize.sm, color: colors.semantic.text.primary, fontFamily: typography.fontFamily.sans.join(', ') }}>
-                Cambio actual
+                Tarifa de cambio
               </span>
               <span style={{ fontSize: typography.fontSize.sm, fontWeight: typography.fontWeight.semibold, color: colors.semantic.text.primary, fontFamily: typography.fontFamily.sans.join(', ') }}>
                 {(() => {
@@ -403,7 +782,7 @@ export function ExchangeMoneySheet({ isOpen, onClose, initialUsdBalance, initial
             
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: spacing[2] }}>
               <span style={{ fontSize: typography.fontSize.sm, color: colors.semantic.text.primary, fontFamily: typography.fontFamily.sans.join(', ') }}>
-                Tiempo restante
+                Válido por
               </span>
               <span style={{ fontSize: typography.fontSize.xs, fontWeight: typography.fontWeight.bold, color: '#92400E', fontFamily: typography.fontFamily.sans.join(', '), backgroundColor: '#FEF3C7', padding: `${spacing[1]} ${spacing[2]}`, borderRadius: borderRadius.full }}>
                 {rateTimer} s
@@ -412,7 +791,7 @@ export function ExchangeMoneySheet({ isOpen, onClose, initialUsdBalance, initial
             
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
               <span style={{ fontSize: typography.fontSize.sm, color: colors.semantic.text.primary, fontFamily: typography.fontFamily.sans.join(', ') }}>
-                Costo del servicio
+                Nuestra tarifa
               </span>
               <span style={{ fontSize: typography.fontSize.sm, fontWeight: typography.fontWeight.bold, color: colors.semantic.text.primary, fontFamily: typography.fontFamily.sans.join(', ') }}>
                 GRATIS
@@ -425,6 +804,7 @@ export function ExchangeMoneySheet({ isOpen, onClose, initialUsdBalance, initial
             <SliderToBlock
               key={`exchange-${isOpen}`}
               mode="exchange"
+              disabled={hasTransactionError()}
               onComplete={() => {
                 // Calcular montos basados en el campo que se editó
                 let fromAmount: number;
@@ -473,9 +853,10 @@ export function ExchangeMoneySheet({ isOpen, onClose, initialUsdBalance, initial
                   amount: -fromAmount,
                   currency: fromSymbol,
                   date: now,
-                  logoUrl: '/img/icons/global/fx.svg',
+                  logoUrl: '/img/icons/global/refresh-cw.svg',
                   type: 'transfer',
                   source: 'wallet', // Aparece en wallet y general
+                  isIcon: true,
                 });
                 
                 // 3. Agregar movimiento de entrada (positivo) - 1 segundo después
@@ -485,14 +866,14 @@ export function ExchangeMoneySheet({ isOpen, onClose, initialUsdBalance, initial
                   amount: toAmount,
                   currency: toSymbol,
                   date: entryDate,
-                  logoUrl: '/img/icons/global/fx.svg',
+                  logoUrl: '/img/icons/global/refresh-cw.svg',
                   type: 'deposit',
                   source: 'wallet', // Aparece en wallet y general
+                  isIcon: true,
                 });
               }}
               onCloseSheet={handleClose}
               onShowToast={(message) => { console.log('Toast:', message); }}
-              disabled={parseFormattedValue(exchangeFromAmount) <= 0}
             />
           </div>
         </div>

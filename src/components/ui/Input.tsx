@@ -47,7 +47,7 @@ export function Input({ label, error, helperText, showPasswordToggle = false, cl
             fontWeight: typography.fontWeight.normal,
             color: colors.semantic.text.primary,
             backgroundColor: colors.semantic.background.white,
-            border: `1px solid ${error ? '#EF4444' : colors.semantic.border.light}`,
+            border: `1px solid ${error ? colors.error[500] : colors.semantic.border.light}`,
             borderRadius: borderRadius.full,
             fontFamily: typography.fontFamily.sans.join(', '),
             outline: 'none',
@@ -59,7 +59,7 @@ export function Input({ label, error, helperText, showPasswordToggle = false, cl
             e.currentTarget.style.boxShadow = `0 0 0 3px ${colors.primary.main}20`;
           }}
           onBlur={(e) => {
-            e.currentTarget.style.borderColor = error ? '#EF4444' : colors.semantic.border.light;
+            e.currentTarget.style.borderColor = error ? colors.error[500] : colors.semantic.border.light;
             e.currentTarget.style.boxShadow = 'none';
           }}
         />
@@ -98,7 +98,7 @@ export function Input({ label, error, helperText, showPasswordToggle = false, cl
           style={{
             marginTop: spacing[1],
             fontSize: typography.fontSize.sm,
-            color: '#EF4444',
+            color: colors.error[500],
             fontFamily: typography.fontFamily.sans.join(', '),
           }}
         >

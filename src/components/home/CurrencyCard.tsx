@@ -81,7 +81,7 @@ export function CurrencyCard({
         overflow: 'hidden',
         boxSizing: 'border-box',
         // Borde más visible de 1px para mejor diferenciación de las tarjetas de currency
-        border: `1px solid rgba(0, 0, 0, 0.10)`, // Opacidad del 10% para mejor visibilidad
+        border: `1px solid ${colors.semantic.border.medium}`, // Opacidad del 10% para mejor visibilidad
       }}
       role="img"
       aria-label={`Card de ${currencyName || currency}`}
@@ -159,8 +159,8 @@ export function CurrencyCard({
               height: '28px',
               borderRadius: borderRadius.full,
               backgroundColor: isDarkBackground 
-                ? 'rgba(255, 255, 255, 0.05)' // Blanco con 5% opacidad para fondo oscuro
-                : 'rgba(0, 0, 0, 0.05)', // Negro con 5% opacidad para fondo claro
+                ? 'rgba(255, 255, 255, 0.05)' // Blanco para fondo oscuro
+                : 'rgba(0, 0, 0, 0.05)', // Negro para fondo claro
               border: 'none',
               display: 'flex',
               alignItems: 'center',
@@ -171,13 +171,13 @@ export function CurrencyCard({
             }}
             onMouseEnter={(e) => {
               e.currentTarget.style.backgroundColor = isDarkBackground 
-                ? 'rgba(255, 255, 255, 0.15)' // Blanco con 15% opacidad en hover para fondo oscuro
-                : 'rgba(0, 0, 0, 0.15)'; // Negro con 15% opacidad en hover para fondo claro
+                ? 'rgba(255, 255, 255, 0.15)' // Blanco en hover para fondo oscuro
+                : 'rgba(0, 0, 0, 0.15)'; // Negro en hover para fondo claro
             }}
             onMouseLeave={(e) => {
               e.currentTarget.style.backgroundColor = isDarkBackground 
-                ? 'rgba(255, 255, 255, 0.05)' // Blanco con 5% opacidad para fondo oscuro
-                : 'rgba(0, 0, 0, 0.05)'; // Negro con 5% opacidad para fondo claro
+                ? 'rgba(255, 255, 255, 0.05)' // Blanco para fondo oscuro
+                : 'rgba(0, 0, 0, 0.05)'; // Negro para fondo claro
             }}
             aria-label="Más opciones"
           >

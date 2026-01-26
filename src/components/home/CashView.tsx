@@ -1077,7 +1077,7 @@ export function CashView({ isBalanceVisible = true, usdBalance: initialUsdBalanc
             }}
           >
             <img
-              src="/img/icons/global/fx.svg"
+              src="/img/icons/global/refresh-cw.svg"
               alt="Cambiar"
               style={{
                 width: '24px',
@@ -1183,7 +1183,7 @@ export function CashView({ isBalanceVisible = true, usdBalance: initialUsdBalanc
             style={{
               padding: `${spacing[2]} ${spacing[4]}`,
               borderRadius: borderRadius.full,
-              backgroundColor: 'rgba(0, 0, 0, 0.0627)',
+              backgroundColor: 'rgba(0, 0, 0, 0.063)',
               color: colors.semantic.text.primary,
               border: 'none',
               fontFamily: typography.fontFamily.sans.join(', '),

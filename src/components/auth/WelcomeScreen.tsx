@@ -255,7 +255,7 @@ export default function WelcomeScreen() {
           left: 0,
           right: 0,
           padding: spacing[5],
-          paddingBottom: `calc(${spacing[10]} + env(safe-area-inset-bottom))`,
+          paddingBottom: `calc(${spacing[8]} + env(safe-area-inset-bottom))`,
           display: 'flex',
           flexDirection: 'column',
           gap: spacing[4],
@@ -398,7 +398,7 @@ export default function WelcomeScreen() {
             height: '56px',
             backgroundColor: isLoginButtonActive 
               ? 'rgba(0, 0, 0, 0.1)' // Ligeramente más oscuro cuando está activo
-              : 'rgba(0, 0, 0, 0.0627)',
+              : 'rgba(0, 0, 0, 0.063)',
             color: colors.semantic.text.primary,
             border: 'none',
             borderRadius: borderRadius.full,

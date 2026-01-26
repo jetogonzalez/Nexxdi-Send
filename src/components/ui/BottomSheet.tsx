@@ -363,7 +363,7 @@ export function BottomSheet({
           paddingLeft: bottomSheet.padding,
           paddingRight: bottomSheet.padding,
           paddingTop: 0, // Sin padding top - el header lo maneja
-          paddingBottom: fullScreen ? '0' : `calc(${spacing[10]} + env(safe-area-inset-bottom))`, // Full screen: sin padding bottom (el contenido lo maneja)
+          paddingBottom: fullScreen ? '0' : `calc(${spacing[8]} + env(safe-area-inset-bottom))`, // Full screen: sin padding bottom (el contenido lo maneja)
           zIndex: zIndex + 1,
           maxHeight: fullScreen ? 'none' : `calc(100vh - 24px - ${bottomSheet.margin})`, // Máximo hasta 24px del top
           height: fullScreen ? 'calc(100vh - 24px)' : 'auto', // Full screen: altura fija

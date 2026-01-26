@@ -117,7 +117,7 @@ export function HomeView({ titleRef, scrollProgress = 0, isBalanceVisible = true
                 fontWeight: typography.fontWeight.bold,
                 lineHeight: typography.lineHeight.tight,
                 letterSpacing: '0%',
-                color: '#101828',
+                color: colors.semantic.text.primary,
                 margin: 0,
                 padding: 0,
                 marginBottom: '1rem',
@@ -128,8 +128,16 @@ export function HomeView({ titleRef, scrollProgress = 0, isBalanceVisible = true
             <div
               style={{
                 display: 'flex',
-                gap: '24px',
+                gap: '16px',
                 justifyContent: 'flex-start',
+                overflowX: 'auto',
+                overflowY: 'hidden',
+                scrollbarWidth: 'none',
+                msOverflowStyle: 'none',
+                WebkitOverflowScrolling: 'touch',
+                marginLeft: `-${spacing[4]}`,
+                marginRight: `-${spacing[4]}`,
+                paddingLeft: spacing[4],
               }}
             >
             {/* Botón Agregar saldo */}
@@ -145,6 +153,7 @@ export function HomeView({ titleRef, scrollProgress = 0, isBalanceVisible = true
                 border: 'none',
                 cursor: 'pointer',
                 padding: 0,
+                flexShrink: 0,
               }}
             >
               <div
@@ -174,15 +183,16 @@ export function HomeView({ titleRef, scrollProgress = 0, isBalanceVisible = true
                   fontWeight: typography.fontWeight.normal,
                   color: colors.semantic.text.primary,
                   fontFamily: typography.fontFamily.sans.join(', '),
+                  whiteSpace: 'nowrap',
                 }}
               >
                 Agregar saldo
               </span>
             </button>
 
-            {/* Botón Recibir */}
+            {/* Botón Recargar tarjeta */}
             <button
-              onClick={() => console.log('Recibir')}
+              onClick={() => console.log('Recargar tarjeta')}
               style={{
                 display: 'flex',
                 flexDirection: 'column',
@@ -193,6 +203,7 @@ export function HomeView({ titleRef, scrollProgress = 0, isBalanceVisible = true
                 border: 'none',
                 cursor: 'pointer',
                 padding: 0,
+                flexShrink: 0,
               }}
             >
               <div
@@ -207,8 +218,8 @@ export function HomeView({ titleRef, scrollProgress = 0, isBalanceVisible = true
                 }}
               >
                 <img
-                  src="/img/icons/global/receive.svg"
-                  alt="Recibir"
+                  src="/img/icons/global/arrow-narrow-up.svg"
+                  alt="Recargar tarjeta"
                   style={{
                     width: '24px',
                     height: '24px',
@@ -222,9 +233,10 @@ export function HomeView({ titleRef, scrollProgress = 0, isBalanceVisible = true
                   fontWeight: typography.fontWeight.normal,
                   color: colors.semantic.text.primary,
                   fontFamily: typography.fontFamily.sans.join(', '),
+                  whiteSpace: 'nowrap',
                 }}
               >
-                Recibir
+                Recargar tarjeta
               </span>
             </button>
 
@@ -241,6 +253,7 @@ export function HomeView({ titleRef, scrollProgress = 0, isBalanceVisible = true
                 border: 'none',
                 cursor: 'pointer',
                 padding: 0,
+                flexShrink: 0,
               }}
             >
               <div
@@ -255,7 +268,7 @@ export function HomeView({ titleRef, scrollProgress = 0, isBalanceVisible = true
                 }}
               >
                 <img
-                  src="/img/icons/global/fx.svg"
+                  src="/img/icons/global/refresh-cw.svg"
                   alt="Cambiar"
                   style={{
                     width: '24px',
@@ -270,6 +283,7 @@ export function HomeView({ titleRef, scrollProgress = 0, isBalanceVisible = true
                   fontWeight: typography.fontWeight.normal,
                   color: colors.semantic.text.primary,
                   fontFamily: typography.fontFamily.sans.join(', '),
+                  whiteSpace: 'nowrap',
                 }}
               >
                 Cambiar
@@ -289,6 +303,7 @@ export function HomeView({ titleRef, scrollProgress = 0, isBalanceVisible = true
                 border: 'none',
                 cursor: 'pointer',
                 padding: 0,
+                flexShrink: 0,
               }}
             >
               <div
@@ -318,9 +333,110 @@ export function HomeView({ titleRef, scrollProgress = 0, isBalanceVisible = true
                   fontWeight: typography.fontWeight.normal,
                   color: colors.semantic.text.primary,
                   fontFamily: typography.fontFamily.sans.join(', '),
+                  whiteSpace: 'nowrap',
                 }}
               >
                 Enviar
+              </span>
+            </button>
+
+            {/* Botón Recibir */}
+            <button
+              onClick={() => console.log('Recibir')}
+              style={{
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: spacing[2],
+                backgroundColor: 'transparent',
+                border: 'none',
+                cursor: 'pointer',
+                padding: 0,
+                flexShrink: 0,
+              }}
+            >
+              <div
+                style={{
+                  width: '64px',
+                  height: '64px',
+                  borderRadius: borderRadius.full,
+                  backgroundColor: colors.semantic.background.white,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                }}
+              >
+                <img
+                  src="/img/icons/global/receive.svg"
+                  alt="Recibir"
+                  style={{
+                    width: '24px',
+                    height: '24px',
+                    display: 'block',
+                  }}
+                />
+              </div>
+              <span
+                style={{
+                  fontSize: typography.fontSize.sm,
+                  fontWeight: typography.fontWeight.normal,
+                  color: colors.semantic.text.primary,
+                  fontFamily: typography.fontFamily.sans.join(', '),
+                  whiteSpace: 'nowrap',
+                }}
+              >
+                Recibir
+              </span>
+            </button>
+
+            {/* Botón Retirar saldo */}
+            <button
+              onClick={() => console.log('Retirar saldo')}
+              style={{
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: spacing[2],
+                backgroundColor: 'transparent',
+                border: 'none',
+                cursor: 'pointer',
+                padding: 0,
+                flexShrink: 0,
+              }}
+            >
+              <div
+                style={{
+                  width: '64px',
+                  height: '64px',
+                  borderRadius: borderRadius.full,
+                  backgroundColor: colors.semantic.background.white,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                }}
+              >
+                <img
+                  src="/img/icons/global/arrow-narrow-down.svg"
+                  alt="Retirar saldo"
+                  style={{
+                    width: '24px',
+                    height: '24px',
+                    display: 'block',
+                  }}
+                />
+              </div>
+              <span
+                style={{
+                  fontSize: typography.fontSize.sm,
+                  fontWeight: typography.fontWeight.normal,
+                  color: colors.semantic.text.primary,
+                  fontFamily: typography.fontFamily.sans.join(', '),
+                  whiteSpace: 'nowrap',
+                }}
+              >
+                Retirar saldo
               </span>
             </button>
             </div>
@@ -360,7 +476,7 @@ export function HomeView({ titleRef, scrollProgress = 0, isBalanceVisible = true
                 fontWeight: typography.fontWeight.bold,
                 lineHeight: typography.lineHeight.tight,
                 letterSpacing: '0%',
-                color: '#101828',
+                color: colors.semantic.text.primary,
                 margin: 0,
                 padding: 0,
                 marginBottom: '1rem',
@@ -372,7 +488,7 @@ export function HomeView({ titleRef, scrollProgress = 0, isBalanceVisible = true
             <div
               style={{
                 display: 'flex',
-                gap: spacing[3],
+                gap: '16px',
                 paddingLeft: spacing[5],
                 paddingRight: spacing[5],
                 marginLeft: `-${spacing[5]}`,
@@ -410,16 +526,22 @@ export function HomeView({ titleRef, scrollProgress = 0, isBalanceVisible = true
                       width: spacing[10],
                       height: spacing[10],
                       borderRadius: borderRadius.full,
-                      backgroundColor: 'rgba(0, 0, 0, 0.05)',
+                      backgroundColor: colors.semantic.button.secondary,
                       display: 'flex',
                       alignItems: 'center',
                       justifyContent: 'center',
                       flexShrink: 0,
                     }}
                   >
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                      <path d="M7 17L17 7M17 7H7M17 7V17" stroke={colors.semantic.text.primary} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-                    </svg>
+                    <img
+                      src="/img/icons/global/send.svg"
+                      alt="Enviar"
+                      style={{
+                        width: 20,
+                        height: 20,
+                        display: 'block',
+                      }}
+                    />
                   </div>
                   <div
                     style={{

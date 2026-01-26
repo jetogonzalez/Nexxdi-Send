@@ -145,7 +145,7 @@ export function PinScreen({ onSuccess }: PinScreenProps) {
                 borderRadius: '50%',
                 backgroundColor: pin.length > index
                   ? error
-                    ? '#EF4444'
+                    ? colors.error[500]
                     : colors.primary.main
                   : colors.semantic.border.light,
                 transition: 'background-color 0.15s ease, transform 0.15s ease',
@@ -165,7 +165,7 @@ export function PinScreen({ onSuccess }: PinScreenProps) {
               style={{
                 fontFamily: typography.fontFamily.sans.join(', '),
                 fontSize: typography.fontSize.sm,
-                color: '#EF4444',
+                color: colors.error[500],
                 textAlign: 'center',
                 margin: 0,
               }}

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef } from 'react';
-import { colors, spacing, typography, borderRadius } from '../../config/design-tokens';
+import { colors, spacing, typography, borderRadius, shadows } from '../../config/design-tokens';
 import { BottomSheet } from './BottomSheet';
 import { formatCurrency } from '../../lib/formatBalance';
 import { useExchangeRates } from '../../hooks/useExchangeRates';
@@ -118,7 +118,7 @@ export function SendMoneySheet({ isOpen, onClose, usdBalance, copBalance }: Send
   ];
   
   // Estados para el envío de dinero
-  const [sendAmount, setSendAmount] = useState<string>('100');
+  const [sendAmount, setSendAmount] = useState<string>('');
   const [receiveAmount, setReceiveAmount] = useState<string>('');
   const [lastEditedField, setLastEditedField] = useState<'send' | 'receive'>('send');
   const [sendCurrency, setSendCurrency] = useState<CurrencyOption>(currencies[0]);
@@ -130,6 +130,109 @@ export function SendMoneySheet({ isOpen, onClose, usdBalance, copBalance }: Send
   const [isSendCurrencySheetOpen, setIsSendCurrencySheetOpen] = useState(false);
   const [isReceiveCurrencySheetOpen, setIsReceiveCurrencySheetOpen] = useState(false);
   const [currencySearch, setCurrencySearch] = useState('');
+  
+  // Estado para error de saldo insuficiente
+  const [balanceError, setBalanceError] = useState(false);
+  
+  // Estado para focus de inputs (mostrar botones MIN/MAX solo cuando está enfocado)
+  const [isSendInputFocused, setIsSendInputFocused] = useState(false);
+  const [isReceiveInputFocused, setIsReceiveInputFocused] = useState(false);
+  
+  // Monto mínimo en USD (y su equivalente en otras monedas)
+  const MIN_AMOUNT_USD = 10;
+  
+  // Validar si el monto cumple con el mínimo
+  const isAmountBelowMinimum = (): boolean => {
+    const amount = parseFormattedValue(sendAmount);
+    if (amount <= 0) return true;
+    
+    if (sendCurrency.symbol === 'USD') {
+      return amount < MIN_AMOUNT_USD;
+    } else {
+      // Convertir el mínimo USD a la moneda de origen
+      const minInSourceCurrency = convert(MIN_AMOUNT_USD, 'USD', sendCurrency.symbol);
+      return amount < minInSourceCurrency;
+    }
+  };
+  
+  // Verificar si hay algún error que impida la transacción
+  const hasTransactionError = (): boolean => {
+    return balanceError || isAmountBelowMinimum();
+  };
+  
+  // Obtener placeholder mínimo por moneda
+  const getMinPlaceholder = (currency: string): string => {
+    return '0';
+  };
+  
+  // Obtener monto mínimo por moneda
+  const getMinAmount = (currency: string): number => {
+    if (currency === 'USD') return MIN_AMOUNT_USD;
+    return convert(MIN_AMOUNT_USD, 'USD', currency);
+  };
+  
+  // Obtener monto máximo (saldo disponible)
+  const getMaxAmount = (currency: string): number => {
+    return currency === 'USD' ? usdBalance : copBalance;
+  };
+  
+  // Aplicar monto mínimo al input de envío
+  const handleSendMin = () => {
+    const minAmount = getMinAmount(sendCurrency.symbol);
+    // Para números enteros, no mostrar decimales
+    const formatted = Number.isInteger(minAmount) 
+      ? new Intl.NumberFormat('es-ES', { useGrouping: true }).format(minAmount)
+      : formatCurrency(minAmount, sendCurrency.symbol as 'USD' | 'COP', false);
+    setSendAmount(formatted);
+    setLastEditedField('send');
+    setBalanceError(minAmount > getMaxAmount(sendCurrency.symbol));
+  };
+  
+  // Aplicar monto máximo al input de envío
+  const handleSendMax = () => {
+    const maxAmount = getMaxAmount(sendCurrency.symbol);
+    const formatted = formatCurrency(maxAmount, sendCurrency.symbol as 'USD' | 'COP', false);
+    setSendAmount(formatted);
+    setLastEditedField('send');
+    setBalanceError(false);
+  };
+  
+  // Aplicar monto mínimo al input de recibir
+  const handleReceiveMin = () => {
+    const minInSend = getMinAmount(sendCurrency.symbol);
+    const minInReceive = convert(minInSend, sendCurrency.symbol, receiveCurrency.symbol);
+    // Para números enteros, no mostrar decimales
+    const formatted = Number.isInteger(minInReceive) 
+      ? new Intl.NumberFormat('es-ES', { useGrouping: true }).format(minInReceive)
+      : formatCurrency(minInReceive, receiveCurrency.symbol as 'USD' | 'COP', false);
+    setReceiveAmount(formatted);
+    setLastEditedField('receive');
+    setBalanceError(minInSend > getMaxAmount(sendCurrency.symbol));
+  };
+  
+  // Aplicar monto máximo al input de recibir
+  const handleReceiveMax = () => {
+    const maxInSend = getMaxAmount(sendCurrency.symbol);
+    const maxInReceive = convert(maxInSend, sendCurrency.symbol, receiveCurrency.symbol);
+    const formatted = formatCurrency(maxInReceive, receiveCurrency.symbol as 'USD' | 'COP', false);
+    setReceiveAmount(formatted);
+    setLastEditedField('receive');
+    setBalanceError(false);
+  };
+  
+  // Calcular font size dinámico basado en longitud del valor (incluye separadores)
+  const getDynamicFontSize = (value: string): number => {
+    // Usar longitud total incluyendo separadores para mejor cálculo
+    const totalLength = value.length;
+    if (totalLength <= 3) return 36;
+    if (totalLength <= 5) return 32;
+    if (totalLength <= 7) return 28;
+    if (totalLength <= 9) return 24;
+    if (totalLength <= 11) return 20;
+    if (totalLength <= 13) return 17;
+    if (totalLength <= 15) return 14;
+    return 12;
+  };
   
   // Tasa de cambio
   const exchangeRate = getRate(sendCurrency.symbol, receiveCurrency.symbol);
@@ -145,9 +248,9 @@ export function SendMoneySheet({ isOpen, onClose, usdBalance, copBalance }: Send
   const MIN_FONT_SIZE = 18;
   const MAX_FONT_SIZE = 36;
   
-  // Límites de dígitos por moneda: COP = 10, USD = 7
+  // Límites de dígitos por moneda: 12 dígitos enteros para todas
   const getMaxDigits = (currency: string): number => {
-    return currency === 'COP' ? 10 : 7;
+    return 12; // 12 dígitos enteros + decimales si aplica
   };
   
   // Actualizar currencies cuando cambien los balances
@@ -290,9 +393,11 @@ export function SendMoneySheet({ isOpen, onClose, usdBalance, copBalance }: Send
     if (!value) return '';
     
     const maxDigits = getMaxDigits(currency.symbol);
-    let cleanValue = value.replace(/[^\d.,]/g, '');
-    cleanValue = cleanValue.replace('.', ',');
     
+    // Eliminar todo excepto dígitos y coma (el punto se ignora como separador de miles)
+    let cleanValue = value.replace(/[^\d,]/g, '');
+    
+    // Manejar múltiples comas - solo permitir una
     const commaCount = (cleanValue.match(/,/g) || []).length;
     if (commaCount > 1) {
       const firstCommaIndex = cleanValue.indexOf(',');
@@ -300,7 +405,7 @@ export function SendMoneySheet({ isOpen, onClose, usdBalance, copBalance }: Send
     }
     
     const parts = cleanValue.split(',');
-    let integerPart = parts[0].replace(/\./g, '');
+    let integerPart = parts[0];
     
     if (integerPart.length > maxDigits) {
       integerPart = integerPart.slice(0, maxDigits);
@@ -323,6 +428,10 @@ export function SendMoneySheet({ isOpen, onClose, usdBalance, copBalance }: Send
     setSendAmount(validated);
     setLastEditedField('send');
     setReceiveAmount('');
+    // Verificar si excede el saldo
+    const amount = parseFormattedValue(validated);
+    const available = sendCurrency.symbol === 'USD' ? usdBalance : copBalance;
+    setBalanceError(amount > available);
   };
   
   const handleReceiveAmountChange = (value: string) => {
@@ -330,12 +439,26 @@ export function SendMoneySheet({ isOpen, onClose, usdBalance, copBalance }: Send
     setReceiveAmount(validated);
     setLastEditedField('receive');
     setSendAmount('');
+    // Verificar si el monto convertido excede el saldo origen
+    const receiveAmt = parseFormattedValue(validated);
+    const sendAmt = sendCurrency.symbol === receiveCurrency.symbol 
+      ? receiveAmt 
+      : convert(receiveAmt, receiveCurrency.symbol, sendCurrency.symbol);
+    const available = sendCurrency.symbol === 'USD' ? usdBalance : copBalance;
+    setBalanceError(sendAmt > available);
   };
   
   // Intercambiar monedas
   const swapCurrencies = () => {
     const matchingCurrency = currencies.find(c => c.symbol === receiveCurrency.symbol);
     if (matchingCurrency) {
+      // Obtener el valor actual del receive (ya sea editado o calculado)
+      const currentReceiveValue = lastEditedField === 'receive' 
+        ? receiveAmount 
+        : (sendAmount 
+          ? formatCurrency(calculateReceiveAmount(), receiveCurrency.symbol as 'USD' | 'COP', false)
+          : '');
+      
       const tempSend = sendCurrency;
       setSendCurrency(matchingCurrency);
       setReceiveCurrency({ 
@@ -344,6 +467,22 @@ export function SendMoneySheet({ isOpen, onClose, usdBalance, copBalance }: Send
         symbol: tempSend.symbol, 
         country: tempSend.symbol === 'USD' ? 'US' : 'CO' 
       });
+      
+      // Mantener el valor de abajo (receive) y recalcular el de arriba (send)
+      setReceiveAmount(currentReceiveValue);
+      setSendAmount('');
+      setLastEditedField('receive');
+      
+      // Verificar si hay error de saldo con la nueva configuración
+      if (currentReceiveValue) {
+        const receiveAmt = parseFormattedValue(currentReceiveValue);
+        // La moneda de origen ahora es la que era de destino (matchingCurrency)
+        const sendAmt = matchingCurrency.symbol === tempSend.symbol 
+          ? receiveAmt 
+          : convert(receiveAmt, tempSend.symbol, matchingCurrency.symbol);
+        const available = matchingCurrency.symbol === 'USD' ? usdBalance : copBalance;
+        setBalanceError(sendAmt > available);
+      }
     }
   };
   
@@ -433,32 +572,110 @@ export function SendMoneySheet({ isOpen, onClose, usdBalance, copBalance }: Send
                   </svg>
                 </button>
                 
-                <div ref={sendContainerRef} style={{ flex: 1, overflow: 'hidden' }}>
+                <div ref={sendContainerRef} style={{ flex: 1, overflow: 'hidden', position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: spacing[2] }}>
                   <input
                     ref={sendInputRef}
                     type="text"
                     inputMode="decimal"
                     pattern="[0-9]*[.,]?[0-9]*"
-                    value={lastEditedField === 'send' ? sendAmount : formatCurrency(calculateSendAmount(), sendCurrency.symbol as 'USD' | 'COP', false)}
-                    onChange={(e) => handleSendAmountChange(e.target.value)}
+                    value={lastEditedField === 'send' ? sendAmount : (receiveAmount ? formatCurrency(calculateSendAmount(), sendCurrency.symbol as 'USD' | 'COP', false) : '')}
+                    onChange={(e) => {
+                      handleSendAmountChange(e.target.value);
+                    }}
+                    onFocus={() => setIsSendInputFocused(true)}
+                    onBlur={() => setTimeout(() => setIsSendInputFocused(false), 150)}
                     style={{
-                      width: '100%',
-                      fontSize: `${inputFontSize}px`,
+                      flex: 1,
+                      minWidth: 0,
+                      fontSize: `${getDynamicFontSize(sendAmount || '0')}px`,
                       fontWeight: typography.fontWeight.bold,
-                      color: colors.semantic.text.primary,
+                      color: balanceError ? colors.error[500] : colors.semantic.text.primary,
                       fontFamily: typography.fontFamily.sans.join(', '),
                       backgroundColor: 'transparent',
                       border: 'none',
                       outline: 'none',
                       padding: 0,
                       letterSpacing: '-0.04em',
-                      transition: 'font-size 0.15s ease-out',
+                      lineHeight: 1,
+                      transition: 'font-size 0.2s cubic-bezier(0.25, 0.46, 0.45, 0.94), color 0.15s ease',
                       WebkitAppearance: 'none',
                       MozAppearance: 'textfield',
                       textAlign: 'right',
                     }}
-                    placeholder="0"
+                    placeholder={getMinPlaceholder(sendCurrency.symbol)}
                   />
+                  {/* Botones MIN/MAX - solo aparecen cuando el input está enfocado y ambos campos vacíos */}
+                  {isSendInputFocused && !sendAmount && !receiveAmount && (
+                    <div style={{ 
+                      display: 'flex', 
+                      gap: spacing[1],
+                      flexShrink: 0,
+                      opacity: 1,
+                      transition: 'opacity 0.2s ease-out',
+                    }}>
+                      {getMaxAmount(sendCurrency.symbol) > 0 ? (
+                        <>
+                          <button
+                            onMouseDown={(e) => e.preventDefault()}
+                            onClick={handleSendMin}
+                            style={{
+                              backgroundColor: colors.semantic.button.secondary,
+                              color: colors.semantic.text.primary,
+                              fontSize: typography.fontSize.xs,
+                              fontWeight: typography.fontWeight.bold,
+                              fontFamily: typography.fontFamily.sans.join(', '),
+                              padding: `${spacing[1]} ${spacing[2]}`,
+                              borderRadius: borderRadius.full,
+                              border: 'none',
+                              cursor: 'pointer',
+                              transition: 'background-color 0.15s ease',
+                              whiteSpace: 'nowrap',
+                            }}
+                          >
+                            MÍN
+                          </button>
+                          <button
+                            onMouseDown={(e) => e.preventDefault()}
+                            onClick={handleSendMax}
+                            style={{
+                              backgroundColor: colors.semantic.text.primary,
+                              color: colors.white,
+                              fontSize: typography.fontSize.xs,
+                              fontWeight: typography.fontWeight.bold,
+                              fontFamily: typography.fontFamily.sans.join(', '),
+                              padding: `${spacing[1]} ${spacing[2]}`,
+                              borderRadius: borderRadius.full,
+                              border: 'none',
+                              cursor: 'pointer',
+                              transition: 'background-color 0.15s ease',
+                              whiteSpace: 'nowrap',
+                            }}
+                          >
+                            MÁX
+                          </button>
+                        </>
+                      ) : (
+                        <button
+                          onMouseDown={(e) => e.preventDefault()}
+                          onClick={() => onClose()}
+                          style={{
+                            backgroundColor: colors.semantic.text.primary,
+                            color: colors.white,
+                            fontSize: typography.fontSize.xs,
+                            fontWeight: typography.fontWeight.semibold,
+                            fontFamily: typography.fontFamily.sans.join(', '),
+                            padding: `${spacing[1]} ${spacing[2]}`,
+                            borderRadius: borderRadius.full,
+                            border: 'none',
+                            cursor: 'pointer',
+                            whiteSpace: 'nowrap',
+                          }}
+                        >
+                          Agregar saldo
+                        </button>
+                      )}
+                    </div>
+                  )}
                 </div>
               </div>
               
@@ -473,10 +690,54 @@ export function SendMoneySheet({ isOpen, onClose, usdBalance, copBalance }: Send
               </div>
               <p style={{ fontSize: typography.fontSize.xs, color: colors.semantic.text.secondary, fontFamily: typography.fontFamily.sans.join(', '), margin: 0, marginTop: spacing[1] }}>
                 {sendCurrency.symbol === 'USD' 
-                  ? 'Mín. 10 USD · Máx. 5.000 USD'
-                  : `Mín. ${formatCurrency(10 * getRate('USD', 'COP'), 'COP', false)} COP · Máx. ${formatCurrency(5000 * getRate('USD', 'COP'), 'COP', false)} COP`
+                  ? `Mín. 10 USD · Máx. ${formatCurrency(usdBalance, 'USD', false)} USD`
+                  : `Mín. ${formatCurrency(10 * getRate('USD', 'COP'), 'COP', false)} COP · Máx. ${formatCurrency(copBalance, 'COP', false)} COP`
                 }
               </p>
+              {/* Mensaje de error cuando excede el saldo */}
+              {balanceError && lastEditedField === 'send' && (
+                <div style={{ 
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  marginTop: spacing[2],
+                }}>
+                  <p style={{ 
+                    fontSize: typography.fontSize.sm, 
+                    color: colors.error[500], 
+                    fontFamily: typography.fontFamily.sans.join(', '), 
+                    margin: 0,
+                    fontWeight: typography.fontWeight.semibold,
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: spacing[1],
+                  }}>
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                      <path d="M12 8V12M12 16H12.01M22 12C22 17.5228 17.5228 22 12 22C6.47715 22 2 17.5228 2 12C2 6.47715 6.47715 2 12 2C17.5228 2 22 6.47715 22 12Z" stroke={colors.error[500]} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                    </svg>
+                    Saldo insuficiente
+                  </p>
+                  <button
+                    onClick={() => {
+                      onClose();
+                      // Navegar a agregar saldo
+                    }}
+                    style={{
+                      backgroundColor: colors.semantic.text.primary,
+                      color: colors.white,
+                      fontSize: typography.fontSize.xs,
+                      fontWeight: typography.fontWeight.semibold,
+                      fontFamily: typography.fontFamily.sans.join(', '),
+                      padding: `${spacing[2]} ${spacing[3]}`,
+                      borderRadius: borderRadius.full,
+                      border: 'none',
+                      cursor: 'pointer',
+                    }}
+                  >
+                    Agregar saldo
+                  </button>
+                </div>
+              )}
             </div>
 
             {/* Botón de intercambiar monedas */}
@@ -494,7 +755,7 @@ export function SendMoneySheet({ isOpen, onClose, usdBalance, copBalance }: Send
                   alignItems: 'center',
                   justifyContent: 'center',
                   transition: 'background-color 0.2s ease, transform 0.2s ease',
-                  boxShadow: '0 2px 8px rgba(0, 0, 0, 0.08)',
+                  boxShadow: shadows.button,
                   position: 'absolute',
                   top: '50%',
                   left: '50%',
@@ -539,46 +800,168 @@ export function SendMoneySheet({ isOpen, onClose, usdBalance, copBalance }: Send
                   </svg>
                 </button>
                 
-                <div ref={receiveContainerRef} style={{ flex: 1, overflow: 'hidden' }}>
+                <div ref={receiveContainerRef} style={{ flex: 1, overflow: 'hidden', position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: spacing[2] }}>
                   <input
                     ref={receiveInputRef}
                     type="text"
                     inputMode="decimal"
                     pattern="[0-9]*[.,]?[0-9]*"
-                    value={lastEditedField === 'receive' ? receiveAmount : formatCurrency(calculateReceiveAmount(), receiveCurrency.symbol as 'USD' | 'COP', false)}
-                    onChange={(e) => handleReceiveAmountChange(e.target.value)}
+                    value={lastEditedField === 'receive' ? receiveAmount : (sendAmount ? formatCurrency(calculateReceiveAmount(), receiveCurrency.symbol as 'USD' | 'COP', false) : '')}
+                    onChange={(e) => {
+                      handleReceiveAmountChange(e.target.value);
+                    }}
+                    onFocus={() => setIsReceiveInputFocused(true)}
+                    onBlur={() => setTimeout(() => setIsReceiveInputFocused(false), 150)}
                     style={{
-                      width: '100%',
-                      fontSize: `${inputFontSize}px`,
+                      flex: 1,
+                      minWidth: 0,
+                      fontSize: `${getDynamicFontSize(lastEditedField === 'receive' ? (receiveAmount || '0') : (sendAmount ? formatCurrency(calculateReceiveAmount(), receiveCurrency.symbol as 'USD' | 'COP', false) : '0'))}px`,
                       fontWeight: typography.fontWeight.bold,
-                      color: colors.semantic.text.primary,
+                      color: balanceError ? colors.error[500] : colors.semantic.text.primary,
                       fontFamily: typography.fontFamily.sans.join(', '),
                       backgroundColor: 'transparent',
                       border: 'none',
                       outline: 'none',
                       padding: 0,
                       letterSpacing: '-0.04em',
-                      transition: 'font-size 0.15s ease-out',
+                      lineHeight: 1,
+                      transition: 'font-size 0.2s cubic-bezier(0.25, 0.46, 0.45, 0.94), color 0.15s ease',
                       WebkitAppearance: 'none',
                       MozAppearance: 'textfield',
                       textAlign: 'right',
                     }}
-                    placeholder="0"
+                    placeholder={getMinPlaceholder(receiveCurrency.symbol)}
                   />
+                  {/* Botones MIN/MAX - solo aparecen cuando el input está enfocado y ambos campos vacíos */}
+                  {isReceiveInputFocused && !sendAmount && !receiveAmount && (
+                    <div style={{ 
+                      display: 'flex', 
+                      gap: spacing[1],
+                      flexShrink: 0,
+                      opacity: 1,
+                      transition: 'opacity 0.2s ease-out',
+                    }}>
+                      {getMaxAmount(sendCurrency.symbol) > 0 ? (
+                        <>
+                          <button
+                            onMouseDown={(e) => e.preventDefault()}
+                            onClick={handleReceiveMin}
+                            style={{
+                              backgroundColor: colors.semantic.button.secondary,
+                              color: colors.semantic.text.primary,
+                              fontSize: typography.fontSize.xs,
+                              fontWeight: typography.fontWeight.bold,
+                              fontFamily: typography.fontFamily.sans.join(', '),
+                              padding: `${spacing[1]} ${spacing[2]}`,
+                              borderRadius: borderRadius.full,
+                              border: 'none',
+                              cursor: 'pointer',
+                              transition: 'background-color 0.15s ease',
+                              whiteSpace: 'nowrap',
+                            }}
+                          >
+                            MÍN
+                          </button>
+                          <button
+                            onMouseDown={(e) => e.preventDefault()}
+                            onClick={handleReceiveMax}
+                            style={{
+                              backgroundColor: colors.semantic.text.primary,
+                              color: colors.white,
+                              fontSize: typography.fontSize.xs,
+                              fontWeight: typography.fontWeight.bold,
+                              fontFamily: typography.fontFamily.sans.join(', '),
+                              padding: `${spacing[1]} ${spacing[2]}`,
+                              borderRadius: borderRadius.full,
+                              border: 'none',
+                              cursor: 'pointer',
+                              transition: 'background-color 0.15s ease',
+                              whiteSpace: 'nowrap',
+                            }}
+                          >
+                            MÁX
+                          </button>
+                        </>
+                      ) : (
+                        <button
+                          onMouseDown={(e) => e.preventDefault()}
+                          onClick={() => onClose()}
+                          style={{
+                            backgroundColor: colors.semantic.text.primary,
+                            color: colors.white,
+                            fontSize: typography.fontSize.xs,
+                            fontWeight: typography.fontWeight.semibold,
+                            fontFamily: typography.fontFamily.sans.join(', '),
+                            padding: `${spacing[1]} ${spacing[2]}`,
+                            borderRadius: borderRadius.full,
+                            border: 'none',
+                            cursor: 'pointer',
+                            whiteSpace: 'nowrap',
+                          }}
+                        >
+                          Agregar saldo
+                        </button>
+                      )}
+                    </div>
+                  )}
                 </div>
               </div>
+              {/* Mensaje de error cuando el monto a recibir excede el saldo de envío */}
+              {balanceError && lastEditedField === 'receive' && (
+                <div style={{ 
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  marginTop: spacing[2],
+                }}>
+                  <p style={{ 
+                    fontSize: typography.fontSize.sm, 
+                    color: colors.error[500], 
+                    fontFamily: typography.fontFamily.sans.join(', '), 
+                    margin: 0,
+                    fontWeight: typography.fontWeight.semibold,
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: spacing[1],
+                  }}>
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                      <path d="M12 8V12M12 16H12.01M22 12C22 17.5228 17.5228 22 12 22C6.47715 22 2 17.5228 2 12C2 6.47715 6.47715 2 12 2C17.5228 2 22 6.47715 22 12Z" stroke={colors.error[500]} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                    </svg>
+                    Saldo insuficiente
+                  </p>
+                  <button
+                    onClick={() => {
+                      onClose();
+                      // Navegar a agregar saldo
+                    }}
+                    style={{
+                      backgroundColor: colors.semantic.text.primary,
+                      color: colors.white,
+                      fontSize: typography.fontSize.xs,
+                      fontWeight: typography.fontWeight.semibold,
+                      fontFamily: typography.fontFamily.sans.join(', '),
+                      padding: `${spacing[2]} ${spacing[3]}`,
+                      borderRadius: borderRadius.full,
+                      border: 'none',
+                      cursor: 'pointer',
+                    }}
+                  >
+                    Agregar saldo
+                  </button>
+                </div>
+              )}
             </div>
           </div>
 
           {/* Detalle de la operación */}
-          <div style={{ backgroundColor: 'rgb(110 147 221 / 12%)', border: '1px solid rgb(110 147 221 / 20%)', borderRadius: '24px', padding: spacing[6], marginTop: spacing[2] }}>
+          <div style={{ backgroundColor: 'rgb(110 147 221 / 12%)', border: '1px solid rgb(110 147 221 / 20%)', borderRadius: borderRadius['3xl'], padding: spacing[6], marginTop: spacing[2] }}>
             <p style={{ fontSize: typography.fontSize.sm, fontWeight: typography.fontWeight.semibold, color: colors.semantic.text.primary, fontFamily: typography.fontFamily.sans.join(', '), marginBottom: spacing[3] }}>
               Detalle de la operación
             </p>
             
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: spacing[2] }}>
               <span style={{ fontSize: typography.fontSize.sm, color: colors.semantic.text.primary, fontFamily: typography.fontFamily.sans.join(', ') }}>
-                Cambio actual
+                Tarifa de cambio
               </span>
               <span style={{ fontSize: typography.fontSize.sm, fontWeight: typography.fontWeight.semibold, color: colors.semantic.text.primary, fontFamily: typography.fontFamily.sans.join(', ') }}>
                 {exchangeRate >= 1 
@@ -590,7 +973,7 @@ export function SendMoneySheet({ isOpen, onClose, usdBalance, copBalance }: Send
             
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: spacing[2] }}>
               <span style={{ fontSize: typography.fontSize.sm, color: colors.semantic.text.primary, fontFamily: typography.fontFamily.sans.join(', ') }}>
-                Tiempo restante
+                Válido por
               </span>
               <span style={{ fontSize: typography.fontSize.xs, fontWeight: typography.fontWeight.bold, color: '#92400E', fontFamily: typography.fontFamily.sans.join(', '), backgroundColor: '#FEF3C7', padding: `${spacing[1]} ${spacing[2]}`, borderRadius: borderRadius.full }}>
                 {rateTimer} s
@@ -599,7 +982,7 @@ export function SendMoneySheet({ isOpen, onClose, usdBalance, copBalance }: Send
             
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
               <span style={{ fontSize: typography.fontSize.sm, color: colors.semantic.text.primary, fontFamily: typography.fontFamily.sans.join(', ') }}>
-                Costo del servicio
+                Nuestra tarifa
               </span>
               <span style={{ fontSize: typography.fontSize.sm, fontWeight: typography.fontWeight.bold, color: colors.semantic.text.primary, fontFamily: typography.fontFamily.sans.join(', ') }}>
                 GRATIS
@@ -610,21 +993,38 @@ export function SendMoneySheet({ isOpen, onClose, usdBalance, copBalance }: Send
           {/* Botón Continuar */}
           <button
             onClick={() => {
+              if (balanceError || parseFormattedValue(sendAmount) <= 0) return;
               console.log('Continuar envío:', { amount: sendAmount, sendCurrency: sendCurrency.symbol, receiveCurrency: receiveCurrency.symbol, receiveAmount: calculateReceiveAmount() });
             }}
+            disabled={balanceError || parseFormattedValue(sendAmount) <= 0}
             style={{
               width: '100%',
               padding: spacing[4],
-              backgroundColor: colors.semantic.button.primary,
+              backgroundColor: balanceError || parseFormattedValue(sendAmount) <= 0 
+                ? colors.gray[300] 
+                : colors.semantic.button.primary,
               borderRadius: borderRadius.full,
               border: 'none',
-              cursor: 'pointer',
+              cursor: balanceError || parseFormattedValue(sendAmount) <= 0 ? 'not-allowed' : 'pointer',
               marginTop: spacing[4],
               transition: 'background-color 0.2s ease, transform 0.2s ease',
+              opacity: balanceError || parseFormattedValue(sendAmount) <= 0 ? 0.6 : 1,
             }}
-            onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = colors.semantic.button.primaryHover; }}
-            onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = colors.semantic.button.primary; }}
-            onPointerDown={(e) => { e.currentTarget.style.transform = 'scale(0.98)'; }}
+            onMouseEnter={(e) => { 
+              if (!balanceError && parseFormattedValue(sendAmount) > 0) {
+                e.currentTarget.style.backgroundColor = colors.semantic.button.primaryHover; 
+              }
+            }}
+            onMouseLeave={(e) => { 
+              e.currentTarget.style.backgroundColor = balanceError || parseFormattedValue(sendAmount) <= 0 
+                ? colors.gray[300] 
+                : colors.semantic.button.primary; 
+            }}
+            onPointerDown={(e) => { 
+              if (!balanceError && parseFormattedValue(sendAmount) > 0) {
+                e.currentTarget.style.transform = 'scale(0.98)'; 
+              }
+            }}
             onPointerUp={(e) => { e.currentTarget.style.transform = 'scale(1)'; }}
             onPointerLeave={(e) => { e.currentTarget.style.transform = 'scale(1)'; }}
           >

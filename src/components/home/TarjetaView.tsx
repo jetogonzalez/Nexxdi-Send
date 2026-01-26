@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect } from 'react';
-import { borderRadius, colors, spacing, typography } from '../../config/design-tokens';
+import { borderRadius, colors, spacing, typography, shadows } from '../../config/design-tokens';
 import { currentUser } from '../../config/userProfile';
 import { transitions } from '../../config/transitions-tokens';
 import { RecentMovementsSection } from './RecentMovementsSection';
@@ -82,7 +82,7 @@ export function TarjetaView({ titleRef, scrollProgress = 0, isBalanceVisible = t
                 cashbackAnimatedRef.current = true;
                 setTimeout(() => {
                   setCashbackAnimationStarted(true);
-                }, 200);
+                }, 600);
                 if (observer) {
                   observer.disconnect();
                 }
@@ -353,7 +353,7 @@ export function TarjetaView({ titleRef, scrollProgress = 0, isBalanceVisible = t
           height: '232px',
           borderRadius: borderRadius['3xl'], // 24px
           overflow: 'hidden',
-          boxShadow: '0px 8px 24px rgba(0, 0, 0, 0.15), 0px 4px 8px rgba(0, 0, 0, 0.1)',
+          boxShadow: shadows.cardElevated,
         }}
       >
         <img
@@ -375,13 +375,14 @@ export function TarjetaView({ titleRef, scrollProgress = 0, isBalanceVisible = t
             right: 0,
             bottom: 0,
             borderRadius: borderRadius['3xl'], // 24px
-            border: '2px solid rgba(255, 255, 255, 0.2)', // Stroke inside 2px
+            border: `2px solid ${colors.semantic.border.dark}`, // Stroke inside 2px
             pointerEvents: 'none',
           }}
         />
-        {/* Overlay negro con opacidad 40% cuando la tarjeta está bloqueada */}
+        {/* Overlay negro con opacidad 40% cuando la tarjeta está bloqueada - clickeable para desbloquear */}
         {isLocked && (
           <div
+            onClick={() => setIsUnlockSheetOpen(true)}
             style={{
               position: 'absolute',
               top: 0,
@@ -390,8 +391,9 @@ export function TarjetaView({ titleRef, scrollProgress = 0, isBalanceVisible = t
               bottom: 0,
               borderRadius: borderRadius['3xl'], // 24px
               backgroundColor: 'rgba(0, 0, 0, 0.4)', // Negro con 40% de opacidad
-              pointerEvents: 'none',
+              pointerEvents: 'auto',
               zIndex: 5,
+              cursor: 'pointer',
             }}
           />
         )}
@@ -401,7 +403,7 @@ export function TarjetaView({ titleRef, scrollProgress = 0, isBalanceVisible = t
             position: 'absolute',
             top: spacing[6], // 24px desde arriba
             left: spacing[6], // 24px desde la izquierda
-            backgroundColor: 'rgba(0, 0, 0, 0.25)', // #000000 con 25% opacidad
+            backgroundColor: 'rgba(0, 0, 0, 0.25)', // Badge de tarjeta
             borderRadius: borderRadius.full, // Full rounded
             paddingTop: '6px',
             paddingBottom: '6px',
@@ -453,9 +455,10 @@ export function TarjetaView({ titleRef, scrollProgress = 0, isBalanceVisible = t
           }}
         />
         
-        {/* Overlay de bloqueo cuando la tarjeta está bloqueada */}
+        {/* Overlay de bloqueo cuando la tarjeta está bloqueada - clickeable para desbloquear */}
         {isLocked && (
           <div
+            onClick={() => setIsUnlockSheetOpen(true)}
             style={{
               position: 'absolute',
               top: '50%',
@@ -470,6 +473,7 @@ export function TarjetaView({ titleRef, scrollProgress = 0, isBalanceVisible = t
               justifyContent: 'center',
               zIndex: 10,
               boxShadow: 'none', // Sin sombra
+              cursor: 'pointer',
             }}
           >
             {/* Icono de candado cerrado */}
@@ -481,6 +485,7 @@ export function TarjetaView({ titleRef, scrollProgress = 0, isBalanceVisible = t
                 height: '32px',
                 display: 'block',
                 filter: 'none', // Color negro (sin filtro)
+                pointerEvents: 'none',
               }}
             />
           </div>
@@ -523,7 +528,7 @@ export function TarjetaView({ titleRef, scrollProgress = 0, isBalanceVisible = t
               e.stopPropagation();
               // Resetear estado inmediatamente
               e.currentTarget.style.backgroundColor = colors.semantic.background.white;
-              console.log('Recargar');
+              console.log('Recargar tarjeta');
             }}
             style={{
               width: '64px',
@@ -558,11 +563,11 @@ export function TarjetaView({ titleRef, scrollProgress = 0, isBalanceVisible = t
               e.stopPropagation();
               e.currentTarget.style.backgroundColor = colors.semantic.background.white;
             }}
-            aria-label="Recargar"
+            aria-label="Recargar tarjeta"
           >
             <img
-              src="/img/icons/global/add.svg"
-              alt="Recargar"
+              src="/img/icons/global/arrow-narrow-up.svg"
+              alt="Recargar tarjeta"
               style={{
                 width: '24px',
                 height: '24px',
@@ -579,7 +584,7 @@ export function TarjetaView({ titleRef, scrollProgress = 0, isBalanceVisible = t
               textAlign: 'center',
             }}
           >
-            Recargar
+            Recargar tarjeta
           </span>
         </div>
 
@@ -1197,32 +1202,6 @@ export function TarjetaView({ titleRef, scrollProgress = 0, isBalanceVisible = t
             title="Acciones"
             actions={[
               {
-                id: 'send-balance-usd',
-                label: 'Enviar saldo a tu cuenta en USD',
-                icon: (
-                  <img
-                    src="/img/icons/button-bar/icon-wallet-inactive.svg"
-                    alt="Wallet"
-                    style={{
-                      width: '20px', // Token: ACTION_ICON_IMAGE_SIZE (20px)
-                      height: '20px', // Token: ACTION_ICON_IMAGE_SIZE (20px)
-                      display: 'block',
-                      // Aplicar filtro para estandarizar el color del icono (#101828)
-                      // Convierte cualquier color a negro/gris oscuro para que coincida con los demás iconos (shield, limit, atm, color-card)
-                      filter: isLocked 
-                        ? 'brightness(0) saturate(100%) grayscale(100%) opacity(0.5)' 
-                        : 'brightness(0) saturate(100%)',
-                    }}
-                  />
-                ),
-                onClick: () => {
-                  // TODO: Implementar acción de enviar saldo
-                  console.log('Enviar saldo a tu cuenta en USD');
-                },
-                // Sin noBackground: usa fondo circular como los demás iconos de acciones
-                disabled: isLocked, // Deshabilitado cuando la tarjeta está bloqueada
-              },
-              {
                 id: 'withdraw-atm',
                 label: 'Retiro en cajeros automáticos',
                 icon: (
@@ -1810,7 +1789,7 @@ export function TarjetaView({ titleRef, scrollProgress = 0, isBalanceVisible = t
               fontFamily: typography.fontFamily.sans.join(', '),
               fontSize: typography.fontSize.sm,
               fontWeight: typography.fontWeight.medium,
-              boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
+              boxShadow: shadows.card,
               opacity: toast.opacity,
               // Animación natural tipo spring para el movimiento
               transition: 'all 0.35s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.4s ease-out',

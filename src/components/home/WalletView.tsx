@@ -86,7 +86,7 @@ export function WalletView({ isBalanceVisible = true, titleRef, scrollProgress =
           fontFamily: typography.fontFamily.sans.join(', '), // Manrope
           fontWeight: typography.fontWeight.normal, // 400
           fontSize: typography.fontSize.base, // 16px
-          color: '#101828',
+          color: colors.semantic.text.primary,
           lineHeight: '24px',
           marginBottom: 0, // Sin espacio entre label y saldo
         }}
@@ -162,7 +162,7 @@ export function WalletView({ isBalanceVisible = true, titleRef, scrollProgress =
             }}
           >
             <img
-              src="/img/icons/global/currency-us.svg"
+              src="/img/icons/country-flags/US.svg"
               alt="USD"
               style={{
                 width: '24px',
@@ -252,7 +252,7 @@ export function WalletView({ isBalanceVisible = true, titleRef, scrollProgress =
                 fontSize: typography.fontSize.base, // 16px
                 lineHeight: '100%', // 100% del font size
                 letterSpacing: '0%',
-                color: '#101828', // Color específico según especificación
+                color: colors.semantic.text.primary, // Color específico según especificación
                 textAlign: 'center', // Horizontal alignment: center
                 display: 'flex',
                 alignItems: 'center',
@@ -300,7 +300,7 @@ export function WalletView({ isBalanceVisible = true, titleRef, scrollProgress =
                   fontFamily: typography.fontFamily.sans.join(', '), // Manrope
                   fontSize: '14px', // 14px según especificación
                   fontWeight: typography.fontWeight.normal,
-                  color: '#676767', // Color específico según especificación
+                  color: colors.gray[500], // Color específico según especificación
                   textAlign: 'center', // Centrado
                   display: 'flex',
                   alignItems: 'center',
@@ -432,7 +432,7 @@ export function WalletView({ isBalanceVisible = true, titleRef, scrollProgress =
               aria-label="Cambiar"
             >
               <img
-                src="/img/icons/global/fx.svg"
+                src="/img/icons/global/refresh-cw.svg"
                 alt="Cambiar"
                 style={{
                   width: '24px',

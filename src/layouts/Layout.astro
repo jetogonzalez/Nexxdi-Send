@@ -175,4 +175,74 @@ const { title, description = "Aplicación móvil Nexxdi Cash" } = Astro.props;
     transform: none !important;
   }
 
+  /* ========================================
+     PROTECCIÓN DE IMÁGENES
+     ======================================== */
+  
+  /* Bloquear selección y arrastre de imágenes */
+  img {
+    -webkit-user-select: none;
+    -khtml-user-select: none;
+    -moz-user-select: none;
+    -o-user-select: none;
+    user-select: none;
+    -webkit-user-drag: none;
+    -khtml-user-drag: none;
+    -moz-user-drag: none;
+    -o-user-drag: none;
+    user-drag: none;
+    pointer-events: none;
+    -webkit-touch-callout: none;
+  }
+
+  /* Permitir pointer-events en imágenes dentro de botones */
+  button img,
+  [role="button"] img,
+  a img {
+    pointer-events: none;
+  }
+
 </style>
+
+<script>
+  // Bloquear menú contextual en imágenes
+  document.addEventListener('contextmenu', (e) => {
+    if (e.target instanceof HTMLImageElement) {
+      e.preventDefault();
+      return false;
+    }
+  });
+
+  // Bloquear arrastre de imágenes
+  document.addEventListener('dragstart', (e) => {
+    if (e.target instanceof HTMLImageElement) {
+      e.preventDefault();
+      return false;
+    }
+  });
+
+  // Bloquear long-press en móviles
+  let longPressTimer: ReturnType<typeof setTimeout> | null = null;
+  
+  document.addEventListener('touchstart', (e) => {
+    if (e.target instanceof HTMLImageElement) {
+      longPressTimer = setTimeout(() => {
+        e.preventDefault();
+      }, 500);
+    }
+  }, { passive: false });
+
+  document.addEventListener('touchend', () => {
+    if (longPressTimer) {
+      clearTimeout(longPressTimer);
+      longPressTimer = null;
+    }
+  });
+
+  document.addEventListener('touchmove', () => {
+    if (longPressTimer) {
+      clearTimeout(longPressTimer);
+      longPressTimer = null;
+    }
+  });
+</script>

@@ -67,8 +67,31 @@ const defaultCardOrder: CardData[] = [
 const DOUBLE_TAP_DELAY = 300; // ms para detectar doble tap
 const TAP_THRESHOLD = 20; // px máximo de movimiento para considerar tap
 
+const CARD_ORDER_STORAGE_KEY = 'cardWalletSliderOrder';
+
+// Función para obtener el orden inicial de las tarjetas
+const getInitialCardOrder = (): CardData[] => {
+  if (typeof window !== 'undefined') {
+    const savedOrder = localStorage.getItem(CARD_ORDER_STORAGE_KEY);
+    if (savedOrder) {
+      try {
+        const parsedOrder = JSON.parse(savedOrder) as CardData[];
+        // Validar que el orden guardado tiene las mismas tarjetas
+        if (parsedOrder.length === defaultCardOrder.length && 
+            parsedOrder.every(card => defaultCardOrder.some(d => d.id === card.id))) {
+          return parsedOrder;
+        }
+      } catch (e) {
+        console.error('Error parsing card order:', e);
+      }
+    }
+  }
+  return defaultCardOrder;
+};
+
 export function CardWalletSlider({ onCardSelect, onCardDoubleTap, onFrontCardChange, isBalanceVisible = true, cardBalance = 379.21, cardBackground, isCardBlocked = false }: CardWalletSliderProps) {
-  const [cards, setCards] = useState<CardData[]>(defaultCardOrder);
+  // Usar función inicializadora para cargar el orden inmediatamente sin saltos visuales
+  const [cards, setCards] = useState<CardData[]>(getInitialCardOrder);
   const [dragOffset, setDragOffset] = useState(0);
   const [isDragging, setIsDragging] = useState(false);
   
@@ -80,6 +103,13 @@ export function CardWalletSlider({ onCardSelect, onCardDoubleTap, onFrontCardCha
   const touchStartYRef = useRef(0);
   const touchCardIdRef = useRef<string | null>(null);
   const hasDraggedRef = useRef(false);
+
+  // Guardar el orden de las tarjetas en localStorage cuando cambia
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      localStorage.setItem(CARD_ORDER_STORAGE_KEY, JSON.stringify(cards));
+    }
+  }, [cards]);
 
   // Notify parent when front card changes
   useEffect(() => {
@@ -105,8 +135,12 @@ export function CardWalletSlider({ onCardSelect, onCardDoubleTap, onFrontCardCha
     if (Math.abs(dragOffset) > 5) return;
     
     const index = cards.findIndex(c => c.id === cardId);
+    if (index === -1) return;
+    
     const isTopCard = index === cards.length - 1;
     const now = Date.now();
+    
+    console.log('Card clicked:', cardId, 'index:', index, 'isTop:', isTopCard);
     
     // If it's the front card
     if (isTopCard) {
@@ -129,11 +163,12 @@ export function CardWalletSlider({ onCardSelect, onCardDoubleTap, onFrontCardCha
     }
 
     // Middle or back card - just bring to front (no navigation)
-    const newCards = [
-      ...cards.slice(0, index),
-      ...cards.slice(index + 1),
-      cards[index]
-    ];
+    console.log('Moving card to front:', cardId, 'from index:', index);
+    // Remove the clicked card and add it to the end (front position)
+    const clickedCard = cards[index];
+    const remainingCards = cards.filter((_, i) => i !== index);
+    const newCards = [...remainingCards, clickedCard];
+    console.log('New order:', newCards.map(c => c.id));
     setCards(newCards);
     // Reset tap ref when changing cards
     lastTapRef.current = null;
@@ -191,8 +226,12 @@ export function CardWalletSlider({ onCardSelect, onCardDoubleTap, onFrontCardCha
   const handleTouchTap = useCallback((cardId: string) => {
     const currentCards = cardsStateRef.current;
     const index = currentCards.findIndex(c => c.id === cardId);
+    if (index === -1) return;
+    
     const isTopCard = index === currentCards.length - 1;
     const now = Date.now();
+    
+    console.log('Touch tap:', cardId, 'index:', index, 'isTop:', isTopCard);
     
     // If it's the front card
     if (isTopCard) {
@@ -215,11 +254,12 @@ export function CardWalletSlider({ onCardSelect, onCardDoubleTap, onFrontCardCha
     }
 
     // Middle or back card - just bring to front (no navigation)
-    const newCards = [
-      ...currentCards.slice(0, index),
-      ...currentCards.slice(index + 1),
-      currentCards[index]
-    ];
+    console.log('Touch moving card to front:', cardId, 'from index:', index);
+    // Remove the clicked card and add it to the end (front position)
+    const clickedCard = currentCards[index];
+    const remainingCards = currentCards.filter((_, i) => i !== index);
+    const newCards = [...remainingCards, clickedCard];
+    console.log('Touch new order:', newCards.map(c => c.id));
     setCards(newCards);
     // Reset tap ref when changing cards
     lastTapRef.current = null;
@@ -278,6 +318,7 @@ export function CardWalletSlider({ onCardSelect, onCardDoubleTap, onFrontCardCha
 
   // Touch start handler
   const handleTouchStart = (cardId: string, e: React.TouchEvent) => {
+    console.log('Touch start on card:', cardId);
     touchCardIdRef.current = cardId;
     touchStartYRef.current = e.touches[0].clientY;
     hasDraggedRef.current = false; // Reset drag flag
@@ -300,46 +341,6 @@ export function CardWalletSlider({ onCardSelect, onCardDoubleTap, onFrontCardCha
       handleDragEnd();
     }
   };
-
-  // Options button component
-  const OptionsButton = ({ isVisa = false }: { isVisa?: boolean }) => (
-    <button
-      onClick={(e) => {
-        e.stopPropagation();
-        console.log('Options clicked');
-      }}
-      onTouchStart={(e) => e.stopPropagation()}
-      onTouchEnd={(e) => e.stopPropagation()}
-      onMouseDown={(e) => e.stopPropagation()}
-      style={{
-        width: 32,
-        height: 32,
-        borderRadius: '50%',
-        border: 'none',
-        background: isVisa ? colors.semantic.background.cardButtonIcon : colors.semantic.button.secondary,
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        cursor: 'pointer',
-        WebkitTapHighlightColor: 'transparent',
-        touchAction: 'manipulation',
-        outline: 'none',
-        userSelect: 'none',
-      }}
-    >
-      <img 
-        src="/img/icons/global/icon-dots.svg" 
-        alt="Opciones"
-        draggable={false}
-        style={{ 
-          width: 16, 
-          height: 16,
-          filter: isVisa ? 'brightness(0) invert(1)' : 'none',
-          pointerEvents: 'none',
-        }}
-      />
-    </button>
-  );
 
   // Render card content based on type
   const renderCardContent = (card: CardData) => {
@@ -418,8 +419,8 @@ export function CardWalletSlider({ onCardSelect, onCardDoubleTap, onFrontCardCha
             </div>
           )}
 
-          {/* Top row - VISA logo + Options (encima del overlay) */}
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%', position: 'relative', zIndex: 3 }}>
+          {/* Top row - VISA logo a la izquierda, centrado verticalmente (encima del overlay) */}
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-start', width: '100%', position: 'relative', zIndex: 3, height: 32 }}>
             <img 
               src="/img/icons/payment/logo-visa.svg" 
               alt="VISA" 
@@ -428,7 +429,6 @@ export function CardWalletSlider({ onCardSelect, onCardDoubleTap, onFrontCardCha
                 opacity: isCardBlocked ? 0.5 : 1,
               }}
             />
-            <OptionsButton isVisa />
           </div>
           {/* Bottom row - Balance + USD (oculto cuando está bloqueada) */}
           {!isCardBlocked && (
@@ -480,8 +480,8 @@ export function CardWalletSlider({ onCardSelect, onCardDoubleTap, onFrontCardCha
 
     return (
       <>
-        {/* Top row - Flag + Currency + Options */}
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%' }}>
+        {/* Top row - Flag + Currency */}
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-start', width: '100%' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: spacing[2] }}>
             <img
               src={getCurrencyFlag(currencySymbol)}
@@ -493,16 +493,15 @@ export function CardWalletSlider({ onCardSelect, onCardDoubleTap, onFrontCardCha
                 objectFit: 'cover',
               }}
             />
-<span style={{ 
-            fontSize: typography.fontSize.base,
-            fontWeight: typography.fontWeight.extrabold,
-            color: textColor,
-            fontFamily: typography.fontFamily.sans.join(', '),
-          }}>
-            {currencySymbol}
-          </span>
+            <span style={{ 
+              fontSize: typography.fontSize.base,
+              fontWeight: typography.fontWeight.extrabold,
+              color: textColor,
+              fontFamily: typography.fontFamily.sans.join(', '),
+            }}>
+              {currencySymbol}
+            </span>
           </div>
-          <OptionsButton />
         </div>
         {/* Bottom row - Balance (sin signo de moneda) */}
         {isBalanceVisible ? (
@@ -558,14 +557,16 @@ export function CardWalletSlider({ onCardSelect, onCardDoubleTap, onFrontCardCha
         
         // Padding: front card = 24px all, others = 12px top, 24px sides, 24px bottom
         const cardPadding = isTop ? '24px' : '12px 24px 24px 24px';
+        
+        // Altura clickeable: solo la parte visible (no cubierta por la tarjeta de adelante)
+        // Para tarjetas de atrás/medio: solo el "tab" visible (CARD_OFFSET px)
+        // Para tarjeta frontal: toda la altura
+        const clickableHeight = isTop ? CARD_HEIGHT : CARD_OFFSET;
 
         return (
           <div
             key={card.id}
             className="no-press-effect"
-            onClick={() => handleCardClick(card.id)}
-            onMouseDown={(e) => handleMouseDown(card.id, e)}
-            onTouchStart={(e) => handleTouchStart(card.id, e)}
             style={{
               position: 'absolute',
               width: '100%',
@@ -594,9 +595,27 @@ export function CardWalletSlider({ onCardSelect, onCardDoubleTap, onFrontCardCha
               userSelect: 'none',
               touchAction: 'pan-x',
               overflow: 'hidden',
+              pointerEvents: 'none', // Desactivar eventos en la tarjeta completa
             }}
           >
             {renderCardContent(card)}
+            
+            {/* Zona clickeable: solo la parte visible */}
+            <div
+              onClick={() => handleCardClick(card.id)}
+              onMouseDown={(e) => handleMouseDown(card.id, e)}
+              onTouchStart={(e) => handleTouchStart(card.id, e)}
+              style={{
+                position: 'absolute',
+                top: 0,
+                left: 0,
+                right: 0,
+                height: `${clickableHeight}px`,
+                zIndex: 100,
+                pointerEvents: 'auto', // Activar eventos solo en esta zona
+                cursor: isTop ? 'grab' : 'pointer',
+              }}
+            />
           </div>
         );
       })}

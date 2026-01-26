@@ -1,4 +1,4 @@
-import { colors, spacing, typography, borderRadius } from '../../config/design-tokens';
+import { colors, spacing, typography, borderRadius, shadows } from '../../config/design-tokens';
 
 interface BiometricErrorDialogProps {
   message: string;
@@ -43,7 +43,7 @@ export function BiometricErrorDialog({
           borderRadius: borderRadius['2xl'],
           padding: spacing[6],
           zIndex: 2001,
-          boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)',
+          boxShadow: shadows.dialog,
           animation: 'scaleIn 0.3s ease',
         }}
       >

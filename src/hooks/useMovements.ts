@@ -6,7 +6,7 @@ import type { Movement } from '../components/home/RecentMovements';
 const MOVEMENTS_STORAGE_KEY = 'nexxdi_cash_movements';
 const MOVEMENTS_VERSION_KEY = 'nexxdi_cash_movements_version';
 const MOVEMENTS_UPDATE_EVENT = 'nexxdi_movements_updated';
-const CURRENT_VERSION = '9'; // Incrementar cuando cambie la estructura de movimientos
+const CURRENT_VERSION = '11'; // Incrementar cuando cambie la estructura de movimientos
 
 /**
  * Hook para gestionar movimientos dinámicamente
@@ -108,7 +108,7 @@ export function useMovements() {
         amount: 2100000,
         currency: 'COP',
         date: new Date(now.getFullYear(), now.getMonth(), now.getDate() - 2, 16, 31),
-        logoUrl: '/img/icons/global/fx.svg',
+        logoUrl: '/img/icons/global/refresh-cw.svg',
         type: 'deposit',
         source: 'cash',
         isIcon: true,
@@ -119,7 +119,7 @@ export function useMovements() {
         amount: -500,
         currency: 'USD',
         date: new Date(now.getFullYear(), now.getMonth(), now.getDate() - 2, 16, 30),
-        logoUrl: '/img/icons/global/fx.svg',
+        logoUrl: '/img/icons/global/refresh-cw.svg',
         type: 'transfer',
         source: 'cash',
         isIcon: true,

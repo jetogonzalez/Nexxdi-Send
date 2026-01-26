@@ -1,4 +1,4 @@
-import { colors, spacing, typography, borderRadius, liquidGlass, button } from '../../config/design-tokens';
+import { colors, spacing, typography, borderRadius, liquidGlass, button, shadows } from '../../config/design-tokens';
 import { motion } from '../../lib/motion';
 import { LiquidGlassButtonBar } from './LiquidGlassButtonBar';
 
@@ -30,7 +30,7 @@ export function OnboardingButtons({ onCreateAccount, onLogin }: OnboardingButton
           transition: `background-color ${motion.duration.fast} ${motion.easing.smoothOut}, transform ${motion.duration.fast} ${motion.easing.smoothOut}`,
           border: 'none',
           cursor: 'pointer',
-          boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)',
+          boxShadow: shadows.buttonMd,
         }}
         onMouseEnter={(e) => {
           e.currentTarget.style.backgroundColor = colors.semantic.button.primaryHover;

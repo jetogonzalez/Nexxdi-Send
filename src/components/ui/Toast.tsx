@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from 'react';
-import { borderRadius, colors, spacing, typography } from '../../config/design-tokens';
+import { borderRadius, colors, spacing, typography, shadows } from '../../config/design-tokens';
 
 interface ToastProps {
   message: string;
@@ -52,7 +52,7 @@ export function Toast({ message, isVisible, onClose, duration = 3000 }: ToastPro
         maxWidth: 'calc(100% - 32px)',
         textAlign: 'center',
         whiteSpace: 'nowrap',
-        boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
+        boxShadow: shadows.toast,
       }}
     >
       {message}

@@ -249,11 +249,11 @@ export const PreferenceIcons = {
   ),
 
   /**
-   * Icono de Ayuda y soporte: help-and-suppot.svg
+   * Icono de Ayuda y soporte: help-and-support.svg
    */
   HelpSupport: () => (
     <img
-      src="/img/icons/global/help-and-suppot.svg"
+      src="/img/icons/global/help-and-support.svg"
       alt="Ayuda y soporte"
       style={{
         width: '20px',

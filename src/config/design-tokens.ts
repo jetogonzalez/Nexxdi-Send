@@ -32,6 +32,12 @@ const primitiveColors = {
     tarjetaViewStart: '#0D0097', // Azul oscuro (inicio)
     tarjetaViewMid: '#3A29E9', // Azul principal (medio)
     tarjetaViewEnd: '#F0EFF8', // Gris claro (fin - igual que background.main)
+    // Gradientes de estado
+    successStart: '#10B981', // Emerald para éxito
+    successEnd: '#34D399', // Emerald claro para gradiente de éxito
+    // Gradientes de card overlays
+    cardOverlayStart: 'rgba(255, 255, 255, 0)', // Transparente
+    cardOverlayEnd: 'rgba(255, 255, 255, 0.12)', // Blanco sutil
   },
   // Colores de iconos
   icon: {
@@ -108,6 +114,39 @@ export const colors = {
       dark: 'rgba(0, 0, 0, 0.2)',
     },
     
+    // Overlays (fondos semitransparentes)
+    overlay: {
+      light: 'rgba(0, 0, 0, 0.4)', // Overlay claro (modales, diálogos)
+      medium: 'rgba(0, 0, 0, 0.5)', // Overlay medio (diálogos biométricos)
+      dark: 'rgba(0, 0, 0, 0.6)', // Overlay oscuro
+    },
+    
+    // Estados de hover/press para botones
+    buttonState: {
+      // Fondos en modo claro
+      default: 'rgba(0, 0, 0, 0.05)', // Estado default
+      defaultAlt: 'rgba(0, 0, 0, 0.063)', // Alternativo para algunos botones
+      hover: 'rgba(0, 0, 0, 0.1)', // Estado hover
+      hoverLight: 'rgba(0, 0, 0, 0.08)', // Hover suave
+      press: 'rgba(0, 0, 0, 0.15)', // Estado presionado
+      pressLight: 'rgba(0, 0, 0, 0.04)', // Press suave
+      // Fondos en modo oscuro/sobre imágenes
+      darkDefault: 'rgba(255, 255, 255, 0.15)', // Estado default sobre fondo oscuro
+      darkHover: 'rgba(255, 255, 255, 0.25)', // Estado hover sobre fondo oscuro
+      darkPress: 'rgba(255, 255, 255, 0.35)', // Estado press sobre fondo oscuro
+      // Fondos específicos
+      cardOverlay: 'rgba(0, 0, 0, 0.4)', // Overlay sobre cards (tarjeta bloqueada)
+      cardIndicator: 'rgba(255, 255, 255, 0.7)', // Indicadores sobre cards
+    },
+    
+    // Textos sobre fondos especiales
+    textOverlay: {
+      light: 'rgba(255, 255, 255, 0.6)', // Texto claro sobre fondo oscuro (secundario)
+      medium: 'rgba(255, 255, 255, 0.7)', // Texto claro sobre fondo oscuro (medio)
+      strong: 'rgba(255, 255, 255, 0.85)', // Texto claro sobre fondo oscuro (fuerte)
+      full: '#FFFFFF', // Texto blanco completo
+    },
+    
     // Colores de fondo para avatares de movimientos (capa media)
     movementAvatar: {
       carulla: '#7DBE42', // Verde Carulla
@@ -155,25 +194,47 @@ export const colors = {
   success: {
     50: '#f0fdf4',
     100: '#dcfce7',
+    200: '#bbf7d0',
+    300: '#86efac',
+    400: '#4ade80',
     500: '#22c55e',
     600: '#16a34a',
     700: '#15803d',
+    // Variantes específicas
+    emerald: '#10B981', // Emerald-500 para badges positivos
+    emeraldLight: '#34D399', // Emerald-400 para gradientes
+    lime: '#0BBD2B', // Verde lima para cambios positivos
   },
 
   error: {
     50: '#fef2f2',
     100: '#fee2e2',
-    500: '#F04438', // Color del indicador de notificación del header
+    200: '#fecaca',
+    300: '#fca5a5',
+    400: '#f87171',
+    500: '#EF4444', // Color principal de error para inputs y mensajes
     600: '#dc2626',
     700: '#b91c1c',
+    notification: '#F04438', // Color del indicador de notificación del header
+    deleteAccount: '#9E3024', // Color específico para eliminar cuenta
   },
 
   warning: {
     50: '#fffbeb',
-    100: '#fef3c7',
+    100: '#fef3c7', // Fondo de badges de advertencia
+    200: '#fde68a',
+    300: '#fcd34d',
+    400: '#fbbf24',
     500: '#f59e0b',
     600: '#d97706',
     700: '#b45309',
+    800: '#92400E', // Texto de advertencia en badges
+  },
+  
+  // Colores de info box (azul)
+  infoBox: {
+    background: 'rgb(110 147 221 / 12%)', // Fondo de info box
+    border: 'rgb(110 147 221 / 20%)', // Borde de info box
   },
 
   info: {
@@ -460,6 +521,14 @@ export const shadows = {
   '2xl': '0 25px 50px -12px rgb(0 0 0 / 0.25)',
   inner: 'inset 0 2px 4px 0 rgb(0 0 0 / 0.05)',
   none: 'none',
+  // Sombras específicas de componentes
+  button: '0 2px 8px rgba(0, 0, 0, 0.08)', // Sombra para botones
+  buttonMd: '0 2px 8px rgba(0, 0, 0, 0.1)', // Sombra media para botones
+  card: '0 4px 12px rgba(0, 0, 0, 0.15)', // Sombra para cards
+  cardElevated: '0px 8px 24px rgba(0, 0, 0, 0.15), 0px 4px 8px rgba(0, 0, 0, 0.1)', // Sombra elevada para cards
+  modal: '0 -4px 20px rgba(0, 0, 0, 0.15)', // Sombra para modales/bottom sheets
+  dialog: '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)', // Sombra para diálogos
+  toast: '0 4px 12px rgba(0, 0, 0, 0.15)', // Sombra para toasts
 } as const;
 
 // ============================================

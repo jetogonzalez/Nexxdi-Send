@@ -75,7 +75,7 @@ export function SliderToBlock({
     switch (mode) {
       case 'lock': return '/img/icons/global/lock.svg';
       case 'unlock': return '/img/icons/global/lock-open.svg';
-      case 'exchange': return '/img/icons/global/fx.svg';
+      case 'exchange': return '/img/icons/global/refresh-cw.svg';
       default: return '/img/icons/global/check.svg';
     }
   };

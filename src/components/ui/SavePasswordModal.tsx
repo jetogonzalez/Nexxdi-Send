@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
-import { colors, spacing, typography, borderRadius, button } from '../../config/design-tokens';
+import { colors, spacing, typography, borderRadius, button, shadows } from '../../config/design-tokens';
 import { LiquidGlassButton } from './LiquidGlassButton';
 import { motion } from '../../lib/motion';
 
@@ -219,7 +219,7 @@ export function SavePasswordModal({ isOpen, onSave, onSkip }: SavePasswordModalP
           transition: isDragging 
             ? 'none' 
             : `transform ${motion.duration.slow} ${motion.easing.smoothOut}, height ${motion.duration.slow} ${motion.easing.smoothOut}`,
-          boxShadow: '0 -4px 20px rgba(0, 0, 0, 0.15)',
+          boxShadow: shadows.modal,
           display: 'flex',
           flexDirection: 'column',
           touchAction: 'pan-y',
