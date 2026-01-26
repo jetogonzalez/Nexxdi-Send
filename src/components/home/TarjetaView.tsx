@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useCallback } from 'react';
 import { borderRadius, colors, spacing, typography, shadows } from '../../config/design-tokens';
 import { currentUser } from '../../config/userProfile';
 import { transitions } from '../../config/transitions-tokens';
@@ -20,6 +20,10 @@ interface TarjetaViewProps {
   scrollProgress?: number;
   isBalanceVisible?: boolean;
 }
+
+// Constantes para la animación de colapso de tarjeta
+const HEADER_HEIGHT = 56; // Altura del header fijo
+const ANIMATION_DURATION = 300; // ms - duración natural
 
 export function TarjetaView({ titleRef, scrollProgress = 0, isBalanceVisible = true }: TarjetaViewProps) {
   const title = 'Tarjeta virtual';
@@ -52,6 +56,162 @@ export function TarjetaView({ titleRef, scrollProgress = 0, isBalanceVisible = t
   const [cashbackAnimationStarted, setCashbackAnimationStarted] = useState<boolean>(false);
   const cashbackIconRef = useRef<HTMLDivElement>(null);
   const cashbackAnimatedRef = useRef<boolean>(false);
+  
+  // ===== ESTADOS Y REFS PARA LA ANIMACIÓN DE COLAPSO DE TARJETA =====
+  const [isCardCollapsed, setIsCardCollapsed] = useState<boolean>(false);
+  const [isAnimating, setIsAnimating] = useState<boolean>(false);
+  const bigCardRef = useRef<HTMLDivElement>(null);
+  const bigCardContainerRef = useRef<HTMLDivElement>(null);
+  const miniCardRef = useRef<HTMLDivElement>(null);
+  const cardNumberRef = useRef<HTMLDivElement>(null);
+  const sectionTitleRef = useRef<HTMLHeadingElement>(null);
+  const lastScrollYRef = useRef<number>(0);
+  const rafIdRef = useRef<number | null>(null);
+  
+  // Usar scrollY para determinar collapse/expand - triggers apenas aparece el blur del header
+  const collapseScrollThreshold = useRef<number>(1); // scrollY donde colapsar (apenas hay scroll)
+  const expandScrollThreshold = useRef<number>(0); // scrollY donde expandir (solo cuando está en el top)
+  
+  // Función para animar el colapso - fade limpio sin saltos
+  const animateCollapse = useCallback(() => {
+    if (!bigCardRef.current || !miniCardRef.current || !cardNumberRef.current || !bigCardContainerRef.current) return;
+    
+    setIsAnimating(true);
+    
+    // 1. Ocultar cardNumber
+    cardNumberRef.current.style.transition = 'none';
+    cardNumberRef.current.style.opacity = '0';
+    cardNumberRef.current.style.visibility = 'hidden';
+    
+    // 2. Mini oculta al inicio
+    miniCardRef.current.style.transition = 'none';
+    miniCardRef.current.style.opacity = '0';
+    
+    // 3. Big card fade out rápido (sin transform para evitar saltos)
+    bigCardRef.current.style.transition = `opacity ${ANIMATION_DURATION * 0.4}ms ease-out`;
+    bigCardRef.current.style.opacity = '0';
+    
+    // 4. Colapsar contenedor
+    bigCardContainerRef.current.style.overflow = 'hidden';
+    bigCardContainerRef.current.style.transition = `height ${ANIMATION_DURATION}ms cubic-bezier(0.25, 0.1, 0.25, 1), margin ${ANIMATION_DURATION}ms cubic-bezier(0.25, 0.1, 0.25, 1)`;
+    bigCardContainerRef.current.style.height = '0px';
+    bigCardContainerRef.current.style.marginBottom = '0px';
+    
+    // 5. Mini aparece cuando la grande ya desapareció
+    setTimeout(() => {
+      if (miniCardRef.current) {
+        miniCardRef.current.style.transition = `opacity ${ANIMATION_DURATION * 0.5}ms ease-out`;
+        miniCardRef.current.style.opacity = '1';
+        miniCardRef.current.style.transform = 'scale(1)';
+      }
+    }, ANIMATION_DURATION * 0.3);
+    
+    // 6. Finalizar
+    setTimeout(() => {
+      if (bigCardRef.current) {
+        bigCardRef.current.style.pointerEvents = 'none';
+        // Reset transform para la próxima expansión
+        bigCardRef.current.style.transform = 'scale(1) translateY(0)';
+        bigCardRef.current.style.borderRadius = '24px';
+      }
+      setIsAnimating(false);
+    }, ANIMATION_DURATION);
+  }, []);
+  
+  // Función para animar la expansión - la tarjeta crece desde la mini (top right)
+  const animateExpand = useCallback(() => {
+    if (!bigCardRef.current || !miniCardRef.current || !cardNumberRef.current || !bigCardContainerRef.current) return;
+    
+    setIsAnimating(true);
+    
+    // 1. Preparar bigCard en la posición de la mini (escala pequeña, desde top right)
+    bigCardRef.current.style.transition = 'none';
+    bigCardRef.current.style.transform = 'scale(0.28) translateY(-50px)';
+    bigCardRef.current.style.opacity = '0';
+    bigCardRef.current.style.borderRadius = '6px';
+    bigCardRef.current.style.pointerEvents = 'auto';
+    
+    // Forzar reflow
+    bigCardRef.current.offsetHeight;
+    
+    // 2. Expandir contenedor
+    bigCardContainerRef.current.style.overflow = 'visible';
+    bigCardContainerRef.current.style.transition = `height ${ANIMATION_DURATION}ms cubic-bezier(0.25, 0.1, 0.25, 1), margin ${ANIMATION_DURATION}ms cubic-bezier(0.25, 0.1, 0.25, 1)`;
+    bigCardContainerRef.current.style.height = '232px';
+    bigCardContainerRef.current.style.marginBottom = '';
+    
+    // 3. Morphing simultáneo: mini fade out + big crece desde la derecha
+    requestAnimationFrame(() => {
+      // Mini card fade out
+      if (miniCardRef.current) {
+        miniCardRef.current.style.transition = `opacity ${ANIMATION_DURATION * 0.4}ms ease-out`;
+        miniCardRef.current.style.opacity = '0';
+      }
+      
+      // Big card crece desde la posición de la mini hacia su tamaño original
+      if (bigCardRef.current) {
+        bigCardRef.current.style.transition = `transform ${ANIMATION_DURATION}ms cubic-bezier(0.25, 0.1, 0.25, 1), opacity ${ANIMATION_DURATION * 0.3}ms ease-out, border-radius ${ANIMATION_DURATION}ms cubic-bezier(0.25, 0.1, 0.25, 1)`;
+        bigCardRef.current.style.opacity = '1';
+        bigCardRef.current.style.transform = 'scale(1) translateY(0)';
+        bigCardRef.current.style.borderRadius = '24px';
+      }
+    });
+    
+    // 4. Mostrar cardNumber al final
+    setTimeout(() => {
+      if (cardNumberRef.current) {
+        cardNumberRef.current.style.visibility = 'visible';
+        cardNumberRef.current.style.transition = `opacity 200ms cubic-bezier(0, 0, 0.2, 1), transform 200ms cubic-bezier(0, 0, 0.2, 1)`;
+        cardNumberRef.current.style.opacity = '1';
+        cardNumberRef.current.style.transform = 'translateY(0) scale(1)';
+      }
+      if (bigCardContainerRef.current) {
+        bigCardContainerRef.current.style.overflow = '';
+      }
+      setIsAnimating(false);
+    }, ANIMATION_DURATION + 100);
+  }, []);
+  
+  // Efecto para el scroll listener - usa scrollY con hysteresis para evitar loops
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    
+    const handleScroll = () => {
+      if (rafIdRef.current) return;
+      
+      rafIdRef.current = requestAnimationFrame(() => {
+        rafIdRef.current = null;
+        
+        if (isAnimating) return;
+        
+        const scrollY = window.scrollY;
+        const prevScrollY = lastScrollYRef.current;
+        const isScrollingDown = scrollY > prevScrollY;
+        const isScrollingUp = scrollY < prevScrollY;
+        lastScrollYRef.current = scrollY;
+        
+        // Colapsar: bajando + scrollY supera umbral + no está colapsado
+        if (isScrollingDown && scrollY >= collapseScrollThreshold.current && !isCardCollapsed) {
+          setIsCardCollapsed(true);
+          animateCollapse();
+        }
+        // Expandir: subiendo + scrollY bajo umbral + está colapsado
+        else if (isScrollingUp && scrollY <= expandScrollThreshold.current && isCardCollapsed) {
+          setIsCardCollapsed(false);
+          animateExpand();
+        }
+      });
+    };
+    
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    
+    return () => {
+      window.removeEventListener('scroll', handleScroll);
+      if (rafIdRef.current) {
+        cancelAnimationFrame(rafIdRef.current);
+      }
+    };
+  }, [isCardCollapsed, isAnimating, animateCollapse, animateExpand]);
   
   // Efecto para observar cuando el icono de cashback entra en pantalla
   useEffect(() => {
@@ -215,17 +375,23 @@ export function TarjetaView({ titleRef, scrollProgress = 0, isBalanceVisible = t
         backgroundColor: colors.semantic.background.main,
       }}
     >
-      {/* Contenedor con gradiente - desde antes del header hasta después de las acciones */}
+      {/* Contenedor con gradiente - desde antes del header hasta la mitad de los botones de acción */}
       <div
         style={{
-          background: `linear-gradient(180deg, #0D0097 0%, ${colors.primary.main} 50%, ${colors.semantic.background.main} 100%)`,
+          // Gradiente según diseño de Figma
+          // Expandido: 0% #0D0097, 55% #3A29E9, 90% #F0EFF8
+          // Colapsado: ajustado para terminar a la mitad de los iconos
+          background: isCardCollapsed
+            ? `linear-gradient(180deg, #0D0097 0%, #3A29E9 40%, #F0EFF8 85%)`
+            : `linear-gradient(180deg, #0D0097 0%, #3A29E9 55%, #F0EFF8 90%)`,
           marginLeft: `-${spacing[5]}`, // -20px para compensar el padding del contenedor padre
           marginRight: `-${spacing[5]}`, // -20px para compensar el padding del contenedor padre
           marginTop: '-100px', // Extender hacia arriba para cubrir detrás del header
           paddingLeft: spacing[5], // 20px para mantener el contenido alineado
           paddingRight: spacing[5], // 20px para mantener el contenido alineado
           paddingTop: `calc(100px + ${spacing[4]})`, // 100px + 16px compensar el margin negativo
-          paddingBottom: spacing[6], // 24px abajo para espaciado con los botones
+          paddingBottom: 0, // Sin padding inferior
+          transition: 'background 300ms ease-out',
         }}
       >
         {/* Header de la sección con título y botón de opciones */}
@@ -240,6 +406,7 @@ export function TarjetaView({ titleRef, scrollProgress = 0, isBalanceVisible = t
           <h1
             ref={(el) => {
               if (titleRef) titleRef(el);
+              sectionTitleRef.current = el;
             }}
             style={{
               fontSize: typography.sectionTitle.fontSize,
@@ -290,63 +457,126 @@ export function TarjetaView({ titleRef, scrollProgress = 0, isBalanceVisible = t
           </button>
         </div>
         
-        {/* Label "Saldo disponible" - mismo estilo que WalletView */}
+        {/* Fila: Saldo disponible + Balance + Mini Card (en una línea) */}
         <div
           style={{
-            height: '24px',
-            fontFamily: typography.fontFamily.sans.join(', '), // Manrope
-            fontWeight: typography.fontWeight.medium, // 500
-            fontSize: typography.fontSize.base, // 16px
-            color: 'rgba(255, 255, 255, 0.7)',
-            lineHeight: '24px',
-            marginBottom: 0, // Sin espacio entre label y saldo
-          }}
-        >
-          Saldo disponible
-        </div>
-        
-        {/* Balance principal - mismo estilo que WalletView - Enmascarado solo cuando isBalanceVisible es false */}
-        <div
-          style={{
-            fontSize: typography.fontSize['3xl'], // 30px
-            fontWeight: typography.fontWeight.bold,
-            letterSpacing: '-0.04em', // -4% letter spacing
-            color: colors.semantic.background.white,
-            fontFamily: typography.fontFamily.sans.join(', '),
-            marginTop: 0, // Sin espacio entre label y saldo
-            marginBottom: spacing[6], // 24px después del contenido
             display: 'flex',
-            alignItems: 'baseline',
-            gap: spacing[1], // 4px entre número y moneda
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            minHeight: '64px', // Altura mínima igual a la mini card para mantener espaciado consistente
+            marginBottom: isCardCollapsed ? 0 : spacing[6], // Sin margen cuando está colapsado
+            transition: 'margin-bottom 300ms ease-out',
           }}
         >
-          {isBalanceVisible ? (
-            <>
-              <span>379,21</span>
-              <span
-                style={{
-                  fontSize: typography.fontSize.sm, // 14px (más pequeño)
-                  fontWeight: typography.fontWeight.bold,
-                  fontFamily: typography.fontFamily.sans.join(', '),
-                  color: colors.semantic.background.white,
-                }}
-              >
-                USD
-              </span>
-            </>
-          ) : (
-            <span>•••</span>
-          )}
+          {/* Columna izquierda: Label + Balance */}
+          <div 
+            style={{ 
+              display: 'flex', 
+              flexDirection: 'column',
+              // Sombra sutil cuando está colapsado para mejor legibilidad
+              textShadow: isCardCollapsed ? '0 2px 8px rgba(0, 0, 0, 0.15), 0 1px 3px rgba(0, 0, 0, 0.1)' : 'none',
+              transition: 'text-shadow 300ms ease-out',
+            }}
+          >
+            <div
+              style={{
+                height: '24px',
+                fontFamily: typography.fontFamily.sans.join(', '),
+                fontWeight: typography.fontWeight.medium,
+                fontSize: typography.fontSize.base,
+                color: 'rgba(255, 255, 255, 0.7)',
+                lineHeight: '24px',
+              }}
+            >
+              Saldo disponible
+            </div>
+            {/* Balance principal */}
+            <div
+              style={{
+                fontSize: typography.fontSize['3xl'],
+                fontWeight: typography.fontWeight.bold,
+                letterSpacing: '-0.04em',
+                color: colors.semantic.background.white,
+                fontFamily: typography.fontFamily.sans.join(', '),
+                display: 'flex',
+                alignItems: 'baseline',
+                gap: spacing[1],
+              }}
+            >
+              {isBalanceVisible ? (
+                <>
+                  <span>379,21</span>
+                  <span
+                    style={{
+                      fontSize: typography.fontSize.sm,
+                      fontWeight: typography.fontWeight.bold,
+                      fontFamily: typography.fontFamily.sans.join(', '),
+                      color: colors.semantic.background.white,
+                    }}
+                  >
+                    USD
+                  </span>
+                </>
+              ) : (
+                <span>•••</span>
+              )}
+            </div>
+          </div>
+          
+          {/* Mini Card - visible cuando está colapsado */}
+          <div
+            ref={miniCardRef}
+            style={{
+              position: 'relative',
+              width: '108px',
+              height: '64px',
+              borderRadius: '6px',
+              overflow: 'hidden',
+              opacity: 0,
+              transform: 'scale(0.96)',
+              willChange: 'transform, opacity',
+              boxShadow: shadows.cardElevated,
+              flexShrink: 0,
+            }}
+          >
+            <img
+              src="/img/icons/cards/card-full-default-3x.png"
+              alt="Tarjeta Mini"
+              style={{
+                width: '100%',
+                height: '100%',
+                objectFit: 'cover',
+                display: 'block',
+              }}
+            />
+            {/* Logo Visa - abajo a la derecha, proporcional */}
+            <img
+              src="/img/icons/payment/logo-visa.svg"
+              alt="Visa"
+              style={{
+                position: 'absolute',
+                bottom: '8px',
+                right: '8px',
+                height: '10px',
+                width: 'auto',
+                filter: 'brightness(0) saturate(100%) invert(95%) sepia(5%) saturate(200%) hue-rotate(200deg) brightness(98%) contrast(92%)',
+              }}
+            />
+          </div>
         </div>
         
-        {/* Tarjeta visual */}
+        {/* Tarjeta visual - Big Card Container */}
       <div
+        ref={bigCardContainerRef}
         style={{
           position: 'relative',
           width: '100%',
+          height: '232px',
+          willChange: 'height, opacity',
         }}
       >
       <div
+        ref={bigCardRef}
         style={{
           position: 'relative',
           width: '100%',
@@ -354,6 +584,8 @@ export function TarjetaView({ titleRef, scrollProgress = 0, isBalanceVisible = t
           borderRadius: borderRadius['3xl'], // 24px
           overflow: 'hidden',
           boxShadow: shadows.cardElevated,
+          willChange: 'transform, opacity',
+          transformOrigin: 'top right', // La tarjeta escala desde la esquina superior derecha (donde está la mini)
         }}
       >
         <img
@@ -399,6 +631,7 @@ export function TarjetaView({ titleRef, scrollProgress = 0, isBalanceVisible = t
         )}
         {/* Badge con últimos dígitos de la tarjeta - arriba a la izquierda */}
         <div
+          ref={cardNumberRef}
           style={{
             position: 'absolute',
             top: spacing[6], // 24px desde arriba
@@ -412,6 +645,7 @@ export function TarjetaView({ titleRef, scrollProgress = 0, isBalanceVisible = t
             display: 'flex',
             alignItems: 'center',
             gap: '4px',
+            willChange: 'transform, opacity',
           }}
         >
           <span
@@ -492,23 +726,15 @@ export function TarjetaView({ titleRef, scrollProgress = 0, isBalanceVisible = t
         )}
         </div>
       </div>
-      </div>
       
-      {/* Fin del contenedor con gradiente */}
-      
-      {/* Fin del contenedor con gradiente */}
-      
-      {/* Botones de acción debajo de la tarjeta */}
+      {/* Botones de acción - DENTRO del gradiente para continuidad visual */}
       <div
         style={{
           display: 'flex',
           justifyContent: 'center',
           alignItems: 'flex-start',
           gap: '40px', // 40px entre botones
-          marginTop: 0, // Sin margen superior
-          marginBottom: spacing[6], // 24px abajo (igual que segmented → movimientos)
-          paddingLeft: spacing[5], // 20px para mantener alineación con el contenido
-          paddingRight: spacing[5], // 20px para mantener alineación con el contenido
+          marginTop: spacing[6], // 24px - distancia original entre tarjeta y acciones
         }}
       >
         {/* Botón Recargar */}
@@ -775,10 +1001,13 @@ export function TarjetaView({ titleRef, scrollProgress = 0, isBalanceVisible = t
           </span>
         </div>
       </div>
+      </div>
+      {/* Fin del contenedor con gradiente */}
 
       {/* Segmented Button - Debajo de los botones de acción */}
       <div
         style={{
+          marginTop: spacing[6], // 24px arriba - igual que el gap hacia últimos movimientos
           marginBottom: spacing[6], // 24px abajo
         }}
       >
