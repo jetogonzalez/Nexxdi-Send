@@ -64,7 +64,7 @@ export function TarjetaView({ titleRef, scrollProgress = 0, isBalanceVisible = t
   const bigCardContainerRef = useRef<HTMLDivElement>(null);
   const miniCardRef = useRef<HTMLDivElement>(null);
   const cardNumberRef = useRef<HTMLDivElement>(null);
-  const sectionTitleRef = useRef<HTMLHeadingElement>(null);
+  const sectionTitleRef = useRef<HTMLHeadingElement | null>(null);
   const lastScrollYRef = useRef<number>(0);
   const rafIdRef = useRef<number | null>(null);
   
